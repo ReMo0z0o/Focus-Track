@@ -1,12 +1,13 @@
 import { useMemo } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
-import { getRecentSessions } from '@/lib/sessions.functions'
+import { getProfile, getRecentSessions } from '@/lib/sessions.functions'
 import { useSessionEngine } from '@/lib/session-engine'
 import {
   APP_LOCALE,
   DAILY_GOAL_SECONDS,
+  GRADE_NAMES,
   filterSince,
   fmtClock,
   fmtDuration,
@@ -14,6 +15,12 @@ import {
   startOfDay,
   summarize,
 } from '@/lib/stats'
+import {
+  computeMilestones,
+  mergeMilestones,
+  normalizeMilestones,
+} from '@/lib/rewards'
+import { GradeEmblem } from '@/components/GradeEmblem'
 
 export const Route = createFileRoute('/_authenticated/app')({
   component: SessionPage,
@@ -41,6 +48,26 @@ function SessionPage() {
     queryKey: ['sessions'],
     queryFn: () => getRecentSessionsFn(),
   })
+
+  const getProfileFn = useServerFn(getProfile)
+  const profileQuery = useQuery({
+    queryKey: ['profile'],
+    queryFn: () => getProfileFn(),
+  })
+
+  /* ---------------- grade badge ---------------- */
+
+  // Best grade reached (persisted milestone high-water mark merged with the
+  // current session data), same source of truth as Rewards and Friends.
+  const grade = useMemo(() => {
+    const stored = normalizeMilestones(profileQuery.data?.milestones)
+    if (!sessionsQuery.data) return stored.grade
+    return mergeMilestones(
+      stored,
+      computeMilestones(sessionsQuery.data, new Date(nowTs)),
+    ).grade
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileQuery.data?.milestones, sessionsQuery.data])
 
   /* ---------------- today panel ---------------- */
 
@@ -88,7 +115,17 @@ function SessionPage() {
 
       <div className="session-layout">
         <section className={`card timer-card${active && !isIdle ? ' is-running' : ''}`}>
-          {statusChip}
+          <div className="timer-top">
+            <Link
+              to="/rewards"
+              className={`grade-badge grade-${grade}`}
+              title={`${GRADE_NAMES[grade]} — your current grade. Open Rewards.`}
+            >
+              <GradeEmblem level={grade} width={26} />
+              <span className="gb-name">{GRADE_NAMES[grade]}</span>
+            </Link>
+            {statusChip}
+          </div>
 
           <div className={`timer-clock${isIdle ? ' paused' : ''}`}>
             {fmtClock(focusSeconds)}
