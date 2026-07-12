@@ -14,6 +14,12 @@ export interface SessionRow {
 
 export type Period = 'day' | 'week' | 'month'
 
+/**
+ * The app's UI language is English; pin date/time rendering to it too so
+ * labels don't switch language with the browser locale.
+ */
+export const APP_LOCALE = 'en-US'
+
 /** Average uninterrupted run of 2h == 100% concentration. */
 export const TARGET_CONCENTRATION_SECONDS = 2 * 60 * 60
 

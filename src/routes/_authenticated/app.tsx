@@ -5,6 +5,7 @@ import { useServerFn } from '@tanstack/react-start'
 import { getRecentSessions } from '@/lib/sessions.functions'
 import { useSessionEngine } from '@/lib/session-engine'
 import {
+  APP_LOCALE,
   DAILY_GOAL_SECONDS,
   filterSince,
   fmtClock,
@@ -106,7 +107,7 @@ function SessionPage() {
           {active && (
             <p className="timer-sub mt-1" style={{ fontSize: '0.82rem' }}>
               Started at{' '}
-              {new Date(active.startedAt).toLocaleTimeString([], {
+              {new Date(active.startedAt).toLocaleTimeString(APP_LOCALE, {
                 hour: '2-digit',
                 minute: '2-digit',
               })}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
+  APP_LOCALE,
   CONCENTRATION_BADGE_THRESHOLDS,
   DAILY_GOAL_SECONDS,
   GRADE_NAMES,
@@ -89,7 +90,7 @@ export function GradeBadges({
 
   const last7 = dailyBuckets(sessions, 7, now).map((b) => ({
     key: b.key,
-    letter: b.date.toLocaleDateString([], { weekday: 'narrow' }),
+    letter: b.date.toLocaleDateString(APP_LOCALE, { weekday: 'narrow' }),
     hit: b.focus >= DAILY_GOAL_SECONDS,
     isToday: b.key === dailyBuckets(sessions, 1, now)[0]!.key,
   }))

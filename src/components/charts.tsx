@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { fmtDuration } from '@/lib/stats'
+import { APP_LOCALE, fmtDuration } from '@/lib/stats'
 
 /**
  * Hand-rolled SVG charts. Series colors are validated for the dark surface
@@ -141,7 +141,7 @@ export function ConcentrationChart({
             <strong>{hovered.value}%</strong> concentration
             <br />
             <span style={{ color: 'var(--text-muted)' }}>
-              {hovered.date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+              {hovered.date.toLocaleDateString(APP_LOCALE, { weekday: 'short', month: 'short', day: 'numeric' })}
             </span>
           </>
         ),
@@ -197,7 +197,7 @@ export function ConcentrationChart({
             y={H - 6}
             textAnchor="middle"
           >
-            {p.date.toLocaleDateString([], { day: 'numeric', month: n > 10 ? undefined : 'short' })}
+            {p.date.toLocaleDateString(APP_LOCALE, { day: 'numeric', month: n > 10 ? undefined : 'short' })}
           </text>
         ) : null,
       )}

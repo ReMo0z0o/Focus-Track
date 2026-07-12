@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
 import { deleteSession, getRecentSessions } from '@/lib/sessions.functions'
 import {
+  APP_LOCALE,
   concentrationSeries,
   dailyBuckets,
   dayKey,
@@ -84,9 +85,9 @@ export function StatsView() {
     return dailyBuckets(inPeriod, days, now).map((b) => ({
       label:
         days === 7
-          ? b.date.toLocaleDateString([], { weekday: 'short' })
+          ? b.date.toLocaleDateString(APP_LOCALE, { weekday: 'short' })
           : `${b.date.getDate()}`,
-      detail: b.date.toLocaleDateString([], {
+      detail: b.date.toLocaleDateString(APP_LOCALE, {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
@@ -230,7 +231,7 @@ function SessionList({
             ? 'Today'
             : key === yesterdayKey
               ? 'Yesterday'
-              : d.toLocaleDateString([], {
+              : d.toLocaleDateString(APP_LOCALE, {
                   weekday: 'long',
                   month: 'short',
                   day: 'numeric',
@@ -262,7 +263,7 @@ function SessionList({
           {g.rows.map((s) => (
             <div key={s.id} className="session-row">
               <span className="time">
-                {new Date(s.started_at).toLocaleTimeString([], {
+                {new Date(s.started_at).toLocaleTimeString(APP_LOCALE, {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
