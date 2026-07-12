@@ -3,32 +3,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
 import { deleteSession, getRecentSessions } from '@/lib/sessions.functions'
 import {
-  CONCENTRATION_BADGE_THRESHOLDS,
-  DAILY_GOAL_SECONDS,
-  GRADE_NAMES,
-  GRADE_THRESHOLDS,
-  RATIO_BADGE_THRESHOLDS,
-  TIER_NAMES,
-  aggregateConcentration,
-  concentrationBadgeLevel,
   concentrationSeries,
   dailyBuckets,
   dayKey,
   filterSince,
   fmtDuration,
   fmtPercent,
-  gradeLevel,
   hourlyBuckets,
   periodStart,
-  qualifiedDaysLast30,
-  ratioBadgeLevel,
   startOfDay,
-  streakDays,
   summarize,
 } from '@/lib/stats'
 import type { Period, SessionRow } from '@/lib/stats'
 import { ConcentrationChart, FocusPauseChart } from '@/components/charts'
 import type { StackedBucket } from '@/components/charts'
+import { GradeBadges } from '@/components/GradeBadges'
 import { useToast } from '@/components/Toaster'
 
 const PERIODS: { key: Period; label: string }[] = [
@@ -199,7 +188,7 @@ export function StatsView() {
         </div>
       </div>
 
-      <Badges sessions={sessions} now={now} />
+      <GradeBadges sessions={sessions} now={now} />
 
       <SessionList
         sessions={sessions}
@@ -207,86 +196,6 @@ export function StatsView() {
         onDelete={(id) => deleteMutation.mutate(id)}
         deletingId={deleteMutation.isPending ? (deleteMutation.variables ?? null) : null}
       />
-    </div>
-  )
-}
-
-/* ------------------------------------------------------------------ */
-/* Badges & grade                                                      */
-/* ------------------------------------------------------------------ */
-
-function Badges({ sessions, now }: { sessions: SessionRow[]; now: Date }) {
-  const grade = gradeLevel(sessions, now)
-  const qualified = qualifiedDaysLast30(sessions, now)
-  const streak = streakDays(sessions, now)
-  const concLevel = concentrationBadgeLevel(sessions, now)
-  const concValue = aggregateConcentration(sessions, 3, now)
-  const ratioLevel = ratioBadgeLevel(sessions, now)
-
-  const nextGradeAt = GRADE_THRESHOLDS[grade + 1]
-  const gradeProgress =
-    nextGradeAt !== undefined ? Math.min(100, (qualified / nextGradeAt) * 100) : 100
-
-  const nextConcAt = CONCENTRATION_BADGE_THRESHOLDS[concLevel + 1]
-  const nextRatioAt = RATIO_BADGE_THRESHOLDS[ratioLevel + 1]
-
-  return (
-    <div className="card mt-3">
-      <h2 className="card-title">Grade &amp; badges</h2>
-      <div className="badge-grid" style={{ marginTop: 0 }}>
-        <div className="badge-card">
-          <div className={`badge-medal lvl-${grade}`} aria-hidden="true">
-            🔥
-          </div>
-          <div className="badge-info">
-            <div className="b-name">{GRADE_NAMES[grade]}</div>
-            <div className="b-tier">
-              {qualified} focused day{qualified === 1 ? '' : 's'} / 30
-              {streak > 0 && ` · ${streak}-day streak`}
-            </div>
-            <div className="b-desc">
-              {nextGradeAt !== undefined
-                ? `${GRADE_NAMES[grade + 1]} at ${nextGradeAt} days with ${fmtDuration(DAILY_GOAL_SECONDS)}+ of focus`
-                : 'Top grade — keep the light on.'}
-            </div>
-            <div className="meter" aria-hidden="true">
-              <span style={{ width: `${gradeProgress}%` }} />
-            </div>
-          </div>
-        </div>
-
-        <div className="badge-card">
-          <div className={`badge-medal lvl-${concLevel}`} aria-hidden="true">
-            🎯
-          </div>
-          <div className="badge-info">
-            <div className="b-name">Concentration</div>
-            <div className="b-tier">
-              {TIER_NAMES[concLevel]} · {concValue} pts (3 days)
-            </div>
-            <div className="b-desc">
-              {nextConcAt !== undefined
-                ? `${TIER_NAMES[concLevel + 1]} at ${nextConcAt}+ points`
-                : 'Diamond — laser focus.'}
-            </div>
-          </div>
-        </div>
-
-        <div className="badge-card">
-          <div className={`badge-medal lvl-${ratioLevel}`} aria-hidden="true">
-            ⚖️
-          </div>
-          <div className="badge-info">
-            <div className="b-name">Pause ratio</div>
-            <div className="b-tier">{TIER_NAMES[ratioLevel]} (3 days)</div>
-            <div className="b-desc">
-              {nextRatioAt !== undefined
-                ? `${TIER_NAMES[ratioLevel + 1]} below ${fmtPercent(nextRatioAt)} pause per focus`
-                : 'Diamond — barely a pause.'}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
