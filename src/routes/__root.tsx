@@ -17,6 +17,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/reac
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ToastProvider } from '@/components/Toaster'
+import { THEME_BOOT_SCRIPT } from '@/lib/theme'
 import stylesUrl from '@/styles.css?url'
 
 /* ------------------------------------------------------------------ */
@@ -171,8 +172,12 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the theme boot script below stamps
+    // data-theme on <html> before hydration, which the SSR HTML can't know.
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Restore the saved reward theme before first paint (no flash). */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

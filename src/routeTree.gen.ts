@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 
 const LoginRoute = LoginRouteImport.update({
@@ -40,6 +41,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
+  id: '/rewards',
+  path: '/rewards',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -50,6 +56,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/app': typeof AuthenticatedAppRoute
+  '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
 }
@@ -57,6 +64,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/app': typeof AuthenticatedAppRoute
+  '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
 }
@@ -66,20 +74,22 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/app' | '/settings' | '/stats'
+  fullPaths: '/' | '/login' | '/app' | '/rewards' | '/settings' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/app' | '/settings' | '/stats'
+  to: '/' | '/login' | '/app' | '/rewards' | '/settings' | '/stats'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/app'
+    | '/_authenticated/rewards'
     | '/_authenticated/settings'
     | '/_authenticated/stats'
   fileRoutesById: FileRoutesById
@@ -127,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/rewards': {
+      id: '/_authenticated/rewards'
+      path: '/rewards'
+      fullPath: '/rewards'
+      preLoaderRoute: typeof AuthenticatedRewardsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/app': {
       id: '/_authenticated/app'
       path: '/app'
@@ -139,12 +156,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,
 }

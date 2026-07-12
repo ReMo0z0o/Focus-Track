@@ -18,6 +18,9 @@ export interface Database {
           display_name: string | null
           idle_threshold_seconds: number
           sound_enabled: boolean
+          theme: string
+          avatar: string
+          milestones: Json
           created_at: string
         }
         Insert: {
@@ -25,6 +28,9 @@ export interface Database {
           display_name?: string | null
           idle_threshold_seconds?: number
           sound_enabled?: boolean
+          theme?: string
+          avatar?: string
+          milestones?: Json
           created_at?: string
         }
         Update: {
@@ -32,6 +38,9 @@ export interface Database {
           display_name?: string | null
           idle_threshold_seconds?: number
           sound_enabled?: boolean
+          theme?: string
+          avatar?: string
+          milestones?: Json
           created_at?: string
         }
         Relationships: []

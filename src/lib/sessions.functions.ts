@@ -107,22 +107,32 @@ export const deleteSession = createServerFn({ method: 'POST' })
 export const getProfile = createServerFn({ method: 'GET' })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    // select('*') keeps this tolerant of databases that haven't run the
+    // latest migration yet — missing columns simply fall back to defaults.
     const { data, error } = await context.supabase
       .from('profiles')
-      .select('display_name, idle_threshold_seconds, sound_enabled')
+      .select('*')
       .eq('id', context.user.id)
       .maybeSingle()
     if (error) throw new Error(error.message)
-    // The signup trigger creates the row; fall back to defaults if it is
-    // missing (e.g. user predates the trigger).
-    return (
-      data ?? {
-        display_name: null,
-        idle_threshold_seconds: 120,
-        sound_enabled: true,
-      }
-    )
+    return {
+      display_name: data?.display_name ?? null,
+      idle_threshold_seconds: data?.idle_threshold_seconds ?? 120,
+      sound_enabled: data?.sound_enabled ?? true,
+      theme: data?.theme ?? 'amber',
+      avatar: data?.avatar ?? 'spark',
+      milestones: (data?.milestones ?? {}) as Record<string, number>,
+    }
   })
+
+const MILESTONE_FIELDS = ['grade', 'streak', 'sessions', 'concTier', 'ratioTier'] as const
+
+function asToken(value: unknown, field: string): string {
+  if (typeof value !== 'string' || !/^[a-z0-9-]{1,40}$/.test(value)) {
+    throw new Error(`Invalid ${field}`)
+  }
+  return value
+}
 
 /** Update profile settings (partial). */
 export const updateProfile = createServerFn({ method: 'POST' })
@@ -131,11 +141,17 @@ export const updateProfile = createServerFn({ method: 'POST' })
       display_name?: string | null
       idle_threshold_seconds?: number
       sound_enabled?: boolean
+      theme?: string
+      avatar?: string
+      milestones?: Record<string, number>
     }) => {
       const out: {
         display_name?: string | null
         idle_threshold_seconds?: number
         sound_enabled?: boolean
+        theme?: string
+        avatar?: string
+        milestones?: Record<string, number>
       } = {}
       if ('display_name' in input) {
         const name =
@@ -153,6 +169,25 @@ export const updateProfile = createServerFn({ method: 'POST' })
       }
       if (input.sound_enabled !== undefined) {
         out.sound_enabled = Boolean(input.sound_enabled)
+      }
+      if (input.theme !== undefined) {
+        out.theme = asToken(input.theme, 'theme')
+      }
+      if (input.avatar !== undefined) {
+        out.avatar = asToken(input.avatar, 'avatar')
+      }
+      if (input.milestones !== undefined) {
+        if (typeof input.milestones !== 'object' || input.milestones === null) {
+          throw new Error('Invalid milestones')
+        }
+        const clean: Record<string, number> = {}
+        for (const key of MILESTONE_FIELDS) {
+          const v = (input.milestones as Record<string, unknown>)[key]
+          if (v !== undefined) {
+            clean[key] = Math.min(1_000_000, asNonNegativeInt(v, `milestones.${key}`))
+          }
+        }
+        out.milestones = clean
       }
       return out
     },

@@ -34,6 +34,12 @@ badges.
 - **Grade** (Ember → Lighthouse): days with 2h+ of focus in the last 30 days.
 - **Streak**: consecutive 2h+ days.
 - **Badges** (Bronze → Diamond): 3-day concentration and 3-day pause-ratio.
+- **Rewards**: grades and badges unlock cosmetic rewards on the Rewards page —
+  six color themes (one per grade, applied app-wide) and eleven profile
+  avatars (tied to streaks, badge tiers and session counts). Grade emblems
+  render as draggable 3D badges (CSS 3D, no dependencies). Unlocks are
+  high-water marks persisted in `profiles.milestones`, so a dip in recent
+  form never re-locks a reward.
 
 ## Stack
 
