@@ -97,6 +97,25 @@ function FriendsPage() {
     )
   }
 
+  if (overviewQuery.isError) {
+    return (
+      <div>
+        <h1 className="page-title">Friends</h1>
+        <div className="card chart-empty" style={{ marginTop: '1rem' }}>
+          Couldn't load your friends. If you just deployed, make sure the
+          friends database migration has been applied.{' '}
+          <button
+            type="button"
+            style={{ color: 'var(--accent-strong)', textDecoration: 'underline' }}
+            onClick={() => void overviewQuery.refetch()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div>
       <h1 className="page-title">Friends</h1>
@@ -239,6 +258,10 @@ function AddFriendCard({
         <div className="search-results" role="list">
           {searchQuery.isLoading ? (
             <div className="sr-empty">Searching…</div>
+          ) : searchQuery.isError ? (
+            <div className="sr-empty">
+              Search isn't available right now — try again in a moment.
+            </div>
           ) : results.length === 0 ? (
             <div className="sr-empty">
               Nobody named “{debounced}” yet — check the spelling?

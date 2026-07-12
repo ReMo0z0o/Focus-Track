@@ -103,16 +103,19 @@ export const searchUsers = createServerFn({ method: 'GET' })
     if (query.length < 2 || query.length > 24) {
       throw new Error('Search with at least 2 characters.')
     }
-    // Strip anything that isn't valid in a username (also defuses LIKE wildcards).
+    // Keep only username-legal characters (drops '%' and '\').
     return { query: query.replace(/[^a-z0-9_.-]/g, '') }
   })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }): Promise<FriendProfile[]> => {
     if (data.query.length < 2) return []
+    // '_' is a valid username char AND a LIKE single-char wildcard — escape it
+    // so a search for "a_b" matches the literal underscore, not "axb".
+    const pattern = `${data.query.replace(/_/g, '\\_')}%`
     const { data: rows, error } = await context.supabase
       .from('profiles')
       .select('id, username, avatar, milestones')
-      .ilike('username', `${data.query}%`)
+      .ilike('username', pattern)
       .order('username')
       .limit(8)
     if (error) throw new Error(error.message)
@@ -155,12 +158,18 @@ export const sendFriendRequest = createServerFn({ method: 'POST' })
         throw new Error(`Your request to ${target.username} is still pending.`)
       }
       // They already asked us — accept instead of duplicating.
-      const { error } = await context.supabase
+      const { data: updated, error } = await context.supabase
         .from('friendships')
         .update({ status: 'accepted', responded_at: new Date().toISOString() })
         .eq('id', pair.id)
         .eq('addressee_id', context.user.id)
+        .eq('status', 'pending')
+        .select('id')
+        .maybeSingle()
       if (error) throw new Error(error.message)
+      if (!updated) {
+        throw new Error('That request just changed — refresh and try again.')
+      }
       return { status: 'accepted' as const, username: target.username }
     }
 
@@ -168,7 +177,15 @@ export const sendFriendRequest = createServerFn({ method: 'POST' })
       requester_id: context.user.id,
       addressee_id: target.id,
     })
-    if (error) throw new Error(error.message)
+    if (error) {
+      // A near-simultaneous reverse request lost the unique-index race.
+      if (/duplicate key|friendships_pair_key/i.test(error.message)) {
+        throw new Error(
+          `You and ${target.username} just crossed requests — refresh to sort it out.`,
+        )
+      }
+      throw new Error(error.message)
+    }
     return { status: 'requested' as const, username: target.username }
   })
 
@@ -192,12 +209,16 @@ export const respondFriendRequest = createServerFn({ method: 'POST' })
       if (!row) throw new Error('This request is no longer pending.')
       return { success: true }
     }
-    const { error } = await context.supabase
+    const { data: removed, error } = await context.supabase
       .from('friendships')
       .delete()
       .eq('id', data.id)
       .eq('addressee_id', context.user.id)
+      .eq('status', 'pending')
+      .select('id')
+      .maybeSingle()
     if (error) throw new Error(error.message)
+    if (!removed) throw new Error('This request is no longer pending.')
     return { success: true }
   })
 

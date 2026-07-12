@@ -56,14 +56,21 @@ function SettingsPage() {
   }, [profileQuery.data, hydrated])
 
   const saveMutation = useMutation({
-    mutationFn: () =>
-      updateProfileFn({
+    mutationFn: () => {
+      const nextUsername = username.trim().toLowerCase()
+      // Only send username when it actually changed — a pre-migration DB has
+      // no username column, so an unconditional write would break every save.
+      const usernameChanged =
+        nextUsername.length > 0 &&
+        nextUsername !== (profileQuery.data?.username ?? '')
+      return updateProfileFn({
         data: {
-          username: username.trim().toLowerCase(),
+          ...(usernameChanged ? { username: nextUsername } : {}),
           idle_threshold_seconds: threshold,
           sound_enabled: soundEnabled,
         },
-      }),
+      })
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast('Settings saved', 'success')

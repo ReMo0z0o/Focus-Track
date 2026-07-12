@@ -124,10 +124,17 @@ create policy "Users can send friend requests"
   on public.friendships for insert
   with check (auth.uid() = requester_id and status = 'pending');
 
+-- Only the addressee can accept, and only a still-pending row. WITH CHECK
+-- cannot see the OLD row, so we also lock the identity columns at the
+-- privilege level below: a raw PATCH cannot rewrite requester_id/addressee_id
+-- (which would otherwise let someone forge an accepted friendship).
 create policy "Addressee can accept requests"
   on public.friendships for update
-  using (auth.uid() = addressee_id)
+  using (auth.uid() = addressee_id and status = 'pending')
   with check (auth.uid() = addressee_id and status = 'accepted');
+
+revoke update on public.friendships from authenticated;
+grant update (status, responded_at) on public.friendships to authenticated;
 
 create policy "Members can remove their friendships"
   on public.friendships for delete
