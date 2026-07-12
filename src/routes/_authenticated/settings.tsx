@@ -39,7 +39,7 @@ function SettingsPage() {
     queryFn: () => getProfileFn(),
   })
 
-  const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
   const [threshold, setThreshold] = useState(120)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [hydrated, setHydrated] = useState(false)
@@ -48,7 +48,7 @@ function SettingsPage() {
   // don't clobber in-progress edits on refetch).
   useEffect(() => {
     if (profileQuery.data && !hydrated) {
-      setDisplayName(profileQuery.data.display_name ?? '')
+      setUsername(profileQuery.data.username ?? '')
       setThreshold(profileQuery.data.idle_threshold_seconds)
       setSoundEnabled(profileQuery.data.sound_enabled)
       setHydrated(true)
@@ -59,7 +59,7 @@ function SettingsPage() {
     mutationFn: () =>
       updateProfileFn({
         data: {
-          display_name: displayName,
+          username: username.trim().toLowerCase(),
           idle_threshold_seconds: threshold,
           sound_enabled: soundEnabled,
         },
@@ -68,7 +68,13 @@ function SettingsPage() {
       void queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast('Settings saved', 'success')
     },
-    onError: () => toast('Could not save settings.', 'error'),
+    onError: (err) =>
+      toast(
+        err instanceof Error && err.message && !/fetch/i.test(err.message)
+          ? err.message
+          : 'Could not save settings.',
+        'error',
+      ),
   })
 
   const handleSubmit = (e: FormEvent) => {
@@ -93,15 +99,29 @@ function SettingsPage() {
       <form onSubmit={handleSubmit}>
         <div className="card">
           <div className="field">
-            <label htmlFor="displayName">Display name</label>
+            <label htmlFor="username">Username</label>
+            <p
+              style={{
+                fontSize: '0.82rem',
+                color: 'var(--text-faint)',
+                marginBottom: '0.4rem',
+              }}
+            >
+              Your public handle — friends add you with it. 3–24 characters:
+              lowercase letters, digits, "_", "." or "-".
+            </p>
             <input
-              id="displayName"
+              id="username"
               className="input"
               type="text"
-              maxLength={80}
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="How should we call you?"
+              maxLength={24}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              pattern="[a-z0-9_.\-]{3,24}"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
+              placeholder="ada.lovelace"
             />
           </div>
 

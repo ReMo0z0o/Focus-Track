@@ -22,7 +22,7 @@ function LoginPage() {
   const [mode, setMode] = useState<Mode>(search.mode ?? 'signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
+  const [username, setUsername] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -49,8 +49,8 @@ function LoginPage() {
           email,
           password,
           options: {
-            data: displayName.trim()
-              ? { display_name: displayName.trim().slice(0, 80) }
+            data: username.trim()
+              ? { username: username.trim().toLowerCase().slice(0, 24) }
               : undefined,
           },
         })
@@ -116,16 +116,19 @@ function LoginPage() {
         <form onSubmit={handleSubmit}>
           {mode === 'signup' && (
             <div className="field">
-              <label htmlFor="displayName">Display name (optional)</label>
+              <label htmlFor="username">Username (optional)</label>
               <input
-                id="displayName"
+                id="username"
                 className="input"
                 type="text"
-                maxLength={80}
-                autoComplete="nickname"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Ada"
+                maxLength={24}
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase())}
+                placeholder="ada.lovelace"
               />
             </div>
           )}

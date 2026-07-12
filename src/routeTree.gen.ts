@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedRewardsRouteImport } from './routes/_authenticated/rewards'
+import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 
 const LoginRoute = LoginRouteImport.update({
@@ -46,6 +47,11 @@ const AuthenticatedRewardsRoute = AuthenticatedRewardsRouteImport.update({
   path: '/rewards',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFriendsRoute = AuthenticatedFriendsRouteImport.update({
+  id: '/friends',
+  path: '/friends',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -56,6 +62,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/app': typeof AuthenticatedAppRoute
+  '/friends': typeof AuthenticatedFriendsRoute
   '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/app': typeof AuthenticatedAppRoute
+  '/friends': typeof AuthenticatedFriendsRoute
   '/rewards': typeof AuthenticatedRewardsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/stats': typeof AuthenticatedStatsRoute
@@ -74,21 +82,24 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/app': typeof AuthenticatedAppRoute
+  '/_authenticated/friends': typeof AuthenticatedFriendsRoute
   '/_authenticated/rewards': typeof AuthenticatedRewardsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/app' | '/rewards' | '/settings' | '/stats'
+  fullPaths:
+    '/' | '/login' | '/app' | '/friends' | '/rewards' | '/settings' | '/stats'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/app' | '/rewards' | '/settings' | '/stats'
+  to: '/' | '/login' | '/app' | '/friends' | '/rewards' | '/settings' | '/stats'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
     | '/_authenticated/app'
+    | '/_authenticated/friends'
     | '/_authenticated/rewards'
     | '/_authenticated/settings'
     | '/_authenticated/stats'
@@ -144,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRewardsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/friends': {
+      id: '/_authenticated/friends'
+      path: '/friends'
+      fullPath: '/friends'
+      preLoaderRoute: typeof AuthenticatedFriendsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/app': {
       id: '/_authenticated/app'
       path: '/app'
@@ -156,6 +174,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAppRoute: typeof AuthenticatedAppRoute
+  AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
   AuthenticatedRewardsRoute: typeof AuthenticatedRewardsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
@@ -163,6 +182,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAppRoute: AuthenticatedAppRoute,
+  AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
   AuthenticatedRewardsRoute: AuthenticatedRewardsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStatsRoute: AuthenticatedStatsRoute,

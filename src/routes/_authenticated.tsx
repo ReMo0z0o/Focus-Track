@@ -11,6 +11,7 @@ import {
   getRecentSessions,
   updateProfile,
 } from '@/lib/sessions.functions'
+import { getFriends } from '@/lib/friends.functions'
 import {
   AVATARS,
   THEMES,
@@ -127,9 +128,17 @@ function AppShell() {
   const { user, signOut } = useAuth()
   const profileQuery = useRewardsSync()
 
-  const displayName =
-    profileQuery.data?.display_name ??
-    (user?.user_metadata?.display_name as string | undefined) ??
+  const getFriendsFn = useServerFn(getFriends)
+  const friendsQuery = useQuery({
+    queryKey: ['friends'],
+    queryFn: () => getFriendsFn(),
+    staleTime: 60_000,
+  })
+  const pendingCount = friendsQuery.data?.incoming.length ?? 0
+
+  const username =
+    profileQuery.data?.username ??
+    (user?.user_metadata?.username as string | undefined) ??
     user?.email
 
   return (
@@ -147,6 +156,17 @@ function AppShell() {
             <Link to="/rewards" activeProps={{ className: 'active' }}>
               Rewards
             </Link>
+            <Link to="/friends" activeProps={{ className: 'active' }}>
+              Friends
+              {pendingCount > 0 && (
+                <span
+                  className="nav-badge"
+                  aria-label={`${pendingCount} pending friend request${pendingCount === 1 ? '' : 's'}`}
+                >
+                  {pendingCount}
+                </span>
+              )}
+            </Link>
             <Link to="/settings" activeProps={{ className: 'active' }}>
               Settings
             </Link>
@@ -160,7 +180,7 @@ function AppShell() {
             aria-label="Your avatar — open rewards"
           >
             <Avatar id={profileQuery.data?.avatar ?? 'spark'} size={30} />
-            <span className="header-user">{displayName}</span>
+            <span className="header-user">@{username}</span>
           </Link>
           <button
             type="button"

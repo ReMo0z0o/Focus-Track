@@ -15,7 +15,7 @@ export interface Database {
       profiles: {
         Row: {
           id: string
-          display_name: string | null
+          username: string
           idle_threshold_seconds: number
           sound_enabled: boolean
           theme: string
@@ -25,7 +25,7 @@ export interface Database {
         }
         Insert: {
           id: string
-          display_name?: string | null
+          username?: string
           idle_threshold_seconds?: number
           sound_enabled?: boolean
           theme?: string
@@ -35,13 +35,40 @@ export interface Database {
         }
         Update: {
           id?: string
-          display_name?: string | null
+          username?: string
           idle_threshold_seconds?: number
           sound_enabled?: boolean
           theme?: string
           avatar?: string
           milestones?: Json
           created_at?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          id: string
+          requester_id: string
+          addressee_id: string
+          status: string
+          created_at: string
+          responded_at: string | null
+        }
+        Insert: {
+          id?: string
+          requester_id: string
+          addressee_id: string
+          status?: string
+          created_at?: string
+          responded_at?: string | null
+        }
+        Update: {
+          id?: string
+          requester_id?: string
+          addressee_id?: string
+          status?: string
+          created_at?: string
+          responded_at?: string | null
         }
         Relationships: []
       }

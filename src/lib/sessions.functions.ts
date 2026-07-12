@@ -82,6 +82,9 @@ export const getRecentSessions = createServerFn({ method: 'GET' })
     const { data, error } = await context.supabase
       .from('focus_sessions')
       .select('id, started_at, ended_at, focus_seconds, idle_seconds, resumes_count')
+      // Explicit owner filter: RLS also lets accepted friends read rows, so
+      // "my stats" must never rely on RLS alone to scope this query.
+      .eq('user_id', context.user.id)
       .gte('started_at', since)
       .order('started_at', { ascending: false })
       .limit(RECENT_LIMIT)
@@ -115,13 +118,17 @@ export const getProfile = createServerFn({ method: 'GET' })
       .eq('id', context.user.id)
       .maybeSingle()
     if (error) throw new Error(error.message)
+    const row = data as
+      | (typeof data & { display_name?: string | null; username?: string })
+      | null
     return {
-      display_name: data?.display_name ?? null,
-      idle_threshold_seconds: data?.idle_threshold_seconds ?? 120,
-      sound_enabled: data?.sound_enabled ?? true,
-      theme: data?.theme ?? 'amber',
-      avatar: data?.avatar ?? 'spark',
-      milestones: (data?.milestones ?? {}) as Record<string, number>,
+      // Tolerate a pre-migration DB where the column is still display_name.
+      username: row?.username ?? row?.display_name ?? null,
+      idle_threshold_seconds: row?.idle_threshold_seconds ?? 120,
+      sound_enabled: row?.sound_enabled ?? true,
+      theme: row?.theme ?? 'amber',
+      avatar: row?.avatar ?? 'spark',
+      milestones: (row?.milestones ?? {}) as Record<string, number>,
     }
   })
 
@@ -134,11 +141,13 @@ function asToken(value: unknown, field: string): string {
   return value
 }
 
+export const USERNAME_PATTERN = /^[a-z0-9_.-]{3,24}$/
+
 /** Update profile settings (partial). */
 export const updateProfile = createServerFn({ method: 'POST' })
   .validator(
     (input: {
-      display_name?: string | null
+      username?: string
       idle_threshold_seconds?: number
       sound_enabled?: boolean
       theme?: string
@@ -146,19 +155,24 @@ export const updateProfile = createServerFn({ method: 'POST' })
       milestones?: Record<string, number>
     }) => {
       const out: {
-        display_name?: string | null
+        username?: string
         idle_threshold_seconds?: number
         sound_enabled?: boolean
         theme?: string
         avatar?: string
         milestones?: Record<string, number>
       } = {}
-      if ('display_name' in input) {
+      if (input.username !== undefined) {
         const name =
-          typeof input.display_name === 'string'
-            ? input.display_name.trim().slice(0, 80)
-            : null
-        out.display_name = name || null
+          typeof input.username === 'string'
+            ? input.username.trim().toLowerCase()
+            : ''
+        if (!USERNAME_PATTERN.test(name)) {
+          throw new Error(
+            'Usernames are 3-24 characters: lowercase letters, digits, "_", "." or "-".',
+          )
+        }
+        out.username = name
       }
       if (input.idle_threshold_seconds !== undefined) {
         const t = asNonNegativeInt(
@@ -218,6 +232,11 @@ export const updateProfile = createServerFn({ method: 'POST' })
     const { error } = await context.supabase
       .from('profiles')
       .upsert({ id: context.user.id, ...data })
-    if (error) throw new Error(error.message)
+    if (error) {
+      if (/duplicate key|profiles_username_key/i.test(error.message)) {
+        throw new Error('That username is already taken — try another one.')
+      }
+      throw new Error(error.message)
+    }
     return { success: true }
   })
