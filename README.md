@@ -94,6 +94,10 @@ supabase/migrations/         # schema, RLS policies, signup trigger
 
 ## Notable design decisions
 
+- **The session engine lives in the authenticated layout**, not the /app
+  page: the timer, idle detection and pause prompts keep running while you
+  browse Stats or Settings, a mini timer shows in the header, and the pause
+  dialog can appear on any page.
 - **Grace ≠ pause.** The focus clock keeps running during the 15s grace
   window; cancelling it doesn't count as a resume. Only a confirmed pause
   freezes focus time — and it stays frozen until an explicit Resume, even if
@@ -105,4 +109,18 @@ supabase/migrations/         # schema, RLS policies, signup trigger
 - **Late-tick reclassification.** If the pause is confirmed late (throttled
   tab), the overshoot is moved from focus to pause so the books stay honest.
 - **Manual pause is quiet** — chime only (if enabled), never a system
-  notification.
+  notification. The reminder itself is a gentle two-note chime rather than
+  the spec's single 660 Hz beep.
+- **Crash recovery.** The running session is snapshotted to localStorage every
+  second; a reload restores it (short gaps continue seamlessly, longer ones
+  count as pause), stale snapshots are closed with their saved counters, and a
+  BroadcastChannel ping prevents a second tab from adopting a session that is
+  still alive elsewhere.
+- **Status chip** shows "Paused" during a confirmed pause (instead of the
+  spec's "Inactivity detected") — clearer, especially for manual pauses. The
+  grace prompt says "ring" instead of "bar" because the countdown is drawn as
+  a ring.
+- **Query invalidation on auth changes** only fires when the signed-in user
+  actually changes, not on token refreshes.
+- **Hourly chart** spreads a session across the hours it spans instead of
+  piling everything into its start hour.

@@ -81,18 +81,24 @@ export function useIdleDetector({
     if (typeof window === 'undefined' || !window.IdleDetector) return
     setSupport('native')
     let cancelled = false
+    let watched: PermissionStatus | null = null
+    const onPermissionChange = () => {
+      if (watched) setPermissionGranted(watched.state === 'granted')
+    }
     navigator.permissions
       ?.query({ name: 'idle-detection' as PermissionName })
       .then((status) => {
         if (cancelled) return
+        watched = status
         setPermissionGranted(status.state === 'granted')
-        status.onchange = () => setPermissionGranted(status.state === 'granted')
+        status.addEventListener('change', onPermissionChange)
       })
       .catch(() => {
         // Permission introspection unavailable; requestPermission() will tell us.
       })
     return () => {
       cancelled = true
+      watched?.removeEventListener('change', onPermissionChange)
     }
   }, [])
 

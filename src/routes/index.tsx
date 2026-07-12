@@ -8,7 +8,6 @@ export const Route = createFileRoute('/')({
 
 function LandingPage() {
   const { user } = useAuth()
-  const ctaTarget = user ? '/app' : '/login'
   const ctaLabel = user ? 'Open the app' : 'Start focusing — it’s free'
 
   return (
@@ -17,9 +16,15 @@ function LandingPage() {
         <div className="container">
           <Brand />
           <nav>
-            <Link to={ctaTarget} className="btn btn-ghost btn-sm">
-              {user ? 'Open app' : 'Sign in'}
-            </Link>
+            {user ? (
+              <Link to="/app" className="btn btn-ghost btn-sm">
+                Open app
+              </Link>
+            ) : (
+              <Link to="/login" className="btn btn-ghost btn-sm">
+                Sign in
+              </Link>
+            )}
           </nav>
         </div>
       </header>
@@ -39,9 +44,19 @@ function LandingPage() {
                 honest focus time, not wishful thinking.
               </p>
               <div className="hero-actions">
-                <Link to={ctaTarget} className="btn btn-primary btn-lg">
-                  {ctaLabel}
-                </Link>
+                {user ? (
+                  <Link to="/app" className="btn btn-primary btn-lg">
+                    {ctaLabel}
+                  </Link>
+                ) : (
+                  <Link
+                    to="/login"
+                    search={{ mode: 'signup' }}
+                    className="btn btn-primary btn-lg"
+                  >
+                    {ctaLabel}
+                  </Link>
+                )}
                 <a href="#how" className="btn btn-ghost btn-lg">
                   How it works
                 </a>

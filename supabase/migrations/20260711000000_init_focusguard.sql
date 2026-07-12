@@ -6,7 +6,7 @@
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  display_name text,
+  display_name text check (display_name is null or char_length(display_name) <= 80),
   idle_threshold_seconds integer not null default 120
     check (idle_threshold_seconds between 60 and 900),
   sound_enabled boolean not null default true,
@@ -83,7 +83,7 @@ begin
   insert into public.profiles (id, display_name)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1))
+    left(coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)), 80)
   );
   return new;
 end;

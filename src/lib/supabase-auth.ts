@@ -1,5 +1,9 @@
 import { createMiddleware } from '@tanstack/react-start'
-import { getRequestHeader, setResponseStatus } from '@tanstack/react-start/server'
+import {
+  getRequestHeader,
+  setResponseHeader,
+  setResponseStatus,
+} from '@tanstack/react-start/server'
 import { createClient } from '@supabase/supabase-js'
 import {
   supabase as browserSupabase,
@@ -28,6 +32,9 @@ export const requireSupabaseAuth = createMiddleware({ type: 'function' })
     })
   })
   .server(async ({ next }) => {
+    // Every response behind this middleware is per-user: make sure no
+    // misconfigured shared cache ever stores it.
+    setResponseHeader('Cache-Control', 'no-store')
     const header = getRequestHeader('Authorization')
     const token = header?.match(/^Bearer\s+(.+)$/i)?.[1]
     if (!token) {

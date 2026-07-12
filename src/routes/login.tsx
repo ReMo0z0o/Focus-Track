@@ -5,17 +5,21 @@ import { supabase } from '@/integrations/supabase/client'
 import { Brand } from '@/components/Brand'
 import { useAuth } from '@/routes/__root'
 
+type Mode = 'signin' | 'signup'
+
 export const Route = createFileRoute('/login')({
+  validateSearch: (search: Record<string, unknown>): { mode?: Mode } => ({
+    mode: search.mode === 'signup' ? 'signup' : undefined,
+  }),
   component: LoginPage,
 })
-
-type Mode = 'signin' | 'signup'
 
 function LoginPage() {
   const { user, isLoading } = useAuth()
   const navigate = useNavigate()
+  const search = Route.useSearch()
 
-  const [mode, setMode] = useState<Mode>('signin')
+  const [mode, setMode] = useState<Mode>(search.mode ?? 'signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -57,7 +61,14 @@ function LoginPage() {
         if (!data.session) {
           const { error: signInError } =
             await supabase.auth.signInWithPassword({ email, password })
-          if (signInError) throw signInError
+          if (signInError) {
+            if (/email not confirmed/i.test(signInError.message)) {
+              throw new Error(
+                'Account created! Check your inbox for a confirmation email, then sign in.',
+              )
+            }
+            throw signInError
+          }
         }
       }
       await navigate({ to: '/app' })

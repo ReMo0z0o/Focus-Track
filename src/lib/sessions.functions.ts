@@ -4,13 +4,16 @@ import type { SessionRow } from '@/lib/stats'
 
 const RECENT_WINDOW_DAYS = 60
 const RECENT_LIMIT = 1000
+/** Sanity ceiling for session counters (90 days in seconds) — keeps absurd
+ * client values out and stays far below the int4 range. */
+const MAX_COUNTER = 90 * 24 * 60 * 60
 
 function asNonNegativeInt(value: unknown, field: string): number {
   const n = Number(value)
   if (!Number.isFinite(n) || n < 0) {
     throw new Error(`Invalid ${field}`)
   }
-  return Math.floor(n)
+  return Math.min(MAX_COUNTER, Math.floor(n))
 }
 
 function asUuid(value: unknown, field: string): string {

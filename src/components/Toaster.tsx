@@ -42,18 +42,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      {toasts.length > 0 && (
-        <div className="toast-stack" role="status" aria-live="polite">
-          {toasts.map((t) => (
-            <div
-              key={t.id}
-              className={`toast${t.kind !== 'default' ? ` ${t.kind}` : ''}`}
-            >
-              {t.message}
-            </div>
-          ))}
-        </div>
-      )}
+      {/* Live region stays mounted so assistive tech announces every toast,
+          including the first one. */}
+      <div className="toast-stack" role="status" aria-live="polite">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`toast${t.kind !== 'default' ? ` ${t.kind}` : ''}`}
+          >
+            {t.message}
+          </div>
+        ))}
+      </div>
     </ToastContext.Provider>
   )
 }

@@ -141,13 +141,12 @@ export function StatsView() {
             Focus vs. pause, honestly accounted.
           </p>
         </div>
-        <div className="seg-control" role="tablist" aria-label="Period">
+        <div className="seg-control" role="group" aria-label="Period">
           {PERIODS.map((p) => (
             <button
               key={p.key}
               type="button"
-              role="tab"
-              aria-selected={period === p.key}
+              aria-pressed={period === p.key}
               className={period === p.key ? 'active' : ''}
               onClick={() => setPeriod(p.key)}
             >
@@ -379,6 +378,7 @@ function SessionList({
                     type="button"
                     className="btn btn-danger btn-sm"
                     disabled={deletingId === s.id}
+                    autoFocus
                     onClick={() => {
                       onDelete(s.id)
                       setConfirmingId(null)

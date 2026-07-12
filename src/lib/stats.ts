@@ -46,7 +46,10 @@ export function fmtClock(seconds: number): string {
 }
 
 export function fmtPercent(ratio: number): string {
-  return `${Math.round(ratio * 100)}%`
+  const pct = Math.round(ratio * 100)
+  // A near-zero focus total can make the pause ratio explode; cap the
+  // display so the tile stays legible.
+  return pct > 999 ? '999%+' : `${pct}%`
 }
 
 /* ------------------------------------------------------------------ */
@@ -161,21 +164,43 @@ export interface HourBucket {
   idle: number
 }
 
-/** 24 hourly buckets for the given local day; sessions land in their start hour. */
+/**
+ * 24 hourly buckets for the given local day. A session's time is spread
+ * proportionally over the hours it spans (approximating its duration as
+ * focus + idle), so a 3-hour session doesn't pile up in its start hour.
+ */
 export function hourlyBuckets(sessions: SessionRow[], day: Date): HourBucket[] {
-  const dk = dayKey(day)
+  const dayStart = startOfDay(day).getTime()
+  const dayEnd = dayStart + 24 * 3_600_000
   const buckets: HourBucket[] = Array.from({ length: 24 }, (_, hour) => ({
     hour,
     focus: 0,
     idle: 0,
   }))
   for (const s of sessions) {
-    const start = new Date(s.started_at)
-    if (dayKey(start) !== dk) continue
-    const bucket = buckets[start.getHours()]
-    if (!bucket) continue
-    bucket.focus += s.focus_seconds
-    bucket.idle += s.idle_seconds
+    const total = s.focus_seconds + s.idle_seconds
+    if (total <= 0) continue
+    const start = new Date(s.started_at).getTime()
+    const end = start + total * 1000
+    if (end <= dayStart || start >= dayEnd) continue
+    const focusShare = s.focus_seconds / total
+    let cursor = Math.max(start, dayStart)
+    const clampedEnd = Math.min(end, dayEnd)
+    while (cursor < clampedEnd) {
+      const hourIdx = Math.floor((cursor - dayStart) / 3_600_000)
+      const hourEnd = dayStart + (hourIdx + 1) * 3_600_000
+      const sliceSeconds = (Math.min(hourEnd, clampedEnd) - cursor) / 1000
+      const bucket = buckets[hourIdx]
+      if (bucket) {
+        bucket.focus += sliceSeconds * focusShare
+        bucket.idle += sliceSeconds * (1 - focusShare)
+      }
+      cursor = Math.min(hourEnd, clampedEnd)
+    }
+  }
+  for (const b of buckets) {
+    b.focus = Math.round(b.focus)
+    b.idle = Math.round(b.idle)
   }
   return buckets
 }

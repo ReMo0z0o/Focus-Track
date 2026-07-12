@@ -123,7 +123,7 @@ describe('buckets', () => {
     expect(buckets.reduce((a, b) => a + b.focus, 0)).toBe(150)
   })
 
-  it('assigns hourly buckets by start hour for the given day only', () => {
+  it('assigns hourly buckets for the given day only', () => {
     const buckets = hourlyBuckets(
       [
         session('2026-07-11T09:15:00', 100, 10),
@@ -136,6 +136,14 @@ describe('buckets', () => {
     expect(buckets[9]!.focus).toBe(300)
     expect(buckets[9]!.idle).toBe(30)
     expect(buckets.reduce((a, b) => a + b.focus, 0)).toBe(300)
+  })
+
+  it('spreads a session spanning hours proportionally', () => {
+    // 09:50 + 1200s of focus -> 600s in hour 9, 600s in hour 10
+    const buckets = hourlyBuckets([session('2026-07-11T09:50:00', 1200)], NOW)
+    expect(buckets[9]!.focus).toBe(600)
+    expect(buckets[10]!.focus).toBe(600)
+    expect(buckets[9]!.idle).toBe(0)
   })
 })
 

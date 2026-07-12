@@ -17,7 +17,7 @@
 
   --text: #e9ecf4;
   --text-muted: #9aa3b8;
-  --text-faint: #6b7488;
+  --text-faint: #848da6; /* >= 4.5:1 on --surface for small text */
 
   --accent: #f6ac3d;
   --accent-strong: #ffc46b;
@@ -199,6 +199,75 @@ input, select {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* compact live timer in the header */
+
+.mini-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 172, 61, 0.4);
+  color: var(--accent-strong);
+  background: var(--accent-dim);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  font-weight: 620;
+  flex: none;
+}
+
+.mini-timer .status-dot {
+  background: var(--accent);
+  width: 7px;
+  height: 7px;
+  animation: pulse 2.2s ease-in-out infinite;
+}
+
+.mini-timer.paused {
+  border-color: rgba(127, 150, 201, 0.45);
+  color: var(--pause);
+  background: var(--pause-dim);
+}
+
+.mini-timer.paused .status-dot {
+  background: var(--pause);
+  animation: none;
+}
+
+@media (max-width: 760px) {
+  .site-header .container {
+    gap: 0.5rem 0.8rem;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 56px;
+    padding-block: 0.55rem;
+  }
+
+  .header-user {
+    display: none;
+  }
+
+  .main-nav {
+    margin-left: 0;
+  }
+
+  .main-nav a {
+    padding: 0.42rem 0.6rem;
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 470px) {
+  .brand span {
+    display: none;
+  }
+
+  .mini-timer {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
 }
 
 /* ---------- buttons ---------- */
@@ -867,7 +936,7 @@ input, select {
 
 .chart-svg .axis-label {
   fill: var(--text-faint);
-  font-size: 10.5px;
+  font-size: 12.5px;
   font-family: var(--font);
 }
 
@@ -1025,6 +1094,22 @@ input, select {
   font-size: 0.8rem;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 560px) {
+  .session-row {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+    column-gap: 0.85rem;
+  }
+
+  .session-row .time {
+    min-width: 62px;
+  }
+
+  .session-row .btn-sm {
+    padding: 0.45rem 0.85rem;
+  }
 }
 
 /* ---------- toast ---------- */
