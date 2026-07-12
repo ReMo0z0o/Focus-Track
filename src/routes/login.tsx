@@ -73,8 +73,14 @@ function LoginPage() {
       }
       await navigate({ to: '/app' })
     } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Something went wrong. Try again.'
+      // "Failed to fetch" means the Supabase request never reached the
+      // server — almost always a misconfigured URL/key, not bad credentials.
       setError(
-        err instanceof Error ? err.message : 'Something went wrong. Try again.',
+        /failed to fetch|networkerror|load failed/i.test(message)
+          ? 'Cannot reach the authentication server. Check that VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set correctly, then try again.'
+          : message,
       )
     } finally {
       setSubmitting(false)
