@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { supabase, SUPABASE_URL } from '@/integrations/supabase/client'
+import { supabase } from '@/integrations/supabase/client'
 import { Brand } from '@/components/Brand'
 import { useAuth } from '@/routes/__root'
-
-const USING_PLACEHOLDER = SUPABASE_URL.includes('placeholder.supabase.co')
 
 type Mode = 'signin' | 'signup'
 
@@ -77,16 +75,11 @@ function LoginPage() {
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Something went wrong. Try again.'
-      // "Failed to fetch" means the Supabase request never reached the
-      // server — almost always a misconfigured URL/key, not bad credentials.
-      // Surface the actual backend host so config problems are diagnosable.
+      // "Failed to fetch" means the request never reached the server —
+      // a connectivity issue, not bad credentials.
       setError(
         /failed to fetch|networkerror|load failed/i.test(message)
-          ? `Cannot reach the authentication server at ${SUPABASE_URL}. ${
-              USING_PLACEHOLDER
-                ? 'The app has no Supabase URL configured — VITE_SUPABASE_URL is missing from the build.'
-                : 'Check the Supabase URL/key and that the project is running.'
-            }`
+          ? 'Cannot reach the server. Check your connection and try again.'
           : message,
       )
     } finally {
@@ -189,21 +182,6 @@ function LoginPage() {
           >
             {mode === 'signin' ? 'Create an account' : 'Sign in'}
           </button>
-        </p>
-
-        {/* Diagnostic line: shows which backend the build is configured for.
-            Remove once auth is confirmed working. */}
-        <p
-          style={{
-            textAlign: 'center',
-            marginTop: '1rem',
-            fontSize: '0.72rem',
-            color: USING_PLACEHOLDER ? 'var(--danger)' : 'var(--text-faint)',
-          }}
-        >
-          {USING_PLACEHOLDER
-            ? '⚠ No Supabase URL in this build (VITE_SUPABASE_URL missing)'
-            : `backend: ${SUPABASE_URL.replace('https://', '')}`}
         </p>
       </div>
     </div>
