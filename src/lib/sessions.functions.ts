@@ -229,14 +229,32 @@ export const updateProfile = createServerFn({ method: 'POST' })
       }
     }
 
-    const { error } = await context.supabase
+    // UPDATE, not upsert: the signup trigger guarantees the row exists, and an
+    // upsert's INSERT arm would violate the NOT NULL username constraint on a
+    // partial update (e.g. avatar/theme only) that omits username. Fall back
+    // to an insert only if the row is genuinely missing.
+    const { data: updated, error } = await context.supabase
       .from('profiles')
-      .upsert({ id: context.user.id, ...data })
+      .update(data)
+      .eq('id', context.user.id)
+      .select('id')
+      .maybeSingle()
     if (error) {
       if (/duplicate key|profiles_username_key/i.test(error.message)) {
         throw new Error('That username is already taken — try another one.')
       }
       throw new Error(error.message)
+    }
+    if (!updated) {
+      const { error: insertError } = await context.supabase
+        .from('profiles')
+        .insert({ id: context.user.id, ...data })
+      if (insertError) {
+        if (/duplicate key|profiles_username_key/i.test(insertError.message)) {
+          throw new Error('That username is already taken — try another one.')
+        }
+        throw new Error(insertError.message)
+      }
     }
     return { success: true }
   })
