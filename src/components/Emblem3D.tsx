@@ -67,6 +67,7 @@ export function Emblem3D({
     interacted: false,
     lastX: 0,
     lastY: 0,
+    lastMoveT: 0,
   })
 
   const scale = width / HEX_VIEW.w
@@ -81,6 +82,7 @@ export function Emblem3D({
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     let raf = 0
     let last = performance.now()
+    let lastWritten = ''
     const loop = (t: number) => {
       const dt = Math.min(64, t - last)
       last = t
@@ -93,8 +95,11 @@ export function Emblem3D({
           s.ry += (IDLE_SPIN_DEG_PER_S * dt) / 1000
         }
       }
-      if (stageRef.current) {
-        stageRef.current.style.transform = `rotateX(${s.rx}deg) rotateY(${s.ry}deg)`
+      // Skip the DOM write when fully at rest.
+      const transform = `rotateX(${s.rx.toFixed(2)}deg) rotateY(${s.ry.toFixed(2)}deg)`
+      if (transform !== lastWritten && stageRef.current) {
+        stageRef.current.style.transform = transform
+        lastWritten = transform
       }
       raf = requestAnimationFrame(loop)
     }
@@ -122,10 +127,29 @@ export function Emblem3D({
     s.ry += dx * DRAG_SENSITIVITY
     s.rx = Math.max(-MAX_TILT, Math.min(MAX_TILT, s.rx - dy * DRAG_SENSITIVITY))
     s.vy = dx * DRAG_SENSITIVITY
+    s.lastMoveT = performance.now()
   }
 
   const endDrag = () => {
-    state.current.dragging = false
+    const s = state.current
+    // A pause before release is a hold, not a flick — drop stale velocity.
+    if (performance.now() - s.lastMoveT > 120) s.vy = 0
+    s.dragging = false
+  }
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const s = state.current
+    const step = 12
+    if (e.key === 'ArrowLeft') s.ry -= step
+    else if (e.key === 'ArrowRight') s.ry += step
+    else if (e.key === 'ArrowUp')
+      s.rx = Math.min(MAX_TILT, s.rx + step)
+    else if (e.key === 'ArrowDown')
+      s.rx = Math.max(-MAX_TILT, s.rx - step)
+    else return
+    e.preventDefault()
+    s.interacted = true
+    s.vy = 0
   }
 
   return (
@@ -133,12 +157,14 @@ export function Emblem3D({
       className={`emblem3d grade-${level}${locked ? ' locked' : ''}`}
       style={{ width, height }}
       role="img"
-      aria-label={`${GRADE_NAMES[level]} emblem in 3D — drag to rotate`}
+      tabIndex={0}
+      aria-label={`${GRADE_NAMES[level]} emblem in 3D — drag or use arrow keys to rotate`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
       onPointerLeave={endDrag}
+      onKeyDown={onKeyDown}
     >
       <div className="emblem3d-stage" ref={stageRef}>
         {/* front */}

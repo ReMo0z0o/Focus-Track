@@ -81,10 +81,16 @@ function useRewardsSync() {
   }, [theme])
 
   const syncingRef = useRef(false)
+  // What this tab last persisted — folded into `stored` so a stale profile
+  // cache can't trigger duplicate writes or repeat unlock toasts.
+  const lastSyncedRef = useRef<ReturnType<typeof normalizeMilestones> | null>(null)
 
   useEffect(() => {
     if (!profileQuery.data || !sessionsQuery.data || syncingRef.current) return
-    const stored = normalizeMilestones(profileQuery.data.milestones)
+    const fromProfile = normalizeMilestones(profileQuery.data.milestones)
+    const stored = lastSyncedRef.current
+      ? mergeMilestones(fromProfile, lastSyncedRef.current)
+      : fromProfile
     const current = computeMilestones(sessionsQuery.data, new Date())
     const merged = mergeMilestones(stored, current)
     if (milestonesEqual(merged, stored)) return
@@ -96,9 +102,14 @@ function useRewardsSync() {
     syncingRef.current = true
     updateProfileFn({ data: { milestones: { ...merged } } })
       .then(() => {
+        lastSyncedRef.current = merged
         void queryClient.invalidateQueries({ queryKey: ['profile'] })
-        for (const reward of newlyUnlocked) {
-          toast(`Reward unlocked: ${reward.name} 🎉`, 'success')
+        if (newlyUnlocked.length > 2) {
+          toast(`${newlyUnlocked.length} rewards unlocked — see the Rewards page 🎉`, 'success')
+        } else {
+          for (const reward of newlyUnlocked) {
+            toast(`Reward unlocked: ${reward.name} 🎉`, 'success')
+          }
         }
       })
       .catch(() => {

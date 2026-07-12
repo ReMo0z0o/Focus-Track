@@ -9,6 +9,7 @@ import {
 } from '@/lib/sessions.functions'
 import {
   AVATARS,
+  DEFAULT_THEME,
   THEMES,
   computeMilestones,
   isUnlocked,
@@ -58,8 +59,12 @@ function RewardsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
-    onError: () =>
-      toast('Could not save the theme — is the latest database migration applied?', 'error'),
+    onError: () => {
+      // Roll the optimistic application back so the visible theme,
+      // localStorage and the "Applied" indicator stay consistent.
+      applyTheme(profileQuery.data?.theme ?? DEFAULT_THEME)
+      toast('Could not save the theme — is the latest database migration applied?', 'error')
+    },
   })
 
   const avatarMutation = useMutation({
@@ -121,7 +126,12 @@ function RewardsPage() {
               <>
                 Locked — reach <strong>{GRADE_NAMES[shownGrade]}</strong>
                 {GRADE_THRESHOLDS[shownGrade] ? (
-                  <> with {GRADE_THRESHOLDS[shownGrade]} focused days (2h+) in 30 days.</>
+                  <>
+                    {' '}
+                    with {GRADE_THRESHOLDS[shownGrade]} focused day
+                    {GRADE_THRESHOLDS[shownGrade] === 1 ? '' : 's'} (2h+) in 30
+                    days.
+                  </>
                 ) : (
                   '.'
                 )}
@@ -137,6 +147,7 @@ function RewardsPage() {
                   i <= milestones.grade ? ' owned' : ''
                 }`}
                 aria-pressed={i === shownGrade}
+                aria-label={`${name} — ${i <= milestones.grade ? 'earned' : 'locked'}`}
                 onClick={() => setViewedGrade(i)}
               >
                 {i <= milestones.grade ? <CheckIcon /> : <LockIcon />}
@@ -267,14 +278,21 @@ function LockedHint({
   condition: Parameters<typeof unlockLabel>[0]
   milestones: Milestones
 }) {
-  const progress = unlockProgress(condition, milestones)
+  const progress = Math.round(unlockProgress(condition, milestones) * 100)
   return (
     <div className="locked-hint">
       <span className="lh-label">
         <LockIcon /> {unlockLabel(condition)}
       </span>
-      <div className="meter" aria-hidden="true">
-        <span style={{ width: `${Math.round(progress * 100)}%` }} />
+      <div
+        className="meter"
+        role="progressbar"
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={`Progress: ${progress}%`}
+      >
+        <span style={{ width: `${progress}%` }} />
       </div>
     </div>
   )

@@ -44,18 +44,28 @@ export const EMPTY_MILESTONES: Milestones = {
 
 const MILESTONE_KEYS = Object.keys(EMPTY_MILESTONES) as (keyof Milestones)[]
 
-function clampCount(value: unknown): number {
+/** Per-key upper bounds: grade and badge tiers live on a 0-5 ladder. */
+const MILESTONE_MAX: Record<keyof Milestones, number> = {
+  grade: 5,
+  streak: 1_000_000,
+  sessions: 1_000_000,
+  concTier: 5,
+  ratioTier: 5,
+}
+
+function clampCount(value: unknown, max: number): number {
   const n = Number(value)
   if (!Number.isFinite(n) || n < 0) return 0
-  return Math.min(1_000_000, Math.floor(n))
+  return Math.min(max, Math.floor(n))
 }
 
 /** Coerce an untrusted JSON value (profiles.milestones) into Milestones. */
 export function normalizeMilestones(raw: unknown): Milestones {
-  const source = (raw ?? {}) as Record<string, unknown>
+  const source =
+    raw !== null && typeof raw === 'object' ? (raw as Record<string, unknown>) : {}
   const out = { ...EMPTY_MILESTONES }
   for (const key of MILESTONE_KEYS) {
-    out[key] = clampCount(source[key])
+    out[key] = clampCount(source[key], MILESTONE_MAX[key])
   }
   return out
 }

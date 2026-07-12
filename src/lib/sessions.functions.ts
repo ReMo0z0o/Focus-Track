@@ -195,6 +195,26 @@ export const updateProfile = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
     if (Object.keys(data).length === 0) return { success: true }
+
+    // Milestones are high-water marks: merge per-key max with the stored row
+    // so no client (stale cache, second device) can ever lower one.
+    if (data.milestones) {
+      const { data: row, error: readError } = await context.supabase
+        .from('profiles')
+        .select('milestones')
+        .eq('id', context.user.id)
+        .maybeSingle()
+      if (!readError && row?.milestones && typeof row.milestones === 'object') {
+        const existing = row.milestones as Record<string, unknown>
+        for (const key of MILESTONE_FIELDS) {
+          const prev = Number(existing[key])
+          if (Number.isFinite(prev) && prev > (data.milestones[key] ?? 0)) {
+            data.milestones[key] = Math.min(1_000_000, Math.floor(prev))
+          }
+        }
+      }
+    }
+
     const { error } = await context.supabase
       .from('profiles')
       .upsert({ id: context.user.id, ...data })

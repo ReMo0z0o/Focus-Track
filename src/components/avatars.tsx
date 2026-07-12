@@ -161,7 +161,8 @@ export function Avatar({
   size?: number
   locked?: boolean
 }) {
-  const known = id in GLYPHS ? id : DEFAULT_AVATAR
+  // Object.hasOwn so prototype-chain keys ('constructor', …) can't slip past.
+  const known = Object.hasOwn(GLYPHS, id) ? id : DEFAULT_AVATAR
   return (
     <span
       className={`avatar av-${known}${locked ? ' locked' : ''}`}

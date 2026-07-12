@@ -138,7 +138,7 @@ input, select {
   z-index: 40;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  background: rgba(11, 14, 20, 0.78);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
   border-bottom: 1px solid var(--border);
 }
 
@@ -1799,30 +1799,50 @@ input, select {
   --accent: #ff7a59;
   --accent-strong: #ff9d82;
   --accent-ink: #2b0f06;
+  --bg: #120c0c;
+  --bg-raise: #171010;
+  --surface: #1d1416;
+  --surface-2: #241a1d;
 }
 
 :root[data-theme='forest'] {
   --accent: #4fd39a;
   --accent-strong: #7fe6b8;
   --accent-ink: #062318;
+  --bg: #0a100d;
+  --bg-raise: #0e1511;
+  --surface: #121b16;
+  --surface-2: #17221c;
 }
 
 :root[data-theme='ocean'] {
   --accent: #55b9f0;
   --accent-strong: #8ad2ff;
   --accent-ink: #06202e;
+  --bg: #090e15;
+  --bg-raise: #0d131c;
+  --surface: #111a26;
+  --surface-2: #162230;
 }
 
 :root[data-theme='violet'] {
   --accent: #a78bfa;
   --accent-strong: #c4b0ff;
   --accent-ink: #1b1038;
+  --bg: #0d0b15;
+  --bg-raise: #120f1c;
+  --surface: #171426;
+  --surface-2: #1d1a30;
 }
 
 :root[data-theme='aurora'] {
   --accent: #ffd98a;
   --accent-strong: #fff0c4;
   --accent-ink: #2b1d04;
+  --bg: #0d0e12;
+  --bg-raise: #121319;
+  --surface: #161a22;
+  --surface-2: #1c212c;
 }
 
 /* ================= header identity ================= */
@@ -1963,7 +1983,7 @@ input, select {
   position: relative;
   perspective: 900px;
   cursor: grab;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
 }
 
@@ -2023,7 +2043,7 @@ input, select {
   pointer-events: none;
 }
 
-.emblem3d.locked .emblem3d-stage {
+.emblem3d.locked {
   filter: grayscale(0.85) brightness(0.75);
 }
 
