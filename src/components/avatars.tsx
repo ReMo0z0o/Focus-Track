@@ -39,7 +39,7 @@ const GLYPHS: Record<string, ReactNode> = {
       <circle className="avp avp-twinkle" cx="33" cy="14" r="2" fill="#ffe9b8" />
       <circle
         className="avp avp-twinkle"
-        style={{ animationDelay: '1.2s' }}
+        style={{ animationDelay: '-1.2s' }}
         cx="38"
         cy="20"
         r="1.3"
@@ -104,7 +104,7 @@ const GLYPHS: Record<string, ReactNode> = {
       />
       <circle cx="17.5" cy="23" r="6.5" fill="#fff" />
       <circle cx="30.5" cy="23" r="6.5" fill="#fff" />
-      <g className="avp avp-blink">
+      <g className="avp avp-blink" style={{ animationDelay: '-0.7s' }}>
         <circle cx="17.5" cy="23" r="2.6" fill="#1d2433" />
         <circle cx="30.5" cy="23" r="2.6" fill="#1d2433" />
       </g>
@@ -143,7 +143,7 @@ const GLYPHS: Record<string, ReactNode> = {
       />
       <path
         className="avp avp-pulse"
-        style={{ animationDelay: '1.5s' }}
+        style={{ animationDelay: '-1.5s' }}
         d="M24 8 C17 15 10 19 11 29 A13.5 13.5 0 0 0 24 41"
         fill="none"
         stroke="#ffc9a3"
@@ -176,7 +176,7 @@ const GLYPHS: Record<string, ReactNode> = {
       <path className="avp avp-pulse" d="M19 12 L8 8 L8 16 Z" fill="#ffe9b0" opacity="0.75" />
       <path
         className="avp avp-pulse"
-        style={{ animationDelay: '1.5s' }}
+        style={{ animationDelay: '-1.5s' }}
         d="M29 12 L40 8 L40 16 Z"
         fill="#ffe9b0"
         opacity="0.75"
@@ -187,14 +187,14 @@ const GLYPHS: Record<string, ReactNode> = {
   /* ---- animated characters ---- */
   cat: (
     <Glyph>
-      <g className="avp avp-ear">
+      <g className="avp avp-ear" style={{ animationDelay: '-2.4s' }}>
         <path d="M12 17 L15 5.5 L22 12.5 Z" fill="#f4e9db" />
         <path d="M13.6 14.6 L15.5 8.5 L19.5 12.4 Z" fill="#f3a7b8" />
       </g>
       <path d="M36 17 L33 5.5 L26 12.5 Z" fill="#f4e9db" />
       <path d="M34.4 14.6 L32.5 8.5 L28.5 12.4 Z" fill="#f3a7b8" />
       <circle cx="24" cy="26" r="13" fill="#f4e9db" />
-      <g className="avp avp-blink">
+      <g className="avp avp-blink" style={{ animationDelay: '-1.9s' }}>
         <ellipse cx="19" cy="24.5" rx="2" ry="2.7" fill="#2c3145" />
         <ellipse cx="29" cy="24.5" rx="2" ry="2.7" fill="#2c3145" />
       </g>
@@ -226,7 +226,7 @@ const GLYPHS: Record<string, ReactNode> = {
       <circle cx="32.5" cy="13.5" r="6" fill="#79b83f" />
       <circle cx="15.5" cy="13" r="4" fill="#fdfcf5" />
       <circle cx="32.5" cy="13" r="4" fill="#fdfcf5" />
-      <g className="avp avp-blink">
+      <g className="avp avp-blink" style={{ animationDelay: '-3.4s' }}>
         <circle cx="15.5" cy="13.4" r="1.8" fill="#26301c" />
         <circle cx="32.5" cy="13.4" r="1.8" fill="#26301c" />
       </g>
@@ -245,12 +245,12 @@ const GLYPHS: Record<string, ReactNode> = {
     <Glyph>
       <ellipse cx="18" cy="11" rx="3.9" ry="9.2" fill="#fdf4f7" transform="rotate(-8 18 11)" />
       <ellipse cx="18" cy="11.6" rx="2" ry="6.2" fill="#f5b8cd" transform="rotate(-8 18 11.6)" />
-      <g className="avp avp-flop">
+      <g className="avp avp-flop" style={{ animationDelay: '-1.2s' }}>
         <ellipse cx="30" cy="11" rx="3.9" ry="9.2" fill="#fdf4f7" transform="rotate(8 30 11)" />
         <ellipse cx="30" cy="11.6" rx="2" ry="6.2" fill="#f5b8cd" transform="rotate(8 30 11.6)" />
       </g>
       <circle cx="24" cy="28" r="11.8" fill="#fdf4f7" />
-      <g className="avp avp-blink">
+      <g className="avp avp-blink" style={{ animationDelay: '-0.9s' }}>
         <circle cx="19.5" cy="26.5" r="1.9" fill="#3a2e33" />
         <circle cx="28.5" cy="26.5" r="1.9" fill="#3a2e33" />
       </g>
@@ -278,7 +278,7 @@ const GLYPHS: Record<string, ReactNode> = {
         d="M24 23 C28.5 23 32.5 25.5 33.5 29.5 C32 34 28.5 36.8 24 36.8 C19.5 36.8 16 34 14.5 29.5 C15.5 25.5 19.5 23 24 23 Z"
         fill="#fff3e6"
       />
-      <g className="avp avp-blink">
+      <g className="avp avp-blink" style={{ animationDelay: '-2.6s' }}>
         <ellipse cx="18.2" cy="20.8" rx="1.8" ry="2.3" fill="#402a1e" />
         <ellipse cx="29.8" cy="20.8" rx="1.8" ry="2.3" fill="#402a1e" />
       </g>
@@ -316,7 +316,7 @@ const GLYPHS: Record<string, ReactNode> = {
       <circle cx="24" cy="26" r="13.2" fill="#fbfaf6" />
       <ellipse cx="18.4" cy="23.5" rx="4" ry="4.9" fill="#20242e" transform="rotate(-14 18.4 23.5)" />
       <ellipse cx="29.6" cy="23.5" rx="4" ry="4.9" fill="#20242e" transform="rotate(14 29.6 23.5)" />
-      <g className="avp avp-blink-slow">
+      <g className="avp avp-blink-slow" style={{ animationDelay: '-2.8s' }}>
         <circle cx="18.8" cy="23.2" r="1.4" fill="#fbfaf6" />
         <circle cx="29.2" cy="23.2" r="1.4" fill="#fbfaf6" />
       </g>
@@ -341,7 +341,7 @@ const GLYPHS: Record<string, ReactNode> = {
         <ellipse cx="24" cy="28.5" rx="7.5" ry="10.5" fill="#f7fbff" />
         <circle cx="20.2" cy="17" r="2.4" fill="#fff" />
         <circle cx="27.8" cy="17" r="2.4" fill="#fff" />
-        <g className="avp avp-blink">
+        <g className="avp avp-blink" style={{ animationDelay: '-4s' }}>
           <circle cx="20.2" cy="17.2" r="1.2" fill="#101623" />
           <circle cx="27.8" cy="17.2" r="1.2" fill="#101623" />
         </g>
@@ -352,7 +352,7 @@ const GLYPHS: Record<string, ReactNode> = {
   wizard: (
     <Glyph>
       <circle cx="24" cy="26.5" r="8.2" fill="#f0cfa8" />
-      <g className="avp avp-blink">
+      <g className="avp avp-blink" style={{ animationDelay: '-1.3s' }}>
         <circle cx="20.8" cy="25" r="1.5" fill="#33261c" />
         <circle cx="27.2" cy="25" r="1.5" fill="#33261c" />
       </g>
@@ -409,7 +409,7 @@ const GLYPHS: Record<string, ReactNode> = {
   ),
   ninja: (
     <Glyph>
-      <circle cx="24" cy="25" r="13.5" fill="#262c3e" />
+      <circle cx="24" cy="25" r="13.5" fill="#262c3e" stroke="#9aa6c2" strokeWidth="1" opacity="0.9" />
       <rect x="10.5" y="16.5" width="27" height="4" rx="2" fill="#d8474b" />
       <g className="avp avp-sway">
         <path d="M36 18.5 L43 15 L41 20.5 Z" fill="#d8474b" />

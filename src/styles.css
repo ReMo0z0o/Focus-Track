@@ -2087,7 +2087,7 @@ input, select {
 .av-penguin { --av-a: #9fd6ff; --av-b: #2e5d8a; }
 .av-wizard { --av-a: #b493f5; --av-b: #43307e; }
 .av-monk { --av-a: #ffd58f; --av-b: #8a5a1c; }
-.av-ninja { --av-a: #6b7896; --av-b: #1f2637; }
+.av-ninja { --av-a: #8a97b8; --av-b: #323c5c; }
 
 /* ---------- avatar micro-animations ---------- */
 
@@ -2101,14 +2101,13 @@ input, select {
 
 .avp-blink { animation: av-blink 4.4s ease-in-out infinite; }
 .avp-blink-slow { animation: av-blink 6.2s ease-in-out infinite; }
+/* Blink/twitch phases are desynced per glyph via inline negative
+   animation-delay in avatars.tsx (deterministic, order-independent). */
 
-/* Desync the grid so the whole cast doesn't blink in unison (negative
-   delays start each loop mid-cycle instead of stalling the first one). */
-.avatar-card:nth-child(2n) .avp-blink { animation-delay: -1.7s; }
-.avatar-card:nth-child(3n) .avp-blink { animation-delay: -3.2s; }
-.avatar-card:nth-child(5n) .avp-blink { animation-delay: -0.9s; }
-.avatar-card:nth-child(2n) .avp-ear,
-.avatar-card:nth-child(2n) .avp-flop { animation-delay: -2.4s; }
+/* Locked previews stay still: saves the per-frame grayscale-filter
+   re-raster on the (majority) locked cards and keeps the locked
+   affordance readable. */
+.avatar.locked svg .avp { animation-play-state: paused; }
 
 .avatar svg .avp-ear {
   transform-origin: 50% 100%;
