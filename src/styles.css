@@ -1064,9 +1064,10 @@ input, select {
   overflow: visible;
   filter: drop-shadow(0 10px 28px var(--tier-glow));
   animation: emblem-float 5.5s ease-in-out infinite;
-  /* per-grade flame intensity (overridden on .grade-N ancestors) */
-  --flame-amp: 1;
-  --flame-speed: 3s;
+  /* Flame intensity (--flame-amp / --flame-speed) is inherited from the
+     .grade-N ancestor. Do NOT declare defaults here — a value set directly
+     on this element would shadow the inherited per-grade values. Consumers
+     use var(..., <fallback>) so ancestor-less emblems still animate. */
 }
 
 @keyframes emblem-float {
@@ -1076,7 +1077,7 @@ input, select {
 
 /* metal shimmer on the bezel */
 .grade-emblem .em-bezel {
-  animation: bezel-shimmer calc(var(--flame-speed) * 2.4) ease-in-out infinite;
+  animation: bezel-shimmer calc(var(--flame-speed, 3s) * 2.4) ease-in-out infinite;
 }
 
 @keyframes bezel-shimmer {
@@ -1094,58 +1095,58 @@ input, select {
   transform-box: view-box;
   transform-origin: 60px 101px;
   opacity: 0.5;
-  animation: flame-lick var(--flame-speed) ease-in-out infinite;
+  animation: flame-lick var(--flame-speed, 3s) ease-in-out infinite;
 }
 
 .grade-emblem .em-gem {
   transform-box: view-box;
   transform-origin: 60px 101px;
-  animation: flame-lick calc(var(--flame-speed) * 0.86) ease-in-out infinite;
+  animation: flame-lick calc(var(--flame-speed, 3s) * 0.86) ease-in-out infinite;
 }
 
 .grade-emblem .em-inner {
   transform-box: view-box;
   transform-origin: 60px 95px;
-  animation: flame-lick-fast calc(var(--flame-speed) * 0.62) ease-in-out infinite;
+  animation: flame-lick-fast calc(var(--flame-speed, 3s) * 0.62) ease-in-out infinite;
 }
 
 .grade-emblem .em-core {
   transform-box: view-box;
   transform-origin: 60px 82px;
-  animation: core-throb calc(var(--flame-speed) * 0.7) ease-in-out infinite;
+  animation: core-throb calc(var(--flame-speed, 3s) * 0.7) ease-in-out infinite;
 }
 
 .grade-emblem .em-tip {
   transform-box: view-box;
   transform-origin: 60px 40px;
-  animation: tip-flick calc(var(--flame-speed) * 0.5) ease-in-out infinite;
+  animation: tip-flick calc(var(--flame-speed, 3s) * 0.5) ease-in-out infinite;
 }
 
 .grade-emblem .em-spec {
-  animation: spec-shift var(--flame-speed) ease-in-out infinite;
+  animation: spec-shift var(--flame-speed, 3s) ease-in-out infinite;
 }
 
 @keyframes flame-lick {
   0%, 100% { transform: scaleY(1) scaleX(1) skewX(0deg) translateY(0); }
-  30% { transform: scaleY(calc(1 + 0.07 * var(--flame-amp))) scaleX(calc(1 - 0.03 * var(--flame-amp))) skewX(calc(3deg * var(--flame-amp))) translateY(calc(-1.5px * var(--flame-amp))); }
-  65% { transform: scaleY(calc(1 - 0.03 * var(--flame-amp))) scaleX(calc(1 + 0.04 * var(--flame-amp))) skewX(calc(-2.5deg * var(--flame-amp))) translateY(0); }
+  30% { transform: scaleY(calc(1 + 0.07 * var(--flame-amp, 1))) scaleX(calc(1 - 0.03 * var(--flame-amp, 1))) skewX(calc(3deg * var(--flame-amp, 1))) translateY(calc(-1.5px * var(--flame-amp, 1))); }
+  65% { transform: scaleY(calc(1 - 0.03 * var(--flame-amp, 1))) scaleX(calc(1 + 0.04 * var(--flame-amp, 1))) skewX(calc(-2.5deg * var(--flame-amp, 1))) translateY(0); }
 }
 
 @keyframes flame-lick-fast {
   0%, 100% { transform: scaleY(1) skewX(0deg); opacity: 0.95; }
-  40% { transform: scaleY(calc(1 + 0.1 * var(--flame-amp))) skewX(calc(-4deg * var(--flame-amp))); opacity: 1; }
-  70% { transform: scaleY(calc(1 - 0.04 * var(--flame-amp))) skewX(calc(3deg * var(--flame-amp))); opacity: 0.85; }
+  40% { transform: scaleY(calc(1 + 0.1 * var(--flame-amp, 1))) skewX(calc(-4deg * var(--flame-amp, 1))); opacity: 1; }
+  70% { transform: scaleY(calc(1 - 0.04 * var(--flame-amp, 1))) skewX(calc(3deg * var(--flame-amp, 1))); opacity: 0.85; }
 }
 
 @keyframes core-throb {
   0%, 100% { transform: scale(0.85); opacity: 0.75; }
-  50% { transform: scale(calc(1 + 0.12 * var(--flame-amp))); opacity: 1; }
+  50% { transform: scale(calc(1 + 0.12 * var(--flame-amp, 1))); opacity: 1; }
 }
 
 @keyframes tip-flick {
   0%, 100% { transform: translate(0, 0) scale(0.7); opacity: 0.6; }
-  35% { transform: translate(calc(2px * var(--flame-amp)), calc(-3px * var(--flame-amp))) scale(1); opacity: 1; }
-  70% { transform: translate(calc(-1.5px * var(--flame-amp)), calc(-1px * var(--flame-amp))) scale(0.85); opacity: 0.8; }
+  35% { transform: translate(calc(2px * var(--flame-amp, 1)), calc(-3px * var(--flame-amp, 1))) scale(1); opacity: 1; }
+  70% { transform: translate(calc(-1.5px * var(--flame-amp, 1)), calc(-1px * var(--flame-amp, 1))) scale(0.85); opacity: 0.8; }
 }
 
 @keyframes spec-shift {
@@ -1156,7 +1157,7 @@ input, select {
 /* glint sweeping across the metal */
 .grade-emblem .em-glint {
   transform-box: view-box;
-  animation: emblem-glint calc(var(--flame-speed) * 2.6) ease-in-out infinite;
+  animation: emblem-glint calc(var(--flame-speed, 3s) * 2.6) ease-in-out infinite;
 }
 
 @keyframes emblem-glint {
@@ -1168,7 +1169,7 @@ input, select {
 .grade-emblem .em-halo {
   transform-box: view-box;
   transform-origin: 60px 66px;
-  animation: halo-pulse calc(var(--flame-speed) * 1.6) ease-in-out infinite;
+  animation: halo-pulse calc(var(--flame-speed, 3s) * 1.6) ease-in-out infinite;
 }
 
 @keyframes halo-pulse {
@@ -1179,12 +1180,13 @@ input, select {
 .grade-emblem .em-beams {
   transform-box: view-box;
   transform-origin: 60px 66px;
-  opacity: 0.5;
-  animation: beams-turn 14s linear infinite, halo-pulse calc(var(--flame-speed) * 1.4) ease-in-out infinite;
+  animation: beams-turn 14s linear infinite;
 }
 
 @keyframes beams-turn {
-  to { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); opacity: 0.4; }
+  50% { opacity: 0.7; }
+  100% { transform: rotate(360deg); opacity: 0.4; }
 }
 
 /* twinkling sparkles */
