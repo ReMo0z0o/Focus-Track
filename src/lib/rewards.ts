@@ -415,8 +415,8 @@ export const AVATARS: AvatarDef[] = [
   {
     id: 'penguin',
     name: 'Polar Penguin',
-    tagline: 'Waddles in, gets it done.',
-    condition: { kind: 'sessions', count: 30 },
+    tagline: 'Stands its ground, whatever the storm.',
+    condition: { kind: 'concTier', tier: 3 },
   },
   {
     id: 'wizard',
