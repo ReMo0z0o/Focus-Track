@@ -45,7 +45,10 @@ badges.
   worlds** (Wildfire, Deep Jungle, Polar Night, Street Art, Deep Space, Neon
   Future, Dragon's Lair — full-screen animated backdrops unlocked by feats
   like streaks, badge tiers or session counts, pure CSS on
-  transform/opacity), and eleven profile avatars. Grade emblems render as
+  transform/opacity), and twenty-one profile avatars — including ten
+  animated human & animal characters (a blinking alley cat, a waddling
+  penguin, a levitating monk…), each with its own micro-animation. Grade
+  emblems render as
   draggable 3D badges (CSS 3D, no dependencies). Unlocks are high-water
   marks persisted in `profiles.milestones`, so a dip in recent form never
   re-locks a reward.

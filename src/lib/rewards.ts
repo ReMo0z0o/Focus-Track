@@ -375,6 +375,67 @@ export const AVATARS: AvatarDef[] = [
     tagline: 'You are the light now.',
     condition: { kind: 'grade', level: 5 },
   },
+  /* ---- animated characters — humans & animals with a life of their own ---- */
+  {
+    id: 'cat',
+    name: 'Alley Cat',
+    tagline: 'Curious, quick, quietly watching.',
+    condition: { kind: 'sessions', count: 5 },
+  },
+  {
+    id: 'frog',
+    name: 'Pond Frog',
+    tagline: 'Patient on the lily pad.',
+    condition: { kind: 'ratioTier', tier: 1 },
+  },
+  {
+    id: 'bunny',
+    name: 'Swift Bunny',
+    tagline: 'Fast bursts, full attention.',
+    condition: { kind: 'concTier', tier: 2 },
+  },
+  {
+    id: 'fox',
+    name: 'Night Fox',
+    tagline: 'Sharp senses after sundown.',
+    condition: { kind: 'streak', days: 5 },
+  },
+  {
+    id: 'astro',
+    name: 'Astronaut',
+    tagline: 'Deep focus, zero gravity.',
+    condition: { kind: 'grade', level: 3 },
+  },
+  {
+    id: 'panda',
+    name: 'Zen Panda',
+    tagline: 'Unbothered. Focused. Bamboo.',
+    condition: { kind: 'ratioTier', tier: 3 },
+  },
+  {
+    id: 'penguin',
+    name: 'Polar Penguin',
+    tagline: 'Waddles in, gets it done.',
+    condition: { kind: 'sessions', count: 30 },
+  },
+  {
+    id: 'wizard',
+    name: 'Time Wizard',
+    tagline: 'Bends hours to their will.',
+    condition: { kind: 'streak', days: 10 },
+  },
+  {
+    id: 'monk',
+    name: 'Still Monk',
+    tagline: 'Breathes in, lets the noise go.',
+    condition: { kind: 'ratioTier', tier: 4 },
+  },
+  {
+    id: 'ninja',
+    name: 'Focus Ninja',
+    tagline: 'In and out without a sound.',
+    condition: { kind: 'concTier', tier: 4 },
+  },
 ]
 
 export const AVATAR_IDS = AVATARS.map((a) => a.id)

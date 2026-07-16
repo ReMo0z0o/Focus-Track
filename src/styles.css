@@ -2078,6 +2078,139 @@ input, select {
 .av-phoenix { --av-a: #ff7a59; --av-b: #7d1f0e; }
 .av-diamond { --av-a: #8ad2ff; --av-b: #275a80; }
 .av-keeper { --av-a: #ffd98a; --av-b: #7a5a1a; }
+.av-cat { --av-a: #8a93c9; --av-b: #39406e; }
+.av-frog { --av-a: #a8e06b; --av-b: #42761f; }
+.av-bunny { --av-a: #f4b0d4; --av-b: #7e3f66; }
+.av-fox { --av-a: #7b6bb3; --av-b: #33285e; }
+.av-astro { --av-a: #8fa8ff; --av-b: #2b3a80; }
+.av-panda { --av-a: #7fd1a8; --av-b: #276b4a; }
+.av-penguin { --av-a: #9fd6ff; --av-b: #2e5d8a; }
+.av-wizard { --av-a: #b493f5; --av-b: #43307e; }
+.av-monk { --av-a: #ffd58f; --av-b: #8a5a1c; }
+.av-ninja { --av-a: #6b7896; --av-b: #1f2637; }
+
+/* ---------- avatar micro-animations ---------- */
+
+/* Animated parts inside a glyph. transform-box makes percentage origins
+   resolve against the part's own bbox (so ears/tails pivot at their base).
+   Base poses are the resting state — reduced-motion just shows a portrait. */
+.avatar svg .avp {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.avp-blink { animation: av-blink 4.4s ease-in-out infinite; }
+.avp-blink-slow { animation: av-blink 6.2s ease-in-out infinite; }
+
+/* Desync the grid so the whole cast doesn't blink in unison (negative
+   delays start each loop mid-cycle instead of stalling the first one). */
+.avatar-card:nth-child(2n) .avp-blink { animation-delay: -1.7s; }
+.avatar-card:nth-child(3n) .avp-blink { animation-delay: -3.2s; }
+.avatar-card:nth-child(5n) .avp-blink { animation-delay: -0.9s; }
+.avatar-card:nth-child(2n) .avp-ear,
+.avatar-card:nth-child(2n) .avp-flop { animation-delay: -2.4s; }
+
+.avatar svg .avp-ear {
+  transform-origin: 50% 100%;
+  animation: av-ear-twitch 5.2s ease-in-out infinite;
+}
+
+.avatar svg .avp-tail {
+  transform-origin: 12% 88%;
+  animation: av-tail-sway 2.6s ease-in-out infinite alternate;
+}
+
+.avatar svg .avp-waddle {
+  transform-origin: 50% 100%;
+  animation: av-waddle 2.3s ease-in-out infinite alternate;
+}
+
+.avp-bob { animation: av-bob 2.8s ease-in-out infinite alternate; }
+
+.avatar svg .avp-puff {
+  transform-origin: 50% 100%;
+  animation: av-puff 3.1s ease-in-out infinite;
+}
+
+.avp-dart { animation: av-dart 6.5s ease-in-out infinite; }
+
+.avatar svg .avp-flop {
+  transform-origin: 50% 100%;
+  animation: av-flop 7s ease-in-out infinite;
+}
+
+.avp-twinkle { animation: av-twinkle 2.6s ease-in-out infinite; }
+.avp-sway { animation: av-sway 3.4s ease-in-out infinite alternate; }
+
+.avatar svg .avp-flicker {
+  transform-origin: 50% 100%;
+  animation: av-flicker 2s ease-in-out infinite;
+}
+
+.avp-pulse { animation: av-pulse 3s ease-in-out infinite; }
+
+@keyframes av-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  94% { transform: scaleY(0.1); }
+}
+
+@keyframes av-ear-twitch {
+  0%, 84%, 100% { transform: rotate(0deg); }
+  88% { transform: rotate(-13deg); }
+  93% { transform: rotate(5deg); }
+}
+
+@keyframes av-tail-sway {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(9deg); }
+}
+
+@keyframes av-waddle {
+  from { transform: rotate(-3.5deg); }
+  to { transform: rotate(3.5deg); }
+}
+
+@keyframes av-bob {
+  from { transform: translateY(0.6px); }
+  to { transform: translateY(-1.2px); }
+}
+
+@keyframes av-puff {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.26); }
+}
+
+@keyframes av-dart {
+  0%, 28%, 100% { transform: translateX(0); }
+  36%, 56% { transform: translateX(-2px); }
+  64%, 84% { transform: translateX(1.8px); }
+}
+
+@keyframes av-flop {
+  0%, 80%, 100% { transform: rotate(0deg); }
+  86%, 92% { transform: rotate(16deg); }
+}
+
+@keyframes av-twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(0.82); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes av-sway {
+  from { transform: rotate(-3.5deg); }
+  to { transform: rotate(3.5deg); }
+}
+
+@keyframes av-flicker {
+  0%, 100% { transform: scaleY(1); }
+  35% { transform: scaleY(0.93); }
+  65% { transform: scaleY(1.05); }
+}
+
+@keyframes av-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
 
 /* ================= rewards page ================= */
 
