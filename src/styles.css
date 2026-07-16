@@ -2139,6 +2139,7 @@ input, select {
 }
 
 .avp-twinkle { animation: av-twinkle 2.6s ease-in-out infinite; }
+.avp-glimmer { animation: av-glimmer 2.6s ease-in-out infinite; }
 .avp-sway { animation: av-sway 3.4s ease-in-out infinite alternate; }
 
 .avatar svg .avp-flicker {
@@ -2193,6 +2194,11 @@ input, select {
 @keyframes av-twinkle {
   0%, 100% { opacity: 0.4; transform: scale(0.82); }
   50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes av-glimmer {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
 }
 
 @keyframes av-sway {

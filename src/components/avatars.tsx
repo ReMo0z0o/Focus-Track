@@ -164,7 +164,9 @@ const GLYPHS: Record<string, ReactNode> = {
       <path d="M15 12 H33 L41 21 L24 40 L7 21 Z" fill="#f4f9ff" opacity="0.92" />
       <path d="M15 12 L24 40 L7 21 Z" fill="#dceaff" />
       <path d="M33 12 L41 21 L24 40 Z" fill="#c3d9f8" />
-      <path className="avp avp-twinkle" d="M15 12 H33 L28 21 H20 Z" fill="#ffffff" />
+      {/* opacity-only glimmer: the facet shares the crown outline, so a
+          scale twinkle would poke past the silhouette */}
+      <path className="avp avp-glimmer" d="M15 12 H33 L28 21 H20 Z" fill="#ffffff" />
       <path d="M7 21 H41 L24 40 Z" fill="none" stroke="#ffffff" strokeWidth="0.8" opacity="0.6" />
     </Glyph>
   ),
