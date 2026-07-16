@@ -17,7 +17,9 @@ import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/reac
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ToastProvider } from '@/components/Toaster'
-import { THEME_BOOT_SCRIPT } from '@/lib/theme'
+import { ThemeBackdrop } from '@/components/ThemeBackdrop'
+import { DEFAULT_THEME } from '@/lib/rewards'
+import { THEME_BOOT_SCRIPT, applyTheme } from '@/lib/theme'
 import stylesUrl from '@/styles.css?url'
 
 /* ------------------------------------------------------------------ */
@@ -84,6 +86,9 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut()
     queryClient.clear()
+    // Themes are per-account rewards: don't leave the previous user's look
+    // (and animated backdrop) running on the login page for the next person.
+    applyTheme(DEFAULT_THEME)
   }
 
   return (
@@ -162,6 +167,7 @@ function RootComponent() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ToastProvider>
+            <ThemeBackdrop />
             <Outlet />
           </ToastProvider>
         </AuthProvider>

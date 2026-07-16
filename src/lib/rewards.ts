@@ -135,7 +135,9 @@ export function unlockLabel(c: UnlockCondition): string {
     case 'streak':
       return `Hold a ${c.days}-day focus streak`
     case 'sessions':
-      return `Finish ${c.count} sessions`
+      // The sessions milestone counts a rolling 60-day window (high-water
+      // mark), not a lifetime total — label it honestly.
+      return `Log ${c.count} sessions within 60 days`
     case 'concTier':
       return `Earn a ${TIER_NAMES[c.tier]} concentration badge`
     case 'ratioTier':
@@ -183,6 +185,8 @@ export interface ThemeDef {
     bg: string
     surface: string
   }
+  /** Ships a full-screen animated backdrop (see ThemeBackdrop). */
+  animated?: boolean
 }
 
 export const DEFAULT_THEME = 'amber'
@@ -229,6 +233,63 @@ export const THEMES: ThemeDef[] = [
     tagline: 'The keeper’s light, always on.',
     condition: { kind: 'grade', level: 5 },
     preview: { accent: '#ffd98a', accentStrong: '#fff0c4', bg: '#0d0e12', surface: '#161a22' },
+  },
+  /* ---- animated worlds — unlocked by feats, not grades ---- */
+  {
+    id: 'fire',
+    name: 'Wildfire',
+    tagline: 'Embers rise while you burn through work.',
+    condition: { kind: 'streak', days: 3 },
+    preview: { accent: '#ff6b1f', accentStrong: '#ff9c54', bg: '#130a06', surface: '#1e130e' },
+    animated: true,
+  },
+  {
+    id: 'jungle',
+    name: 'Deep Jungle',
+    tagline: 'Falling leaves and fireflies keep you company.',
+    condition: { kind: 'sessions', count: 15 },
+    preview: { accent: '#6fce4e', accentStrong: '#a4e87e', bg: '#0a120a', surface: '#13200f' },
+    animated: true,
+  },
+  {
+    id: 'polar',
+    name: 'Polar Night',
+    tagline: 'Snow drifts under a silent aurora.',
+    condition: { kind: 'ratioTier', tier: 3 },
+    preview: { accent: '#9fdcff', accentStrong: '#d3f0ff', bg: '#080e16', surface: '#101b28' },
+    animated: true,
+  },
+  {
+    id: 'street',
+    name: 'Street Art',
+    tagline: 'Neon paint in the back alley.',
+    condition: { kind: 'concTier', tier: 3 },
+    preview: { accent: '#ff5fa8', accentStrong: '#ff92c5', bg: '#0d0a10', surface: '#171021' },
+    animated: true,
+  },
+  {
+    id: 'space',
+    name: 'Deep Space',
+    tagline: 'Focus drifting among the stars.',
+    condition: { kind: 'sessions', count: 40 },
+    preview: { accent: '#8fa8ff', accentStrong: '#bac9ff', bg: '#05060f', surface: '#0f1322' },
+    animated: true,
+  },
+  {
+    id: 'future',
+    name: 'Neon Future',
+    tagline: 'The grid hums beneath your focus.',
+    condition: { kind: 'streak', days: 7 },
+    preview: { accent: '#22e0e8', accentStrong: '#7ff5f9', bg: '#060b12', surface: '#0c1520' },
+    animated: true,
+  },
+  {
+    id: 'dragon',
+    name: 'Dragon’s Lair',
+    tagline: 'Smoke and embers from a sleeping hoard.',
+    condition: { kind: 'anyDiamond' },
+    preview: { accent: '#ff5346', accentStrong: '#ff8a76', bg: '#120708', surface: '#1d0e10' },
+    animated: true,
   },
 ]
 

@@ -1961,6 +1961,78 @@ input, select {
   --surface-2: #1c212c;
 }
 
+/* ---- animated worlds (paired with a ThemeBackdrop scene) ---- */
+
+:root[data-theme='fire'] {
+  --accent: #ff6b1f;
+  --accent-strong: #ff9c54;
+  --accent-ink: #2b1000;
+  --bg: #130a06;
+  --bg-raise: #180d08;
+  --surface: #1e130e;
+  --surface-2: #251913;
+}
+
+:root[data-theme='jungle'] {
+  --accent: #6fce4e;
+  --accent-strong: #a4e87e;
+  --accent-ink: #0f2606;
+  --bg: #0a120a;
+  --bg-raise: #0e170c;
+  --surface: #13200f;
+  --surface-2: #182714;
+}
+
+:root[data-theme='polar'] {
+  --accent: #9fdcff;
+  --accent-strong: #d3f0ff;
+  --accent-ink: #06222f;
+  --bg: #080e16;
+  --bg-raise: #0c131d;
+  --surface: #101b28;
+  --surface-2: #152233;
+}
+
+:root[data-theme='street'] {
+  --accent: #ff5fa8;
+  --accent-strong: #ff92c5;
+  --accent-ink: #33081d;
+  --bg: #0d0a10;
+  --bg-raise: #120d17;
+  --surface: #171021;
+  --surface-2: #1d1529;
+}
+
+:root[data-theme='space'] {
+  --accent: #8fa8ff;
+  --accent-strong: #bac9ff;
+  --accent-ink: #0d1233;
+  --bg: #05060f;
+  --bg-raise: #090b16;
+  --surface: #0f1322;
+  --surface-2: #141a2e;
+}
+
+:root[data-theme='future'] {
+  --accent: #22e0e8;
+  --accent-strong: #7ff5f9;
+  --accent-ink: #04262a;
+  --bg: #060b12;
+  --bg-raise: #0a1119;
+  --surface: #0c1520;
+  --surface-2: #111d2b;
+}
+
+:root[data-theme='dragon'] {
+  --accent: #ff5346;
+  --accent-strong: #ff8a76;
+  --accent-ink: #2e0705;
+  --bg: #120708;
+  --bg-raise: #170b0c;
+  --surface: #1d0e10;
+  --surface-2: #241316;
+}
+
 /* ================= header identity ================= */
 
 .header-id {
@@ -2227,7 +2299,14 @@ input, select {
 
 .theme-meta { padding: 0.85rem 1rem 1rem; }
 
-.theme-name { font-weight: 660; font-size: 0.95rem; }
+.theme-name {
+  font-weight: 660;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
 
 .theme-tagline {
   font-size: 0.78rem;
@@ -2543,4 +2622,451 @@ input, select {
 
 .grade-badge .gb-name {
   letter-spacing: 0.01em;
+}
+
+/* ================= animated theme backdrops ================= */
+
+/* Fixed layer behind all content (negative z-index child of <body>):
+   it paints above the page background but below every surface, and
+   never intercepts pointer events. All animations stick to
+   transform/opacity so they stay compositor-only (and are neutralised
+   by the global prefers-reduced-motion rule). */
+
+.theme-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Let the animated worlds glow faintly through surfaces. */
+:root:is(
+  [data-theme='fire'],
+  [data-theme='jungle'],
+  [data-theme='polar'],
+  [data-theme='street'],
+  [data-theme='space'],
+  [data-theme='future'],
+  [data-theme='dragon']
+) .card {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 88%, transparent),
+    color-mix(in srgb, var(--bg-raise) 92%, transparent)
+  );
+}
+
+.theme-backdrop > * {
+  position: absolute;
+}
+
+/* ThemeBackdrop toggles this while the tab is hidden. */
+.theme-backdrop.paused *,
+.theme-backdrop.paused *::after {
+  animation-play-state: paused;
+}
+
+/* The global reduced-motion rule ends every animation instantly, which
+   would leave fall/sweep particles frozen at their base (top-edge) spot —
+   hide them and keep only the static ambiance layers. */
+@media (prefers-reduced-motion: reduce) {
+  .tb-snow,
+  .tb-leaf,
+  .tb-scanline,
+  .tb-shooting {
+    display: none;
+  }
+}
+
+/* Weaker mobile GPUs: shrink the expensive blur radii. */
+@media (max-width: 640px) {
+  .tb-nebula,
+  .tb-paint {
+    filter: blur(38px);
+  }
+
+  .tb-aurora {
+    filter: blur(28px);
+  }
+}
+
+/* ---------------- deep space ---------------- */
+
+.tb-nebula {
+  width: 55vw;
+  height: 55vw;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.tb-nebula-1 {
+  top: -18%;
+  left: -12%;
+  background: radial-gradient(circle at 40% 40%, rgba(122, 100, 255, 0.3), rgba(64, 42, 160, 0.12) 55%, transparent 70%);
+  animation: tb-drift 26s ease-in-out infinite alternate;
+}
+
+.tb-nebula-2 {
+  bottom: -22%;
+  right: -15%;
+  background: radial-gradient(circle at 60% 60%, rgba(84, 160, 255, 0.22), rgba(150, 64, 220, 0.1) 55%, transparent 70%);
+  animation: tb-drift 32s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes tb-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(6vw, 4vh, 0) scale(1.15); }
+}
+
+.tb-star {
+  border-radius: 50%;
+  background: #eaf2ff;
+  opacity: 0.25;
+  animation-name: tb-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.tb-star.big {
+  box-shadow: 0 0 8px 2px rgba(170, 200, 255, 0.65);
+}
+
+@keyframes tb-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.8); }
+  50% { opacity: 0.95; transform: scale(1.15); }
+}
+
+.tb-shooting {
+  left: 105%;
+  width: 130px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #cfe1ff 60%, #ffffff);
+  opacity: 0;
+  animation-name: tb-shoot;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-shoot {
+  0% { transform: translate3d(0, 0, 0) rotate(-24deg); opacity: 0; }
+  3% { opacity: 0.9; }
+  9%, 100% { transform: translate3d(-120vw, 46vh, 0) rotate(-24deg); opacity: 0; }
+}
+
+/* ---------------- polar night ---------------- */
+
+.tb-aurora {
+  top: -20%;
+  height: 70%;
+  width: 45%;
+  filter: blur(46px);
+}
+
+.tb-aurora-1 {
+  left: 6%;
+  background: linear-gradient(180deg, rgba(80, 255, 190, 0.45), rgba(60, 160, 255, 0.16) 60%, transparent);
+  animation: tb-aurora 13s ease-in-out infinite alternate;
+}
+
+.tb-aurora-2 {
+  left: 45%;
+  background: linear-gradient(180deg, rgba(120, 130, 255, 0.4), rgba(90, 220, 255, 0.16) 55%, transparent);
+  animation: tb-aurora 17s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes tb-aurora {
+  0% { transform: translate3d(-6%, 0, 0) skewX(-18deg) scaleY(1); opacity: 0.35; }
+  50% { transform: translate3d(4%, -2%, 0) skewX(-8deg) scaleY(1.12); opacity: 0.6; }
+  100% { transform: translate3d(10%, 0, 0) skewX(-22deg) scaleY(0.95); opacity: 0.4; }
+}
+
+.tb-snow {
+  top: 0;
+  border-radius: 50%;
+  background: #eef6ff;
+  animation-name: tb-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-fall {
+  0% { transform: translate3d(0, -6vh, 0); }
+  25% { transform: translate3d(calc(var(--sway, 30px) * 0.6), 22vh, 0); }
+  50% { transform: translate3d(calc(var(--sway, 30px) * -0.4), 50vh, 0); }
+  75% { transform: translate3d(calc(var(--sway, 30px) * 0.8), 78vh, 0); }
+  100% { transform: translate3d(0, 108vh, 0); }
+}
+
+/* ---------------- deep jungle ---------------- */
+
+.tb-canopy {
+  left: -5%;
+  right: -5%;
+  top: -4%;
+  height: 34%;
+  background:
+    radial-gradient(60% 90% at 12% 0%, rgba(34, 84, 32, 0.55), transparent 70%),
+    radial-gradient(55% 80% at 50% -10%, rgba(46, 104, 42, 0.45), transparent 72%),
+    radial-gradient(60% 90% at 88% 0%, rgba(28, 74, 30, 0.5), transparent 70%);
+  filter: blur(6px);
+  transform-origin: 50% 0;
+  animation: tb-canopy-sway 12s ease-in-out infinite alternate;
+}
+
+@keyframes tb-canopy-sway {
+  from { transform: translateX(-1.5%); }
+  to { transform: translateX(1.5%); }
+}
+
+.tb-leaf {
+  top: 0;
+  background: linear-gradient(135deg, #8ccb63, #4a8030);
+  border-radius: 8% 68% 10% 66%;
+  opacity: 0.85;
+  animation-name: tb-leaf-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-leaf-fall {
+  0% { transform: translate3d(0, -8vh, 0) rotate(0deg); }
+  25% { transform: translate3d(var(--sway, 40px), 24vh, 0) rotate(calc(var(--spin, 1) * 100deg)); }
+  50% { transform: translate3d(calc(var(--sway, 40px) * -0.6), 52vh, 0) rotate(calc(var(--spin, 1) * 190deg)); }
+  75% { transform: translate3d(var(--sway, 40px), 80vh, 0) rotate(calc(var(--spin, 1) * 280deg)); }
+  100% { transform: translate3d(0, 108vh, 0) rotate(calc(var(--spin, 1) * 360deg)); }
+}
+
+.tb-firefly {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #e8ffb0;
+  box-shadow: 0 0 9px 2px rgba(190, 255, 120, 0.55);
+  opacity: 0;
+  animation-name: tb-firefly;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-firefly {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  20% { opacity: 0.9; }
+  50% { opacity: 0.2; }
+  70% { opacity: 0.85; }
+  100% { transform: translate3d(var(--dx, 20px), var(--dy, -14px), 0); opacity: 0; }
+}
+
+/* ---------------- wildfire & dragon's lair ---------------- */
+
+.tb-heat {
+  left: -10%;
+  right: -10%;
+  bottom: -12%;
+  height: 45%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 110, 30, 0.28), rgba(255, 60, 10, 0.1) 45%, transparent 70%);
+  transform-origin: 50% 100%;
+  animation: tb-heat-pulse 5s ease-in-out infinite;
+}
+
+.tb-lair-glow {
+  left: -10%;
+  right: -10%;
+  bottom: -15%;
+  height: 50%;
+  background:
+    radial-gradient(ellipse at 30% 100%, rgba(255, 62, 40, 0.22), transparent 60%),
+    radial-gradient(ellipse at 75% 100%, rgba(200, 30, 60, 0.16), transparent 55%);
+  transform-origin: 50% 100%;
+  animation: tb-heat-pulse 8s ease-in-out infinite;
+}
+
+@keyframes tb-heat-pulse {
+  0%, 100% { transform: scaleY(1); opacity: 0.8; }
+  50% { transform: scaleY(1.15); opacity: 1; }
+}
+
+.tb-ember {
+  bottom: -12px;
+  border-radius: 50%;
+  background: #ffb46b;
+  box-shadow: 0 0 6px 1px rgba(255, 140, 50, 0.7);
+  opacity: 0;
+  animation-name: tb-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.tb-ember.dragon {
+  background: #ff6b52;
+  box-shadow: 0 0 7px 2px rgba(255, 70, 50, 0.55);
+}
+
+@keyframes tb-rise {
+  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+  8% { opacity: 0.9; }
+  70% { opacity: 0.55; }
+  100% { transform: translate3d(var(--dx, 0px), -108vh, 0) scale(0.4); opacity: 0; }
+}
+
+.tb-smoke {
+  bottom: -160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(126, 112, 122, 0.16), transparent 65%);
+  filter: blur(18px);
+  opacity: 0;
+  animation-name: tb-smoke-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-smoke-rise {
+  0% { transform: translate3d(0, 0, 0) scale(0.8); opacity: 0; }
+  20% { opacity: 0.5; }
+  100% { transform: translate3d(6vw, -115vh, 0) scale(1.6); opacity: 0; }
+}
+
+/* ---------------- street art ---------------- */
+
+.tb-paint {
+  width: 46vw;
+  height: 46vw;
+  border-radius: 50%;
+  filter: blur(70px);
+}
+
+.tb-paint-1 {
+  top: -14%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(255, 70, 160, 0.38), transparent 65%);
+  animation: tb-drift 22s ease-in-out infinite alternate;
+}
+
+.tb-paint-2 {
+  top: 30%;
+  right: -14%;
+  background: radial-gradient(circle, rgba(60, 220, 255, 0.3), transparent 65%);
+  animation: tb-drift 28s ease-in-out infinite alternate-reverse;
+}
+
+.tb-paint-3 {
+  bottom: -18%;
+  left: 22%;
+  background: radial-gradient(circle, rgba(255, 220, 60, 0.24), transparent 65%);
+  animation: tb-drift 34s ease-in-out infinite alternate;
+}
+
+.tb-spray {
+  border-radius: 50%;
+  background: hsl(var(--h, 320) 95% 65%);
+  box-shadow: 0 0 10px 2px hsl(var(--h, 320) 95% 60% / 0.5);
+  opacity: 0;
+  animation-name: tb-spray;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-spray {
+  0%, 100% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.6); }
+  20% { opacity: 0.85; }
+  50% { opacity: 0.4; transform: translate3d(10px, -14px, 0) scale(1); }
+  80% { opacity: 0.7; }
+}
+
+/* ---------------- neon future ---------------- */
+
+.tb-grid-wrap {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 58%;
+  perspective: 620px;
+  overflow: hidden;
+}
+
+.tb-grid {
+  position: absolute;
+  left: -60%;
+  right: -60%;
+  /* The rotation origin (top edge) sits inside the wrap so the dense
+     converging lines show. The scroll loop translates the element itself
+     (its top edge bobs ~10px per cycle), so the sky fade below must stay
+     fully opaque past 34% to hide the moving edge — the visible horizon
+     is the fade boundary, not the element edge. */
+  top: 26%;
+  bottom: -150%;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--accent) 55%, transparent) 2px, transparent 2px),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 45%, transparent) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform-origin: 50% 0;
+  animation: tb-grid-move 3.2s linear infinite;
+}
+
+/* horizon fade so the grid melts into the sky, plus a neon horizon glow */
+.tb-grid-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(58% 16% at 50% 36%, color-mix(in srgb, var(--accent) 16%, transparent), transparent),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg) 34%, transparent 56%);
+}
+
+@keyframes tb-grid-move {
+  from { transform: rotateX(72deg) translateY(0); }
+  to { transform: rotateX(72deg) translateY(60px); }
+}
+
+.tb-scanline {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22vh;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    color-mix(in srgb, var(--accent) 10%, transparent) 45%,
+    color-mix(in srgb, var(--accent) 16%, transparent) 75%,
+    transparent
+  );
+  opacity: 0.35;
+  animation: tb-scan 9s linear infinite;
+}
+
+@keyframes tb-scan {
+  from { transform: translateY(-30vh); }
+  to { transform: translateY(130vh); }
+}
+
+.tb-orb {
+  border-radius: 50%;
+  background: var(--accent-strong);
+  box-shadow: 0 0 12px 3px color-mix(in srgb, var(--accent) 60%, transparent);
+  opacity: 0.35;
+  animation-name: tb-orb;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-orb {
+  0%, 100% { transform: translate3d(0, 0, 0); opacity: 0.3; }
+  50% { transform: translate3d(8px, -26px, 0); opacity: 0.8; }
+}
+
+/* "Animated" chip on theme cards */
+.theme-anim-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
 }

@@ -56,14 +56,22 @@ function RewardsPage() {
 
   const themeMutation = useMutation({
     mutationFn: (theme: string) => updateProfileFn({ data: { theme } }),
-    onSuccess: () => {
+    onSuccess: (_result, theme) => {
+      // Patch the cache right away: if a follow-up apply fails before the
+      // refetch lands, the rollback below must see the theme that actually
+      // saved, not a stale pre-mutation value.
+      queryClient.setQueryData(['profile'], (old: unknown) =>
+        old ? { ...(old as Record<string, unknown>), theme } : old,
+      )
       void queryClient.invalidateQueries({ queryKey: ['profile'] })
     },
-    onError: () => {
-      // Roll the optimistic application back so the visible theme,
-      // localStorage and the "Applied" indicator stay consistent.
-      applyTheme(profileQuery.data?.theme ?? DEFAULT_THEME)
+    onError: async () => {
       toast('Could not save the theme — is the latest database migration applied?', 'error')
+      // Roll the optimistic application back to the server's truth so the
+      // visible theme, localStorage and the "Applied" indicator stay
+      // consistent (the local cache may be stale, so refetch first).
+      const fresh = await profileQuery.refetch()
+      applyTheme(fresh.data?.theme ?? profileQuery.data?.theme ?? DEFAULT_THEME)
     },
   })
 
@@ -164,7 +172,9 @@ function RewardsPage() {
           <h2 className="card-title" style={{ marginBottom: 0 }}>
             Themes
           </h2>
-          <span className="gamify-sub">one per grade — applied everywhere, instantly</span>
+          <span className="gamify-sub">
+            grades and feats unlock new looks — animated worlds included
+          </span>
         </div>
         <div className="theme-grid">
           {THEMES.map((t) => {
@@ -198,7 +208,14 @@ function RewardsPage() {
                   </div>
                 </div>
                 <div className="theme-meta">
-                  <div className="theme-name">{t.name}</div>
+                  <div className="theme-name">
+                    {t.name}
+                    {t.animated && (
+                      <span className="theme-anim-chip" title="Ships a full-screen animated backdrop">
+                        <SparkleIcon /> Animated
+                      </span>
+                    )}
+                  </div>
                   <div className="theme-tagline">{t.tagline}</div>
                   <div className="reward-unlock">
                     {unlocked ? (
@@ -311,6 +328,14 @@ function CheckIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4.5 12.5 10 18 19.5 6.5" />
+    </svg>
+  )
+}
+
+function SparkleIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2l2.2 6.2L20 10l-5.8 1.8L12 18l-2.2-6.2L4 10l5.8-1.8L12 2z" />
     </svg>
   )
 }
