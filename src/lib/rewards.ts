@@ -460,6 +460,42 @@ export const AVATARS: AvatarDef[] = [
     tagline: 'In and out without a sound.',
     condition: { kind: 'concTier', tier: 4 },
   },
+  {
+    id: 'koala',
+    name: 'Drowsy Koala',
+    tagline: 'Slow blinks, steady branches.',
+    condition: { kind: 'grade', level: 2 },
+  },
+  {
+    id: 'bee',
+    name: 'Busy Bee',
+    tagline: 'Small wings, serious output.',
+    condition: { kind: 'sessions', count: 15 },
+  },
+  {
+    id: 'knight',
+    name: 'Focus Knight',
+    tagline: 'Armor polished by routine.',
+    condition: { kind: 'grade', level: 4 },
+  },
+  {
+    id: 'whale',
+    name: 'Deep Whale',
+    tagline: 'Fifty dives and still surfacing.',
+    condition: { kind: 'sessions', count: 50 },
+  },
+  {
+    id: 'dragonling',
+    name: 'Dragonling',
+    tagline: 'Hatched from a diamond of pure focus.',
+    condition: { kind: 'concTier', tier: 5 },
+  },
+  {
+    id: 'sloth',
+    name: 'Zen Sloth',
+    tagline: 'Never hurries, never pauses.',
+    condition: { kind: 'ratioTier', tier: 5 },
+  },
 ]
 
 export const AVATAR_IDS = AVATARS.map((a) => a.id)

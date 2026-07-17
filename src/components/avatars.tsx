@@ -433,6 +433,188 @@ const GLYPHS: Record<string, ReactNode> = {
       />
     </Glyph>
   ),
+  koala: (
+    <Glyph>
+      <g className="avp avp-ear" style={{ animationDelay: '-3.1s' }}>
+        <circle cx="10.5" cy="15" r="6.8" fill="#aab6c2" />
+        <circle cx="10.5" cy="15" r="3.4" fill="#7d8896" />
+      </g>
+      <circle cx="37.5" cy="15" r="6.8" fill="#aab6c2" />
+      <circle cx="37.5" cy="15" r="3.4" fill="#7d8896" />
+      <circle cx="24" cy="26" r="13.5" fill="#c3ccd6" />
+      <g className="avp avp-blink-slow" style={{ animationDelay: '-1.5s' }}>
+        <circle cx="18.5" cy="23.5" r="1.7" fill="#2b3240" />
+        <circle cx="29.5" cy="23.5" r="1.7" fill="#2b3240" />
+      </g>
+      <ellipse cx="24" cy="29.5" rx="3.6" ry="4.8" fill="#3a414f" />
+      <ellipse cx="22.9" cy="27.8" rx="1" ry="1.6" fill="#5a6272" opacity="0.8" />
+    </Glyph>
+  ),
+  bee: (
+    <Glyph>
+      <g className="avp avp-bob">
+        {/* wings — static tilt on the wrapper, buzz on the ellipse itself */}
+        <g transform="rotate(-30 13 20)">
+          <ellipse className="avp avp-buzz" cx="13" cy="20" rx="8" ry="4.4" fill="rgba(240, 248, 255, 0.8)" />
+        </g>
+        <g transform="rotate(30 35 20)">
+          <ellipse className="avp avp-buzz r" cx="35" cy="20" rx="8" ry="4.4" fill="rgba(240, 248, 255, 0.8)" />
+        </g>
+        {/* antennae */}
+        <path
+          d="M21 11.5 C20 9 18.5 7.5 16.5 7 M27 11.5 C28 9 29.5 7.5 31.5 7"
+          stroke="#4a3b10"
+          strokeWidth="1.3"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <circle cx="16" cy="6.6" r="1.4" fill="#4a3b10" />
+        <circle cx="32" cy="6.6" r="1.4" fill="#4a3b10" />
+        {/* head */}
+        <circle cx="24" cy="16.5" r="6.6" fill="#ffd44d" />
+        <g className="avp avp-blink" style={{ animationDelay: '-2.9s' }}>
+          <circle cx="21.6" cy="16" r="1.3" fill="#33280c" />
+          <circle cx="26.4" cy="16" r="1.3" fill="#33280c" />
+        </g>
+        <path d="M22 19.2 Q24 20.8 26 19.2" stroke="#33280c" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+        {/* striped body */}
+        <ellipse cx="24" cy="31" rx="9.5" ry="10.5" fill="#ffd44d" />
+        <rect x="15.6" y="26.6" width="16.8" height="3.6" rx="1.8" fill="#3c2f0e" />
+        <rect x="16.6" y="33" width="14.8" height="3.6" rx="1.8" fill="#3c2f0e" />
+        {/* stinger */}
+        <path d="M24 41.4 L22.4 44.2 L25.6 44.2 Z" fill="#3c2f0e" />
+      </g>
+    </Glyph>
+  ),
+  knight: (
+    <Glyph>
+      <g className="avp avp-sway" style={{ transformOrigin: '50% 100%', animationDuration: '2.6s' }}>
+        <path d="M24 2.5 C20 6 18.5 9.5 19.5 13.5 L28.5 13.5 C29.5 9.5 28 6 24 2.5 Z" fill="#d8474b" />
+      </g>
+      <path
+        d="M11.5 26 C11.5 15.5 16.5 10 24 10 C31.5 10 36.5 15.5 36.5 26 L36.5 36 C33 39.5 15 39.5 11.5 36 Z"
+        fill="#c7d0e2"
+      />
+      <path
+        d="M24 10 C16.5 10 11.5 15.5 11.5 26 L11.5 30 L15 30 L15 24 C15 17 18.5 13 24 12.6 Z"
+        fill="#e6ecf7"
+        opacity="0.7"
+      />
+      <rect x="22.4" y="9" width="3.2" height="5.5" rx="1.6" fill="#a8b3c9" />
+      <rect x="14" y="23" width="20" height="3.6" rx="1.8" fill="#1c2130" />
+      <g className="avp avp-dart">
+        <circle cx="19.5" cy="24.8" r="1.2" fill="#9fdcff" />
+        <circle cx="28.5" cy="24.8" r="1.2" fill="#9fdcff" />
+      </g>
+      <circle cx="20" cy="32" r="0.9" fill="#8a94ad" />
+      <circle cx="24" cy="32.8" r="0.9" fill="#8a94ad" />
+      <circle cx="28" cy="32" r="0.9" fill="#8a94ad" />
+      <circle className="avp avp-twinkle" cx="31.5" cy="16" r="1.6" fill="#ffffff" />
+    </Glyph>
+  ),
+  whale: (
+    <Glyph>
+      <g className="avp avp-bob">
+        {/* spout — bursts every few seconds */}
+        <g className="avp avp-spout">
+          <path
+            d="M22.5 13.5 C21 9.5 18.5 7.5 15.5 7.5 C18 6.3 20.6 6.8 22.3 8.6 C22 6.2 20.8 4.4 19 3.4 C22.3 3.7 24.6 6 24.5 9.4 C25.8 7.2 27.9 6.2 30.2 6.7 C27.3 7.8 25.4 9.9 24.8 13.5 Z"
+            fill="#bfe3ff"
+            opacity="0.9"
+          />
+        </g>
+        {/* body */}
+        <path
+          d="M8 26.5 C8 19 15 14.5 23.5 14.5 C32 14.5 38.5 19.5 38.5 26.5 C38.5 31 35.5 34.5 30.5 34.5 L14.5 34.5 C10.5 34.5 8 31 8 26.5 Z"
+          fill="#5b95c9"
+        />
+        {/* tail fluke */}
+        <path
+          d="M37.5 27.5 C39.5 24.5 42.5 23.4 45.3 24.6 C43.4 25.7 42.2 27.3 41.8 29.6 C40.2 28.4 38.7 28 37.5 28.3 Z"
+          fill="#5b95c9"
+        />
+        {/* belly */}
+        <path
+          d="M10.3 30.8 C15 33.9 31 33.9 36.4 29.5 C35.2 32.6 33 34.5 30.5 34.5 L14.5 34.5 C12.6 34.5 11.2 33 10.3 30.8 Z"
+          fill="#cfe6f5"
+        />
+        <g className="avp avp-blink" style={{ animationDelay: '-3.8s' }}>
+          <circle cx="15.5" cy="24" r="1.6" fill="#12293d" />
+        </g>
+        <path d="M10.5 28 Q14 30 18 29" stroke="#3d6f9e" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      </g>
+    </Glyph>
+  ),
+  dragonling: (
+    <Glyph>
+      {/* far wing */}
+      <g className="avp avp-wingbeat far">
+        <path d="M29 22 C33 14 39 11 44.5 12 C41 15 39 19 38.5 24 Z" fill="#4f9a55" />
+      </g>
+      {/* flame breath — puffs from the snout */}
+      <g className="avp avp-breath">
+        <path
+          d="M13.5 25.5 C9.5 23.8 6.8 24.3 4.8 26.5 C7 26.9 8.5 27.8 9.3 29.3 C11.5 29 13 27.6 13.5 25.5 Z"
+          fill="#ffb347"
+        />
+        <path
+          d="M12 26.2 C10 25.4 8.5 25.7 7.4 26.8 C8.6 27.1 9.4 27.6 9.9 28.4 C11 28.1 11.8 27.3 12 26.2 Z"
+          fill="#ff7a30"
+        />
+      </g>
+      {/* body */}
+      <path
+        d="M14 27 C14 20 19 15.5 26 15.5 C33.5 15.5 38.5 21 38.5 28.5 C38.5 35 33.5 39.5 26.5 39.5 C19.5 39.5 14.5 35 14 27 Z"
+        fill="#6fbf6a"
+      />
+      <ellipse cx="24.5" cy="33" rx="7" ry="5.5" fill="#cdeab2" />
+      {/* snout */}
+      <ellipse cx="16.8" cy="26.5" rx="4.6" ry="3.6" fill="#8ed08a" />
+      <circle cx="14.8" cy="25.6" r="0.8" fill="#2c5231" />
+      {/* horns */}
+      <path d="M26 15.8 L24.5 10.5 L28.3 14.6 Z M31 16.6 L31.5 11.5 L34.2 16.2 Z" fill="#e8f4d9" />
+      <g className="avp avp-blink" style={{ animationDelay: '-2.2s' }}>
+        <circle cx="23.5" cy="23.5" r="2.1" fill="#1f3a24" />
+      </g>
+      {/* near wing */}
+      <g className="avp avp-wingbeat">
+        <path d="M31 25 C35.5 17.5 41.5 15 46.5 16.5 C43 19.5 41 24 41 29.5 C37.5 28 34 26.8 31 25 Z" fill="#57a85c" />
+      </g>
+    </Glyph>
+  ),
+  sloth: (
+    <Glyph>
+      <g className="avp avp-sway" style={{ animationDuration: '7s' }}>
+        <circle cx="24" cy="25" r="13.5" fill="#b59b7c" />
+        <ellipse cx="24" cy="27" rx="9.5" ry="8" fill="#e3d3bb" />
+        <path
+          d="M13.5 21.5 C15.5 19.5 18 19.5 20 22 C18.5 24.5 15.5 24.7 13.5 23 Z"
+          fill="#6d5942"
+          transform="rotate(-14 17 22)"
+        />
+        <path
+          d="M34.5 21.5 C32.5 19.5 30 19.5 28 22 C29.5 24.5 32.5 24.7 34.5 23 Z"
+          fill="#6d5942"
+          transform="rotate(14 31 22)"
+        />
+        <g
+          className="avp avp-blink-slow"
+          style={{ animationDuration: '8.8s', animationDelay: '-3.7s' }}
+        >
+          <circle cx="18" cy="22.3" r="1.5" fill="#2e2618" />
+          <circle cx="30" cy="22.3" r="1.5" fill="#2e2618" />
+        </g>
+        <ellipse cx="24" cy="27.5" rx="2.4" ry="1.7" fill="#4a3c2a" />
+        <path
+          d="M20.5 31.5 Q24 34.5 27.5 31.5"
+          stroke="#6d5942"
+          strokeWidth="1.4"
+          fill="none"
+          strokeLinecap="round"
+        />
+      </g>
+    </Glyph>
+  ),
 }
 
 export function Avatar({

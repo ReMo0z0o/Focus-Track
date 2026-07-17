@@ -2118,6 +2118,12 @@ input, select {
 .av-wizard { --av-a: #b493f5; --av-b: #43307e; }
 .av-monk { --av-a: #ffd58f; --av-b: #8a5a1c; }
 .av-ninja { --av-a: #8a97b8; --av-b: #323c5c; }
+.av-koala { --av-a: #9fb8a8; --av-b: #3f5d4c; }
+.av-bee { --av-a: #ffd95e; --av-b: #8a6a12; }
+.av-knight { --av-a: #7d89a8; --av-b: #2c3550; }
+.av-whale { --av-a: #7fb9e6; --av-b: #24507c; }
+.av-dragonling { --av-a: #8fd98a; --av-b: #2f6b3a; }
+.av-sloth { --av-a: #c9a880; --av-b: #5f4a32; }
 
 /* ---------- avatar micro-animations ---------- */
 
@@ -2178,6 +2184,42 @@ input, select {
 }
 
 .avp-pulse { animation: av-pulse 3s ease-in-out infinite; }
+
+/* bee wings: fast flap about the body-side edge */
+.avatar svg .avp-buzz {
+  transform-origin: 100% 60%;
+  animation: av-buzz 0.24s linear infinite alternate;
+}
+
+.avatar svg .avp-buzz.r {
+  transform-origin: 0% 60%;
+  animation-direction: alternate-reverse;
+}
+
+/* whale spout: bursts, then rests (base state invisible) */
+.avatar svg .avp-spout {
+  opacity: 0;
+  transform-origin: 50% 100%;
+  animation: av-spout 5.2s ease-in-out infinite;
+}
+
+/* dragonling flame: puffs out of the snout leftward */
+.avatar svg .avp-breath {
+  opacity: 0;
+  transform-origin: 100% 55%;
+  animation: av-breath 4.6s ease-in-out infinite;
+}
+
+/* dragonling wings: slow beat about the shoulder joint */
+.avatar svg .avp-wingbeat {
+  transform-origin: 0% 85%;
+  animation: av-wingbeat 1.3s ease-in-out infinite alternate;
+}
+
+.avatar svg .avp-wingbeat.far {
+  animation-delay: -0.65s;
+  opacity: 0.85;
+}
 
 @keyframes av-blink {
   0%, 90%, 100% { transform: scaleY(1); }
@@ -2245,6 +2287,30 @@ input, select {
 @keyframes av-pulse {
   0%, 100% { transform: scale(1); opacity: 0.8; }
   50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes av-buzz {
+  from { transform: rotate(-12deg); }
+  to { transform: rotate(14deg); }
+}
+
+@keyframes av-spout {
+  0%, 55% { opacity: 0; transform: scale(0.2); }
+  62% { opacity: 0.95; transform: scale(1.06); }
+  78% { opacity: 0.8; transform: scale(1); }
+  88%, 100% { opacity: 0; transform: scale(0.6); }
+}
+
+@keyframes av-breath {
+  0%, 58% { opacity: 0; transform: scaleX(0.2); }
+  64% { opacity: 1; transform: scaleX(1.08); }
+  80% { opacity: 0.85; transform: scaleX(1); }
+  90%, 100% { opacity: 0; transform: scaleX(0.4); }
+}
+
+@keyframes av-wingbeat {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(16deg); }
 }
 
 /* ================= rewards page ================= */
