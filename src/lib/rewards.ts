@@ -291,6 +291,30 @@ export const THEMES: ThemeDef[] = [
     preview: { accent: '#ff5346', accentStrong: '#ff8a76', bg: '#120708', surface: '#1d0e10' },
     animated: true,
   },
+  {
+    id: 'abyss',
+    name: 'The Abyss',
+    tagline: 'Sunlight fades, focus deepens.',
+    condition: { kind: 'sessions', count: 25 },
+    preview: { accent: '#38c8c2', accentStrong: '#7fe6df', bg: '#04101a', surface: '#0a1c2b' },
+    animated: true,
+  },
+  {
+    id: 'storm',
+    name: 'Thunderhead',
+    tagline: 'Lightning outside, calm within.',
+    condition: { kind: 'concTier', tier: 4 },
+    preview: { accent: '#a5b8ff', accentStrong: '#d0dcff', bg: '#0a0d18', surface: '#141a2c' },
+    animated: true,
+  },
+  {
+    id: 'sakura',
+    name: 'Sakura Drift',
+    tagline: 'Petals fall, minutes bloom.',
+    condition: { kind: 'streak', days: 14 },
+    preview: { accent: '#ff9ec0', accentStrong: '#ffc7da', bg: '#150d13', surface: '#221521' },
+    animated: true,
+  },
 ]
 
 export const THEME_IDS = THEMES.map((t) => t.id)

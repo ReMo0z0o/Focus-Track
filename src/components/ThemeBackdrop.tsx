@@ -3,9 +3,9 @@ import type { CSSProperties, ReactNode } from 'react'
 
 /**
  * Full-screen animated backdrop for the "world" themes (fire, jungle,
- * polar, street, space, future, dragon). Pure CSS animations on
- * transform/opacity; particle positions come from a seeded PRNG so the
- * markup is deterministic (SSR-safe, stable across renders).
+ * polar, street, space, future, dragon, abyss, storm, sakura). Pure CSS
+ * animations on transform/opacity; particle positions come from a seeded
+ * PRNG so the markup is deterministic (SSR-safe, stable across renders).
  *
  * The layer sits at z-index -1 inside <body>: above the body background,
  * below all content, and never intercepts pointer events.
@@ -111,6 +111,66 @@ const ORBS = gen(71, 6, (r) => ({
   size: 5 + r() * 8,
   delay: r() * 6,
   dur: 7 + r() * 7,
+}))
+
+const BUBBLES = gen(81, 24, (r) => ({
+  left: r() * 100,
+  size: 3 + r() * 7,
+  delay: r() * 12,
+  dur: 8 + r() * 9,
+  dx: -30 + r() * 60,
+}))
+const FISH = gen(82, 8, (r, i) => ({
+  top: 12 + r() * 72,
+  size: 9 + r() * 9,
+  delay: r() * 24,
+  dur: 17 + r() * 17,
+  ltr: i % 2 === 0,
+}))
+const PLANKTON = gen(83, 14, (r) => ({
+  left: r() * 100,
+  top: r() * 100,
+  delay: r() * 8,
+  dur: 5 + r() * 6,
+  dx: -14 + r() * 28,
+  dy: -18 + r() * 36,
+}))
+const KELP = gen(84, 7, (r, i) => ({
+  left: 2 + i * 14.5 + r() * 7,
+  height: 70 + r() * 90,
+  delay: r() * 5,
+  dur: 5.5 + r() * 4,
+}))
+
+const RAIN = gen(91, 34, (r) => ({
+  left: -5 + r() * 112,
+  height: 42 + r() * 42,
+  delay: r() * 3,
+  dur: 0.9 + r() * 0.9,
+  opacity: 0.18 + r() * 0.4,
+}))
+const STORM_CLOUDS = gen(92, 4, (r, i) => ({
+  left: -15 + i * 28 + r() * 12,
+  top: -14 + r() * 16,
+  size: 260 + r() * 220,
+  delay: r() * 30,
+  dur: 38 + r() * 34,
+}))
+
+const PETALS = gen(101, 22, (r) => ({
+  left: r() * 100,
+  size: 7 + r() * 7,
+  delay: r() * 14,
+  dur: 9 + r() * 8,
+  sway: 40 + r() * 70,
+  spin: r() > 0.5 ? 1 : -1,
+}))
+const HAZE = gen(102, 3, (r, i) => ({
+  left: 5 + i * 32 + r() * 10,
+  top: 8 + r() * 40,
+  size: 200 + r() * 160,
+  delay: r() * 18,
+  dur: 26 + r() * 18,
 }))
 
 /* ---------------- per-theme layers ---------------- */
@@ -306,6 +366,153 @@ function renderLayers(theme: string): ReactNode | null {
               }}
             />
           ))}
+        </>
+      )
+    case 'abyss':
+      return (
+        <>
+          <div className="tb-ray tb-ray-1" />
+          <div className="tb-ray tb-ray-2" />
+          <div className="tb-ray tb-ray-3" />
+          <div className="tb-abyss-floor" />
+          {KELP.map((k, i) => (
+            <span
+              key={i}
+              className="tb-kelp"
+              style={{
+                left: `${k.left}%`,
+                height: k.height,
+                animationDelay: `-${k.delay}s`,
+                animationDuration: `${k.dur}s`,
+              }}
+            />
+          ))}
+          {FISH.map((f, i) => (
+            <span
+              key={i}
+              className={`tb-fish${f.ltr ? '' : ' rtl'}`}
+              style={{
+                top: `${f.top}%`,
+                width: f.size * 2.4,
+                height: f.size,
+                animationDelay: `-${f.delay}s`,
+                animationDuration: `${f.dur}s`,
+              }}
+            />
+          ))}
+          {BUBBLES.map((b, i) => (
+            <span
+              key={i}
+              className="tb-bubble"
+              style={
+                {
+                  left: `${b.left}%`,
+                  width: b.size,
+                  height: b.size,
+                  animationDelay: `-${b.delay}s`,
+                  animationDuration: `${b.dur}s`,
+                  '--dx': `${b.dx}px`,
+                } as Vars
+              }
+            />
+          ))}
+          {PLANKTON.map((p, i) => (
+            <span
+              key={i}
+              className="tb-plankton"
+              style={
+                {
+                  left: `${p.left}%`,
+                  top: `${p.top}%`,
+                  animationDelay: `-${p.delay}s`,
+                  animationDuration: `${p.dur}s`,
+                  '--dx': `${p.dx}px`,
+                  '--dy': `${p.dy}px`,
+                } as Vars
+              }
+            />
+          ))}
+        </>
+      )
+    case 'storm':
+      return (
+        <>
+          <div className="tb-flash tb-flash-1" />
+          <div className="tb-flash tb-flash-2" />
+          <span className="tb-bolt tb-bolt-1" />
+          <span className="tb-bolt tb-bolt-2" />
+          {STORM_CLOUDS.map((c, i) => (
+            <span
+              key={i}
+              className="tb-storm-cloud"
+              style={{
+                left: `${c.left}%`,
+                top: `${c.top}%`,
+                width: c.size,
+                height: c.size * 0.45,
+                animationDelay: `-${c.delay}s`,
+                animationDuration: `${c.dur}s`,
+              }}
+            />
+          ))}
+          {RAIN.map((d, i) => (
+            <span
+              key={i}
+              className="tb-rain"
+              style={{
+                left: `${d.left}%`,
+                height: d.height,
+                opacity: d.opacity,
+                animationDelay: `-${d.delay}s`,
+                animationDuration: `${d.dur}s`,
+              }}
+            />
+          ))}
+        </>
+      )
+    case 'sakura':
+      return (
+        <>
+          <div className="tb-sakura-glow" />
+          {HAZE.map((h, i) => (
+            <span
+              key={i}
+              className="tb-haze"
+              style={{
+                left: `${h.left}%`,
+                top: `${h.top}%`,
+                width: h.size,
+                height: h.size * 0.6,
+                animationDelay: `-${h.delay}s`,
+                animationDuration: `${h.dur}s`,
+              }}
+            />
+          ))}
+          {PETALS.map((p, i) => (
+            <span
+              key={i}
+              className="tb-petal"
+              style={
+                {
+                  left: `${p.left}%`,
+                  width: p.size,
+                  height: p.size * 0.85,
+                  animationDelay: `-${p.delay}s`,
+                  animationDuration: `${p.dur}s`,
+                  '--sway': `${p.sway}px`,
+                  '--spin': p.spin,
+                } as Vars
+              }
+            />
+          ))}
+          <span className="tb-butterfly tb-butterfly-1">
+            <span className="tb-wing l" />
+            <span className="tb-wing r" />
+          </span>
+          <span className="tb-butterfly tb-butterfly-2">
+            <span className="tb-wing l" />
+            <span className="tb-wing r" />
+          </span>
         </>
       )
     default:

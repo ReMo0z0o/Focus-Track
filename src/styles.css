@@ -2033,6 +2033,36 @@ input, select {
   --surface-2: #241316;
 }
 
+:root[data-theme='abyss'] {
+  --accent: #38c8c2;
+  --accent-strong: #7fe6df;
+  --accent-ink: #032a28;
+  --bg: #04101a;
+  --bg-raise: #071624;
+  --surface: #0a1c2b;
+  --surface-2: #0e2436;
+}
+
+:root[data-theme='storm'] {
+  --accent: #a5b8ff;
+  --accent-strong: #d0dcff;
+  --accent-ink: #131b45;
+  --bg: #0a0d18;
+  --bg-raise: #0f1320;
+  --surface: #141a2c;
+  --surface-2: #1a2138;
+}
+
+:root[data-theme='sakura'] {
+  --accent: #ff9ec0;
+  --accent-strong: #ffc7da;
+  --accent-ink: #3a0f22;
+  --bg: #150d13;
+  --bg-raise: #1a1119;
+  --surface: #221521;
+  --surface-2: #2a1a28;
+}
+
 /* ================= header identity ================= */
 
 .header-id {
@@ -2786,7 +2816,10 @@ input, select {
   [data-theme='street'],
   [data-theme='space'],
   [data-theme='future'],
-  [data-theme='dragon']
+  [data-theme='dragon'],
+  [data-theme='abyss'],
+  [data-theme='storm'],
+  [data-theme='sakura']
 ) .card {
   background: linear-gradient(
     180deg,
@@ -2812,7 +2845,12 @@ input, select {
   .tb-snow,
   .tb-leaf,
   .tb-scanline,
-  .tb-shooting {
+  .tb-shooting,
+  .tb-rain,
+  .tb-bubble,
+  .tb-fish,
+  .tb-petal,
+  .tb-butterfly {
     display: none;
   }
 }
@@ -2826,6 +2864,11 @@ input, select {
 
   .tb-aurora {
     filter: blur(28px);
+  }
+
+  .tb-storm-cloud,
+  .tb-haze {
+    filter: blur(24px);
   }
 }
 
@@ -3207,4 +3250,296 @@ input, select {
   color: var(--accent-strong);
   background: color-mix(in srgb, var(--accent) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* ---------------- the abyss ---------------- */
+
+/* god rays slanting down from the surface */
+.tb-ray {
+  top: -12%;
+  height: 85%;
+  width: 13%;
+  transform: skewX(-14deg);
+  background: linear-gradient(180deg, rgba(126, 217, 210, 0.2), rgba(80, 180, 190, 0.06) 55%, transparent);
+  filter: blur(18px);
+}
+
+.tb-ray-1 { left: 12%; animation: tb-ray 9s ease-in-out infinite alternate; }
+.tb-ray-2 { left: 34%; width: 8%; animation: tb-ray 12s ease-in-out infinite alternate-reverse; }
+.tb-ray-3 { left: 58%; width: 16%; animation: tb-ray 10.5s ease-in-out infinite alternate; animation-delay: -4s; }
+
+@keyframes tb-ray {
+  from { transform: skewX(-14deg) translateX(-1.5vw); opacity: 0.5; }
+  to { transform: skewX(-10deg) translateX(1.5vw); opacity: 1; }
+}
+
+.tb-abyss-floor {
+  left: -5%;
+  right: -5%;
+  bottom: -8%;
+  height: 30%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(10, 46, 60, 0.75), rgba(6, 28, 40, 0.35) 60%, transparent);
+}
+
+.tb-kelp {
+  bottom: -12px;
+  width: 9px;
+  border-radius: 50% 50% 0 0 / 14% 14% 0 0;
+  background: linear-gradient(180deg, rgba(52, 134, 120, 0.55), rgba(22, 74, 78, 0.75));
+  transform-origin: 50% 100%;
+  animation-name: tb-kelp-sway;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-kelp-sway {
+  0%, 100% { transform: rotate(0deg) skewX(0deg); }
+  50% { transform: rotate(5deg) skewX(7deg); }
+}
+
+/* fish silhouette: body + tail fin, crossing the whole viewport */
+.tb-fish {
+  left: 0;
+  border-radius: 50% 60% 60% 50% / 55% 55% 45% 45%;
+  background: rgba(31, 84, 102, 0.75);
+  animation-name: tb-swim-ltr;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.tb-fish::after {
+  content: '';
+  position: absolute;
+  right: -38%;
+  top: 14%;
+  width: 46%;
+  height: 72%;
+  background: inherit;
+  clip-path: polygon(0 50%, 100% 0, 78% 50%, 100% 100%);
+}
+
+.tb-fish.rtl {
+  animation-name: tb-swim-rtl;
+}
+
+@keyframes tb-swim-ltr {
+  0% { transform: translate3d(-14vw, 0, 0) scaleX(-1); }
+  25% { transform: translate3d(17vw, 9px, 0) scaleX(-1); }
+  50% { transform: translate3d(48vw, -7px, 0) scaleX(-1); }
+  75% { transform: translate3d(79vw, 7px, 0) scaleX(-1); }
+  100% { transform: translate3d(112vw, 0, 0) scaleX(-1); }
+}
+
+@keyframes tb-swim-rtl {
+  0% { transform: translate3d(112vw, 0, 0); }
+  25% { transform: translate3d(79vw, -8px, 0); }
+  50% { transform: translate3d(48vw, 8px, 0); }
+  75% { transform: translate3d(17vw, -6px, 0); }
+  100% { transform: translate3d(-14vw, 0, 0); }
+}
+
+.tb-bubble {
+  bottom: -14px;
+  border-radius: 50%;
+  border: 1px solid rgba(150, 220, 225, 0.55);
+  background: radial-gradient(circle at 32% 30%, rgba(190, 240, 240, 0.35), rgba(120, 200, 210, 0.06));
+  opacity: 0;
+  animation-name: tb-bubble-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-bubble-rise {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  8% { opacity: 0.8; }
+  50% { transform: translate3d(calc(var(--dx, 0px) * 0.5), -55vh, 0); }
+  85% { opacity: 0.6; }
+  100% { transform: translate3d(var(--dx, 0px), -112vh, 0); opacity: 0; }
+}
+
+.tb-plankton {
+  width: 2.5px;
+  height: 2.5px;
+  border-radius: 50%;
+  background: rgba(160, 230, 225, 0.8);
+  box-shadow: 0 0 6px 1px rgba(110, 220, 210, 0.35);
+  opacity: 0;
+  animation-name: tb-firefly;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* ---------------- thunderhead ---------------- */
+
+.tb-storm-cloud {
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 45%, rgba(52, 62, 96, 0.55), rgba(26, 32, 54, 0.28) 60%, transparent 75%);
+  filter: blur(34px);
+  animation-name: tb-cloud-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes tb-cloud-drift {
+  from { transform: translate3d(-4vw, 0, 0) scale(1); }
+  to { transform: translate3d(4vw, 1.5vh, 0) scale(1.12); }
+}
+
+.tb-rain {
+  top: 0;
+  width: 1.5px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, rgba(174, 190, 226, 0.85));
+  animation-name: tb-rain-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-rain-fall {
+  0% { transform: translate3d(0, -18vh, 0) rotate(9deg); }
+  100% { transform: translate3d(-7vw, 115vh, 0) rotate(9deg); }
+}
+
+/* full-screen lightning flash — two independent strobes */
+.tb-flash {
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(ellipse at 30% 8%, rgba(214, 224, 255, 0.5), rgba(140, 160, 230, 0.14) 55%, transparent 80%);
+  animation-name: tb-flash;
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+}
+
+.tb-flash-1 { animation-duration: 9s; }
+.tb-flash-2 {
+  animation-duration: 13s;
+  animation-delay: -6.5s;
+  background: radial-gradient(ellipse at 72% 6%, rgba(214, 224, 255, 0.44), rgba(140, 160, 230, 0.12) 55%, transparent 80%);
+}
+
+@keyframes tb-flash {
+  0%, 88.9% { opacity: 0; }
+  89% { opacity: 0.85; }
+  90% { opacity: 0.12; }
+  91% { opacity: 0.5; }
+  93%, 100% { opacity: 0; }
+}
+
+/* jagged bolt, revealed in sync-ish with a flash */
+.tb-bolt {
+  top: 0;
+  width: 30px;
+  height: 44vh;
+  background: linear-gradient(180deg, #eef2ff, rgba(178, 196, 255, 0.85) 70%, transparent);
+  clip-path: polygon(52% 0, 66% 0, 48% 34%, 62% 34%, 34% 72%, 46% 44%, 32% 44%, 48% 12%, 38% 12%);
+  opacity: 0;
+  animation-name: tb-bolt;
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+}
+
+.tb-bolt-1 { left: 26%; animation-duration: 9s; }
+.tb-bolt-2 { left: 71%; height: 36vh; animation-duration: 13s; animation-delay: -6.5s; }
+
+@keyframes tb-bolt {
+  0%, 88.9% { opacity: 0; }
+  89% { opacity: 1; }
+  90.2% { opacity: 0.2; }
+  91% { opacity: 0.7; }
+  92.2%, 100% { opacity: 0; }
+}
+
+/* ---------------- sakura drift ---------------- */
+
+.tb-sakura-glow {
+  top: -14%;
+  right: -10%;
+  width: 46vw;
+  height: 46vw;
+  border-radius: 50%;
+  background: radial-gradient(circle at 55% 40%, rgba(255, 170, 200, 0.26), rgba(255, 140, 180, 0.08) 55%, transparent 72%);
+  filter: blur(40px);
+  animation: tb-glow-pulse 11s ease-in-out infinite alternate;
+}
+
+@keyframes tb-glow-pulse {
+  from { transform: scale(1); opacity: 0.75; }
+  to { transform: scale(1.12); opacity: 1; }
+}
+
+.tb-haze {
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 190, 212, 0.14), transparent 68%);
+  filter: blur(30px);
+  animation-name: tb-cloud-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.tb-petal {
+  top: 0;
+  border-radius: 62% 6% 62% 6%;
+  background: linear-gradient(135deg, #ffc7da, #f290b4);
+  opacity: 0.85;
+  animation-name: tb-petal-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-petal-fall {
+  0% { transform: translate3d(0, -8vh, 0) rotate(10deg); }
+  25% { transform: translate3d(var(--sway, 50px), 22vh, 0) rotate(calc(var(--spin, 1) * 80deg)); }
+  50% { transform: translate3d(calc(var(--sway, 50px) * -0.7), 50vh, 0) rotate(calc(var(--spin, 1) * 150deg)); }
+  75% { transform: translate3d(var(--sway, 50px), 80vh, 0) rotate(calc(var(--spin, 1) * 230deg)); }
+  100% { transform: translate3d(calc(var(--sway, 50px) * -0.3), 110vh, 0) rotate(calc(var(--spin, 1) * 300deg)); }
+}
+
+/* two butterflies: the wrapper drifts along a loop, the wings flap */
+.tb-butterfly {
+  width: 14px;
+  height: 12px;
+  animation-name: tb-flutter;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.tb-butterfly-1 { left: 18%; top: 58%; animation-duration: 21s; }
+.tb-butterfly-2 { left: 64%; top: 30%; animation-duration: 26s; animation-delay: -9s; }
+
+.tb-wing {
+  position: absolute;
+  top: 0;
+  width: 7px;
+  height: 11px;
+  background: linear-gradient(180deg, #ffb3cd, #e87ba4);
+  animation: tb-flap 0.5s ease-in-out infinite alternate;
+}
+
+.tb-wing.l {
+  left: 0;
+  border-radius: 80% 20% 55% 45% / 70% 30% 70% 30%;
+  transform-origin: 100% 55%;
+}
+
+.tb-wing.r {
+  right: 0;
+  border-radius: 20% 80% 45% 55% / 30% 70% 30% 70%;
+  transform-origin: 0 55%;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes tb-flap {
+  from { transform: rotateY(18deg); }
+  to { transform: rotateY(70deg); }
+}
+
+@keyframes tb-flutter {
+  0% { transform: translate3d(0, 0, 0) rotate(-6deg); }
+  20% { transform: translate3d(9vw, -9vh, 0) rotate(8deg); }
+  40% { transform: translate3d(16vw, 3vh, 0) rotate(-5deg); }
+  60% { transform: translate3d(7vw, 11vh, 0) rotate(7deg); }
+  80% { transform: translate3d(-6vw, 5vh, 0) rotate(-8deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(-6deg); }
 }
