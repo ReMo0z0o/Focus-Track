@@ -17,6 +17,61 @@ const OUTER = HEX_POINTS.map((p) => p.join(',')).join(' ')
 // Inner edge of the metal bezel — the recessed plate that cradles the gem.
 const PLATE = '60,14 103,39 103,93 60,118 17,93 17,39'
 
+const CX = 60
+const CY = 66
+
+const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V']
+
+/** Watch-bezel tick ring (fits inside the hex: inscribed radius ~52). */
+const BEZEL_TICKS = Array.from({ length: 24 }, (_, i) => {
+  const a = (i * 15 * Math.PI) / 180
+  const long = i % 6 === 0
+  const r1 = long ? 44.5 : 46.5
+  const r2 = 51
+  return {
+    x1: CX + r1 * Math.cos(a),
+    y1: CY + r1 * Math.sin(a),
+    x2: CX + r2 * Math.cos(a),
+    y2: CY + r2 * Math.sin(a),
+    long,
+  }
+})
+
+/** Engraved rays fanning out from behind the medallion (grade >= 4). */
+const BACK_RAYS = Array.from({ length: 12 }, (_, i) => {
+  const a = ((i * 30 + 15) * Math.PI) / 180
+  return {
+    x1: CX + 25 * Math.cos(a),
+    y1: CY + 25 * Math.sin(a),
+    x2: CX + 40 * Math.cos(a),
+    y2: CY + 40 * Math.sin(a),
+  }
+})
+
+/** Laurel leaves flanking the numeral; the top rows join in at grade 5. */
+const SPRIG_LEAVES = [
+  { x: 33.5, y: 111, a: -50 },
+  { x: 29.5, y: 103.5, a: -66 },
+  { x: 27.2, y: 95.5, a: -80 },
+  { x: 26.8, y: 87.5, a: -94 },
+]
+const WREATH_EXTRA = [
+  { x: 28.2, y: 79.5, a: -106 },
+  { x: 31.2, y: 72, a: -118 },
+]
+
+const BACK_STARS = [
+  { x: 60, y: 18, r: 2.2, delay: '0s' },
+  { x: 99, y: 42, r: 1.8, delay: '1.2s' },
+  { x: 99, y: 90, r: 2, delay: '2.1s' },
+  { x: 21, y: 42, r: 2, delay: '0.7s' },
+  { x: 21, y: 90, r: 1.8, delay: '2.8s' },
+]
+
+function starPath(r: number): string {
+  return `M0 ${-r * 2} L${r * 0.5} ${-r * 0.5} L${r * 2} 0 L${r * 0.5} ${r * 0.5} L0 ${r * 2} L${-r * 0.5} ${r * 0.5} L${-r * 2} 0 L${-r * 0.5} ${-r * 0.5} Z`
+}
+
 // Twinkling sparkle positions (kept inside the viewBox so they aren't clipped).
 const SPARKLES = [
   { x: 90, y: 30, r: 2.6, delay: '0s' },
@@ -244,6 +299,226 @@ export function GradeEmblem({
               fill={i <= level ? 'var(--tier-hi)' : 'rgba(233,236,244,0.12)'}
             />
           ))}
+        </g>
+      )}
+    </svg>
+  )
+}
+
+/**
+ * Reverse of the medal, shown when the 3D emblem is flipped. It earns
+ * detail with every grade: a turning clock hand (>=1), a rotating bezel
+ * ring (>=2), an orbiting gem (>=3), engraved rays, a counter-orbit and a
+ * glint sweep (>=4), then a full laurel wreath, halo and twinkling stars
+ * (5). Animation speeds follow the grade's --flame-speed.
+ */
+export function GradeEmblemBack({
+  level,
+  width = 128,
+}: {
+  level: number
+  width?: number
+}) {
+  const rawId = useId()
+  const uid = rawId.replace(/[^a-zA-Z0-9]/g, '')
+  const g = (name: string) => `${name}-${uid}`
+  const url = (name: string) => `url(#${g(name)})`
+
+  const leaves =
+    level >= 5 ? [...SPRIG_LEAVES, ...WREATH_EXTRA] : level >= 1 ? SPRIG_LEAVES : []
+
+  return (
+    <svg
+      className="grade-emblem-back"
+      viewBox={`0 0 ${HEX_VIEW.w} ${HEX_VIEW.h}`}
+      width={width}
+      height={Math.round((width * HEX_VIEW.h) / HEX_VIEW.w)}
+      role="img"
+      aria-label={`Back of the ${GRADE_NAMES[level]} emblem`}
+    >
+      <defs>
+        {/* darker brushed metal than the front — this side faces away */}
+        <linearGradient id={g('metalB')} x1="0.15" y1="0" x2="0.85" y2="1">
+          <stop offset="0" stopColor="color-mix(in srgb, var(--tier) 42%, #0a0d13)" />
+          <stop offset="0.5" stopColor="color-mix(in srgb, var(--tier-lo) 55%, #0a0d13)" />
+          <stop offset="1" stopColor="color-mix(in srgb, var(--tier) 30%, #0a0d13)" />
+        </linearGradient>
+        <radialGradient id={g('haloB')} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="var(--tier)" stopOpacity="0.4" />
+          <stop offset="1" stopColor="var(--tier)" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={g('sheenB')} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="0.5" stopColor="#ffffff" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+        <clipPath id={g('clipHexB')}>
+          <polygon points={OUTER} />
+        </clipPath>
+      </defs>
+
+      {/* plate */}
+      <polygon
+        points={OUTER}
+        fill={url('metalB')}
+        stroke="var(--tier-lo)"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <polygon
+        points={PLATE}
+        fill="none"
+        stroke="color-mix(in srgb, var(--tier-lo) 60%, transparent)"
+        strokeWidth="1"
+      />
+
+      {/* brushed guilloche rings */}
+      <g stroke="color-mix(in srgb, var(--tier) 20%, transparent)" fill="none">
+        <circle cx={CX} cy={CY} r="30" strokeWidth="0.8" />
+        <circle cx={CX} cy={CY} r="38" strokeWidth="0.8" />
+      </g>
+
+      {/* engraved rays (grade >= 4) */}
+      {level >= 4 && (
+        <g
+          className="bk-rays"
+          stroke="var(--tier)"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        >
+          {BACK_RAYS.map((r, i) => (
+            <line key={i} x1={r.x1} y1={r.y1} x2={r.x2} y2={r.y2} />
+          ))}
+        </g>
+      )}
+
+      {/* halo behind the medallion (grade 5) */}
+      {level >= 5 && (
+        <circle className="bk-halo" cx={CX} cy={CY} r="27" fill={url('haloB')} />
+      )}
+
+      {/* rotating watch bezel (grade >= 2) */}
+      {level >= 2 && (
+        <g className="bk-bezel" strokeLinecap="round">
+          {BEZEL_TICKS.map((t, i) => (
+            <line
+              key={i}
+              x1={t.x1}
+              y1={t.y1}
+              x2={t.x2}
+              y2={t.y2}
+              stroke={t.long ? 'var(--tier-hi)' : 'var(--tier)'}
+              strokeWidth={t.long ? 1.6 : 1}
+              opacity={t.long ? 0.75 : 0.4}
+            />
+          ))}
+        </g>
+      )}
+
+      {/* medallion: the FocusGuard dial */}
+      <circle
+        cx={CX}
+        cy={CY}
+        r="22"
+        fill="none"
+        stroke="color-mix(in srgb, var(--tier) 40%, transparent)"
+        strokeWidth="2.6"
+      />
+      <path
+        d="M60 44 a22 22 0 0 1 20.5 14"
+        stroke="var(--tier)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {level >= 1 && (
+        <line
+          className="bk-hand"
+          x1={CX}
+          y1={CY}
+          x2={CX}
+          y2={CY - 16}
+          stroke="var(--tier-hi)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      )}
+      <circle cx={CX} cy={CY} r="7" fill="var(--tier)" />
+
+      {/* orbiting gems (grade >= 3; counter-orbit >= 4; trail at 5) */}
+      {level >= 3 && (
+        <g className="bk-orbit">
+          {level >= 5 && (
+            <path
+              d="M60 36 a30 30 0 0 0 -21 8.7"
+              fill="none"
+              stroke="var(--tier-hi)"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              opacity="0.35"
+            />
+          )}
+          <circle cx={CX} cy={CY - 30} r="2.6" fill="var(--tier-hi)" />
+        </g>
+      )}
+      {level >= 4 && (
+        <g className="bk-orbit rev">
+          <circle cx={CX} cy={CY + 38} r="2" fill="var(--tier)" />
+        </g>
+      )}
+
+      {/* laurel + grade numeral (grade >= 1) */}
+      {level >= 1 && (
+        <g className="bk-laurel" fill="var(--tier)" opacity="0.55">
+          <path
+            d={level >= 5 ? 'M36 116 Q25 98 30 70' : 'M36 116 Q26 100 27.5 85'}
+            fill="none"
+            stroke="var(--tier)"
+            strokeWidth="1.2"
+          />
+          <path
+            d={level >= 5 ? 'M84 116 Q95 98 90 70' : 'M84 116 Q94 100 92.5 85'}
+            fill="none"
+            stroke="var(--tier)"
+            strokeWidth="1.2"
+          />
+          {leaves.map((l, i) => (
+            <g key={i}>
+              <ellipse cx={l.x} cy={l.y} rx="3.4" ry="1.7" transform={`rotate(${l.a} ${l.x} ${l.y})`} />
+              <ellipse
+                cx={120 - l.x}
+                cy={l.y}
+                rx="3.4"
+                ry="1.7"
+                transform={`rotate(${-l.a} ${120 - l.x} ${l.y})`}
+              />
+            </g>
+          ))}
+        </g>
+      )}
+      {level >= 1 && (
+        <text className="bk-numeral" x={CX} y="103" textAnchor="middle">
+          {ROMAN[level]}
+        </text>
+      )}
+
+      {/* twinkling inlaid stars (grade 5) */}
+      {level >= 5 &&
+        BACK_STARS.map((s, i) => (
+          <g
+            key={i}
+            className="bk-star"
+            transform={`translate(${s.x} ${s.y})`}
+            style={{ animationDelay: s.delay }}
+          >
+            <path d={starPath(s.r)} fill="#fffdf6" />
+          </g>
+        ))}
+
+      {/* glint sweep (grade >= 4) */}
+      {level >= 4 && (
+        <g clipPath={url('clipHexB')}>
+          <rect className="bk-glint" x="-34" y="0" width="30" height="132" fill={url('sheenB')} />
         </g>
       )}
     </svg>

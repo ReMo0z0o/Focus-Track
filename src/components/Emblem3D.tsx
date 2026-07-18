@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { GradeEmblem, HEX_POINTS, HEX_VIEW } from '@/components/GradeEmblem'
+import { GradeEmblem, GradeEmblemBack, HEX_POINTS, HEX_VIEW } from '@/components/GradeEmblem'
 import { GRADE_NAMES } from '@/lib/stats'
 
 /**
@@ -175,28 +175,12 @@ export function Emblem3D({
           <GradeEmblem level={level} width={width} />
         </div>
 
-        {/* back */}
+        {/* back — the medal reverse, richer with every grade */}
         <div
           className="emblem3d-face back"
           style={{ transform: `rotateY(180deg) translateZ(${DEPTH / 2}px)` }}
         >
-          <svg viewBox={`0 0 ${HEX_VIEW.w} ${HEX_VIEW.h}`} width={width} height={height}>
-            <polygon
-              points={HEX_POINTS.map((p) => p.join(',')).join(' ')}
-              className="back-fill"
-              strokeWidth="3"
-              strokeLinejoin="round"
-            />
-            <circle cx="60" cy="66" r="22" className="back-ring" strokeWidth="3" fill="none" />
-            <path
-              d="M60 44 a22 22 0 0 1 20.5 14"
-              className="back-arc"
-              strokeWidth="3"
-              strokeLinecap="round"
-              fill="none"
-            />
-            <circle cx="60" cy="66" r="7" className="back-dot" />
-          </svg>
+          <GradeEmblemBack level={level} width={width} />
         </div>
 
         {/* core slab hides see-through at grazing angles */}

@@ -2428,14 +2428,69 @@ input, select {
   filter: drop-shadow(0 0 26px var(--tier-glow));
 }
 
-.emblem3d-face.back .back-fill {
-  fill: color-mix(in srgb, var(--tier-lo) 28%, #0d1017);
-  stroke: var(--tier);
+/* ---- medal reverse: engravings that spin up with the grade ---- */
+
+.grade-emblem-back .bk-hand,
+.grade-emblem-back .bk-bezel,
+.grade-emblem-back .bk-orbit {
+  transform-box: view-box;
+  transform-origin: 60px 66px;
 }
 
-.emblem3d-face.back .back-ring { stroke: color-mix(in srgb, var(--tier) 40%, transparent); }
-.emblem3d-face.back .back-arc { stroke: var(--tier); }
-.emblem3d-face.back .back-dot { fill: var(--tier); }
+/* clock hand sweeps faster as the grade climbs */
+.grade-emblem-back .bk-hand {
+  animation: bk-rotate calc(var(--flame-speed, 3s) * 4) linear infinite;
+}
+
+.grade-emblem-back .bk-bezel {
+  animation: bk-rotate 70s linear infinite;
+}
+
+.grade-emblem-back .bk-orbit {
+  animation: bk-rotate calc(var(--flame-speed, 3s) * 3) linear infinite;
+}
+
+.grade-emblem-back .bk-orbit.rev {
+  animation: bk-rotate calc(var(--flame-speed, 3s) * 5) linear infinite reverse;
+}
+
+@keyframes bk-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.grade-emblem-back .bk-rays {
+  opacity: 0.3;
+  animation: bk-rays-breathe calc(var(--flame-speed, 3s) * 2) ease-in-out infinite;
+}
+
+@keyframes bk-rays-breathe {
+  0%, 100% { opacity: 0.18; }
+  50% { opacity: 0.42; }
+}
+
+.grade-emblem-back .bk-halo {
+  transform-box: view-box;
+  transform-origin: 60px 66px;
+  animation: halo-pulse calc(var(--flame-speed, 3s) * 1.6) ease-in-out infinite;
+}
+
+.grade-emblem-back .bk-star {
+  transform-box: view-box;
+  animation: sparkle-twinkle 3.8s ease-in-out infinite;
+}
+
+.grade-emblem-back .bk-glint {
+  transform-box: view-box;
+  animation: emblem-glint calc(var(--flame-speed, 3s) * 3.2) ease-in-out infinite;
+}
+
+.grade-emblem-back .bk-numeral {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  fill: color-mix(in srgb, var(--tier-hi) 85%, transparent);
+}
 
 .emblem3d-core {
   position: absolute;

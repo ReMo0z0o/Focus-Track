@@ -115,7 +115,7 @@ function RewardsPage() {
         <div className="showcase-viewer">
           <Emblem3D level={shownGrade} locked={!gradeUnlocked} />
           <span className="drag-hint">
-            <DragIcon /> drag to rotate
+            <DragIcon /> drag to rotate — flip it over
           </span>
         </div>
         <div className="showcase-info">
