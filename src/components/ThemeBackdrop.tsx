@@ -48,13 +48,29 @@ const BIG_STARS = gen(12, 7, (r) => ({
   big: true,
 }))
 
-const SNOW = gen(21, 20, (r) => ({
+const SNOW = gen(21, 14, (r) => ({
   left: r() * 100,
   size: 2.5 + r() * 4,
   delay: r() * 14,
   dur: 9 + r() * 9,
   sway: 20 + r() * 50,
   opacity: 0.35 + r() * 0.5,
+  gustDelay: r() * 0.9,
+}))
+/** Detailed six-armed flakes (drawn as inline SVG, larger than the dots). */
+const FLAKES = gen(22, 10, (r) => ({
+  left: r() * 100,
+  size: 10 + r() * 12,
+  delay: r() * 16,
+  dur: 12 + r() * 10,
+  sway: 24 + r() * 40,
+  opacity: 0.5 + r() * 0.45,
+  gustDelay: r() * 0.9,
+}))
+const WINDS = gen(23, 4, (r, i) => ({
+  top: 12 + i * 20 + r() * 8,
+  width: 160 + r() * 140,
+  delay: r() * 1.2,
 }))
 
 const LEAVES = gen(31, 11, (r) => ({
@@ -80,6 +96,13 @@ const FIRE_EMBERS = gen(41, 22, (r) => ({
   delay: r() * 7,
   dur: 4.5 + r() * 4.5,
   dx: -40 + r() * 80,
+}))
+/** Flame tongues that lick up from the bottom once per 25s cycle. */
+const FLAME_TONGUES = gen(42, 7, (r, i) => ({
+  left: 3 + i * 14 + r() * 6,
+  width: 26 + r() * 26,
+  height: 70 + r() * 70,
+  delay: r() * 1.6,
 }))
 
 const DRAGON_EMBERS = gen(51, 13, (r) => ({
@@ -205,21 +228,68 @@ function renderLayers(theme: string): ReactNode | null {
         <>
           <div className="tb-aurora tb-aurora-1" />
           <div className="tb-aurora tb-aurora-2" />
+          {/* the gust wrapper shoves each fall sideways every 16s */}
           {SNOW.map((s, i) => (
             <span
               key={i}
-              className="tb-snow"
-              style={
-                {
-                  left: `${s.left}%`,
-                  width: s.size,
-                  height: s.size,
-                  opacity: s.opacity,
-                  animationDelay: `-${s.delay}s`,
-                  animationDuration: `${s.dur}s`,
-                  '--sway': `${s.sway}px`,
-                } as Vars
-              }
+              className="tb-gust"
+              style={{ left: `${s.left}%`, animationDelay: `${s.gustDelay}s` }}
+            >
+              <span
+                className="tb-snow"
+                style={
+                  {
+                    width: s.size,
+                    height: s.size,
+                    opacity: s.opacity,
+                    animationDelay: `-${s.delay}s`,
+                    animationDuration: `${s.dur}s`,
+                    '--sway': `${s.sway}px`,
+                  } as Vars
+                }
+              />
+            </span>
+          ))}
+          {FLAKES.map((f, i) => (
+            <span
+              key={i}
+              className="tb-gust"
+              style={{ left: `${f.left}%`, animationDelay: `${f.gustDelay}s` }}
+            >
+              <svg
+                className="tb-flake"
+                width={f.size}
+                height={f.size}
+                viewBox="0 0 24 24"
+                style={
+                  {
+                    opacity: f.opacity,
+                    animationDelay: `-${f.delay}s`,
+                    animationDuration: `${f.dur}s`,
+                    '--sway': `${f.sway}px`,
+                  } as Vars
+                }
+              >
+                <g stroke="#eef6ff" strokeWidth="1.5" strokeLinecap="round" fill="none">
+                  {[0, 60, 120].map((a) => (
+                    <line key={a} x1="12" y1="2" x2="12" y2="22" transform={`rotate(${a} 12 12)`} />
+                  ))}
+                  {[0, 60, 120, 180, 240, 300].map((a) => (
+                    <path
+                      key={a}
+                      d="M12 4.5 L9.6 7.2 M12 4.5 L14.4 7.2"
+                      transform={`rotate(${a} 12 12)`}
+                    />
+                  ))}
+                </g>
+              </svg>
+            </span>
+          ))}
+          {WINDS.map((w, i) => (
+            <span
+              key={i}
+              className="tb-wind"
+              style={{ top: `${w.top}%`, width: w.width, animationDelay: `${w.delay}s` }}
             />
           ))}
         </>
@@ -267,6 +337,19 @@ function renderLayers(theme: string): ReactNode | null {
       return (
         <>
           <div className="tb-heat" />
+          <div className="tb-heat-surge" />
+          {FLAME_TONGUES.map((f, i) => (
+            <span
+              key={i}
+              className="tb-flame-tongue"
+              style={{
+                left: `${f.left}%`,
+                width: f.width,
+                height: f.height,
+                animationDelay: `${f.delay}s`,
+              }}
+            />
+          ))}
           {FIRE_EMBERS.map((e, i) => (
             <span
               key={i}

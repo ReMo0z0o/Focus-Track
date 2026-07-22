@@ -2964,6 +2964,8 @@ input, select {
    hide them and keep only the static ambiance layers. */
 @media (prefers-reduced-motion: reduce) {
   .tb-snow,
+  .tb-flake,
+  .tb-wind,
   .tb-leaf,
   .tb-scanline,
   .tb-shooting,
@@ -3084,6 +3086,25 @@ input, select {
   100% { transform: translate3d(10%, 0, 0) skewX(-22deg) scaleY(0.95); opacity: 0.4; }
 }
 
+/* wind-gust wrapper: shoves its falling child sideways every 16s */
+.tb-gust {
+  top: 0;
+  animation: tb-gust 16s ease-in-out infinite;
+}
+
+.tb-gust > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@keyframes tb-gust {
+  0%, 70% { transform: translate3d(0, 0, 0); }
+  78% { transform: translate3d(7vw, 0, 0); }
+  84% { transform: translate3d(11vw, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
 .tb-snow {
   top: 0;
   border-radius: 50%;
@@ -3091,6 +3112,39 @@ input, select {
   animation-name: tb-fall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
+}
+
+.tb-flake {
+  top: 0;
+  overflow: visible;
+  animation-name: tb-flake-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-flake-fall {
+  0% { transform: translate3d(0, -6vh, 0) rotate(0deg); }
+  25% { transform: translate3d(calc(var(--sway, 30px) * 0.6), 22vh, 0) rotate(70deg); }
+  50% { transform: translate3d(calc(var(--sway, 30px) * -0.4), 50vh, 0) rotate(150deg); }
+  75% { transform: translate3d(calc(var(--sway, 30px) * 0.8), 78vh, 0) rotate(230deg); }
+  100% { transform: translate3d(0, 108vh, 0) rotate(310deg); }
+}
+
+/* wind streaks that sweep the sky during the gust window */
+.tb-wind {
+  left: -30%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(210, 235, 255, 0.55), transparent);
+  opacity: 0;
+  animation: tb-wind 16s linear infinite;
+}
+
+@keyframes tb-wind {
+  0%, 69% { transform: translate3d(0, 0, 0) rotate(-6deg); opacity: 0; }
+  72% { opacity: 0.7; }
+  80% { transform: translate3d(150vw, 6vh, 0) rotate(-6deg); opacity: 0.45; }
+  81%, 100% { transform: translate3d(150vw, 6vh, 0) rotate(-6deg); opacity: 0; }
 }
 
 @keyframes tb-fall {
@@ -3170,6 +3224,50 @@ input, select {
   background: radial-gradient(ellipse at 50% 100%, rgba(255, 110, 30, 0.28), rgba(255, 60, 10, 0.1) 45%, transparent 70%);
   transform-origin: 50% 100%;
   animation: tb-heat-pulse 5s ease-in-out infinite;
+}
+
+/* the whole hearth brightens while the flames are up */
+.tb-heat-surge {
+  left: -10%;
+  right: -10%;
+  bottom: -12%;
+  height: 50%;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 140, 40, 0.38), transparent 65%);
+  opacity: 0;
+  animation: tb-heat-surge 25s ease-in-out infinite;
+}
+
+@keyframes tb-heat-surge {
+  0%, 75% { opacity: 0; }
+  80% { opacity: 1; }
+  86% { opacity: 0.65; }
+  92%, 100% { opacity: 0; }
+}
+
+/* flame tongues licking up from the bottom, one burst per 25s cycle */
+.tb-flame-tongue {
+  bottom: -6px;
+  transform-origin: 50% 100%;
+  border-radius: 50% 50% 24% 24% / 78% 78% 22% 22%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 205, 105, 0.9),
+    rgba(255, 122, 32, 0.85) 45%,
+    rgba(200, 60, 12, 0.55)
+  );
+  filter: blur(3px);
+  opacity: 0;
+  transform: scaleY(0.1);
+  animation: tb-flame-burst 25s ease-in-out infinite;
+}
+
+@keyframes tb-flame-burst {
+  0%, 76% { opacity: 0; transform: scaleY(0.1) scaleX(1); }
+  79% { opacity: 0.95; transform: scaleY(1) scaleX(1); }
+  82% { opacity: 0.85; transform: scaleY(0.8) scaleX(1.09); }
+  85% { opacity: 0.95; transform: scaleY(1.06) scaleX(0.93); }
+  88% { opacity: 0.8; transform: scaleY(0.74) scaleX(1.06); }
+  91%, 100% { opacity: 0; transform: scaleY(0.1) scaleX(1); }
 }
 
 .tb-lair-glow {
