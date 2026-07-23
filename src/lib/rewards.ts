@@ -419,9 +419,10 @@ export const AVATARS: AvatarDef[] = [
     condition: { kind: 'concTier', tier: 2 },
   },
   {
+    // id kept as 'fox' so previously saved profiles keep their avatar
     id: 'fox',
-    name: 'Night Fox',
-    tagline: 'Sharp senses after sundown.',
+    name: 'Jungle Monkey',
+    tagline: 'Swings in from Deep Jungle.',
     condition: { kind: 'streak', days: 5 },
   },
   {
@@ -487,7 +488,7 @@ export const AVATARS: AvatarDef[] = [
   {
     id: 'dragonling',
     name: 'Dragonling',
-    tagline: 'Hatched from a diamond of pure focus.',
+    tagline: 'The lair’s little guardian, mid-flap.',
     condition: { kind: 'concTier', tier: 5 },
   },
   {

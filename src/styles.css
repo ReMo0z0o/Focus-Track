@@ -2111,7 +2111,7 @@ input, select {
 .av-cat { --av-a: #8a93c9; --av-b: #39406e; }
 .av-frog { --av-a: #a8e06b; --av-b: #42761f; }
 .av-bunny { --av-a: #f4b0d4; --av-b: #7e3f66; }
-.av-fox { --av-a: #7b6bb3; --av-b: #33285e; }
+.av-fox { --av-a: #7cc25a; --av-b: #2c5220; }
 .av-astro { --av-a: #8fa8ff; --av-b: #2b3a80; }
 .av-panda { --av-a: #7fd1a8; --av-b: #276b4a; }
 .av-penguin { --av-a: #9fd6ff; --av-b: #2e5d8a; }
@@ -2122,7 +2122,7 @@ input, select {
 .av-bee { --av-a: #ffd95e; --av-b: #8a6a12; }
 .av-knight { --av-a: #7d89a8; --av-b: #2c3550; }
 .av-whale { --av-a: #7fb9e6; --av-b: #24507c; }
-.av-dragonling { --av-a: #8fd98a; --av-b: #2f6b3a; }
+.av-dragonling { --av-a: #ff9a7e; --av-b: #58170e; }
 .av-sloth { --av-a: #c9a880; --av-b: #5f4a32; }
 .av-polarbear { --av-a: #9cd3e8; --av-b: #2c5a78; }
 
@@ -2185,6 +2185,45 @@ input, select {
 }
 
 .avp-pulse { animation: av-pulse 3s ease-in-out infinite; }
+
+/* live-sprite avatars (characters lifted straight from their themes) */
+.av-live {
+  display: block;
+  flex: none;
+}
+
+.av-live-monkey {
+  width: 94%;
+  height: 94%;
+  background: url('/monkey-leap.png') no-repeat center / contain;
+  animation: av-monkey-hop 1.7s ease-in-out infinite;
+}
+
+@keyframes av-monkey-hop {
+  0%, 100% { transform: translateY(6%) rotate(-4deg); }
+  30% { transform: translateY(-6%) rotate(3deg); }
+  55% { transform: translateY(-2%) rotate(0deg); }
+}
+
+.av-live-dragon {
+  /* dedicated sheet with the dragon centroid-centred in every frame,
+     so the flap plays without the body drifting inside the disc */
+  width: 118%;
+  aspect-ratio: 220 / 144;
+  background: url('/avatar-dragon.png') no-repeat;
+  background-size: 1100% 100%;
+  animation: av-dragon-flap 0.92s steps(11, jump-none) infinite;
+}
+
+@keyframes av-dragon-flap {
+  from { background-position-x: 0%; }
+  to { background-position-x: 100%; }
+}
+
+.avatar.locked .av-live-monkey,
+.avatar.locked .av-live-dragon {
+  animation-play-state: paused;
+}
 
 /* bee wings: fast flap about the body-side edge */
 .avatar svg .avp-buzz {

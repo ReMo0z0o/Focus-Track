@@ -263,30 +263,8 @@ const GLYPHS: Record<string, ReactNode> = {
     </Glyph>
   ),
   fox: (
-    <Glyph>
-      <g className="avp avp-tail">
-        <path d="M30 39 C38 38.5 42.5 32 42 24.5 C39 31 35 33.5 29.5 34.5 Z" fill="#e8763a" />
-        <path
-          d="M42 24.5 C41.6 28.5 40 31.5 37.5 33.4 C39.8 33.8 41.8 32.3 42.3 30 C42.7 28 42.4 26 42 24.5 Z"
-          fill="#fff3e6"
-        />
-      </g>
-      <path d="M11 15.5 L13.5 4.5 L21 11.5 Z" fill="#e8763a" />
-      <path d="M37 15.5 L34.5 4.5 L27 11.5 Z" fill="#e8763a" />
-      <path d="M13 13.3 L14.3 7.6 L18.6 11.5 Z" fill="#402a1e" />
-      <path d="M35 13.3 L33.7 7.6 L29.4 11.5 Z" fill="#402a1e" />
-      <circle cx="24" cy="24.5" r="12.5" fill="#e8763a" />
-      <path
-        d="M24 23 C28.5 23 32.5 25.5 33.5 29.5 C32 34 28.5 36.8 24 36.8 C19.5 36.8 16 34 14.5 29.5 C15.5 25.5 19.5 23 24 23 Z"
-        fill="#fff3e6"
-      />
-      <g className="avp avp-blink" style={{ animationDelay: '-2.6s' }}>
-        <ellipse cx="18.2" cy="20.8" rx="1.8" ry="2.3" fill="#402a1e" />
-        <ellipse cx="29.8" cy="20.8" rx="1.8" ry="2.3" fill="#402a1e" />
-      </g>
-      <path d="M22.4 28.4 H25.6 L24 30.4 Z" fill="#402a1e" />
-      <path d="M24 30.4 V32.2" stroke="#402a1e" strokeWidth="1.1" strokeLinecap="round" />
-    </Glyph>
+    // the Deep Jungle companion, straight from the theme's sprite
+    <span className="av-live av-live-monkey" />
   ),
   astro: (
     <Glyph>
@@ -546,41 +524,8 @@ const GLYPHS: Record<string, ReactNode> = {
     </Glyph>
   ),
   dragonling: (
-    <Glyph>
-      {/* far wing */}
-      <g className="avp avp-wingbeat far">
-        <path d="M29 22 C33 14 39 11 44.5 12 C41 15 39 19 38.5 24 Z" fill="#4f9a55" />
-      </g>
-      {/* flame breath — puffs from the snout */}
-      <g className="avp avp-breath">
-        <path
-          d="M13.5 25.5 C9.5 23.8 6.8 24.3 4.8 26.5 C7 26.9 8.5 27.8 9.3 29.3 C11.5 29 13 27.6 13.5 25.5 Z"
-          fill="#ffb347"
-        />
-        <path
-          d="M12 26.2 C10 25.4 8.5 25.7 7.4 26.8 C8.6 27.1 9.4 27.6 9.9 28.4 C11 28.1 11.8 27.3 12 26.2 Z"
-          fill="#ff7a30"
-        />
-      </g>
-      {/* body */}
-      <path
-        d="M14 27 C14 20 19 15.5 26 15.5 C33.5 15.5 38.5 21 38.5 28.5 C38.5 35 33.5 39.5 26.5 39.5 C19.5 39.5 14.5 35 14 27 Z"
-        fill="#6fbf6a"
-      />
-      <ellipse cx="24.5" cy="33" rx="7" ry="5.5" fill="#cdeab2" />
-      {/* snout */}
-      <ellipse cx="16.8" cy="26.5" rx="4.6" ry="3.6" fill="#8ed08a" />
-      <circle cx="14.8" cy="25.6" r="0.8" fill="#2c5231" />
-      {/* horns */}
-      <path d="M26 15.8 L24.5 10.5 L28.3 14.6 Z M31 16.6 L31.5 11.5 L34.2 16.2 Z" fill="#e8f4d9" />
-      <g className="avp avp-blink" style={{ animationDelay: '-2.2s' }}>
-        <circle cx="23.5" cy="23.5" r="2.1" fill="#1f3a24" />
-      </g>
-      {/* near wing */}
-      <g className="avp avp-wingbeat">
-        <path d="M31 25 C35.5 17.5 41.5 15 46.5 16.5 C43 19.5 41 24 41 29.5 C37.5 28 34 26.8 31 25 Z" fill="#57a85c" />
-      </g>
-    </Glyph>
+    // the Dragon's Lair dragon, wing-beat played from its sprite sheet
+    <span className="av-live av-live-dragon" />
   ),
   sloth: (
     <Glyph>
