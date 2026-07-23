@@ -2186,45 +2186,6 @@ input, select {
 
 .avp-pulse { animation: av-pulse 3s ease-in-out infinite; }
 
-/* live-sprite avatars (characters lifted straight from their themes) */
-.av-live {
-  display: block;
-  flex: none;
-}
-
-.av-live-monkey {
-  width: 94%;
-  height: 94%;
-  background: url('/monkey-leap.png') no-repeat center / contain;
-  animation: av-monkey-hop 1.7s ease-in-out infinite;
-}
-
-@keyframes av-monkey-hop {
-  0%, 100% { transform: translateY(6%) rotate(-4deg); }
-  30% { transform: translateY(-6%) rotate(3deg); }
-  55% { transform: translateY(-2%) rotate(0deg); }
-}
-
-.av-live-dragon {
-  /* dedicated sheet with the dragon centroid-centred in every frame,
-     so the flap plays without the body drifting inside the disc */
-  width: 118%;
-  aspect-ratio: 220 / 144;
-  background: url('/avatar-dragon.png') no-repeat;
-  background-size: 1100% 100%;
-  animation: av-dragon-flap 0.92s steps(11, jump-none) infinite;
-}
-
-@keyframes av-dragon-flap {
-  from { background-position-x: 0%; }
-  to { background-position-x: 100%; }
-}
-
-.avatar.locked .av-live-monkey,
-.avatar.locked .av-live-dragon {
-  animation-play-state: paused;
-}
-
 /* bee wings: fast flap about the body-side edge */
 .avatar svg .avp-buzz {
   transform-origin: 100% 60%;
@@ -2254,11 +2215,6 @@ input, select {
 .avatar svg .avp-wingbeat {
   transform-origin: 0% 85%;
   animation: av-wingbeat 1.3s ease-in-out infinite alternate;
-}
-
-.avatar svg .avp-wingbeat.far {
-  animation-delay: -0.65s;
-  opacity: 0.85;
 }
 
 @keyframes av-blink {

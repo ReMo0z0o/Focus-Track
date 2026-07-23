@@ -263,8 +263,58 @@ const GLYPHS: Record<string, ReactNode> = {
     </Glyph>
   ),
   fox: (
-    // the Deep Jungle companion, straight from the theme's sprite
-    <span className="av-live av-live-monkey" />
+    // the Deep Jungle companion, face on
+    <Glyph>
+      <g className="avp avp-bob" style={{ animationDuration: '3.2s', animationDelay: '-1.1s' }}>
+        {/* ears */}
+        <g className="avp avp-ear" style={{ animationDelay: '-2.4s' }}>
+          <circle cx="9" cy="23.5" r="5.4" fill="#7f5433" />
+          <circle cx="8.6" cy="23.5" r="3" fill="#d9ab77" />
+        </g>
+        <circle cx="39" cy="23.5" r="5.4" fill="#7f5433" />
+        <circle cx="39.4" cy="23.5" r="3" fill="#d9ab77" />
+        {/* head + top tufts */}
+        <circle cx="24" cy="25.5" r="12.6" fill="#7f5433" />
+        <path d="M19.6 14 C19.4 10.8 21 8.6 23.8 8 C22.6 9.8 22.4 11.6 23.2 13.4 Z" fill="#5d3a1f" />
+        <path d="M24.4 12.9 C25 9.6 27 8.2 29.6 8.6 C27.8 9.7 26.9 11.3 26.9 13.3 Z" fill="#5d3a1f" />
+        {/* tan face patch: brow lobes + muzzle */}
+        <circle cx="18.6" cy="21.4" r="5.5" fill="#e6c194" />
+        <circle cx="29.4" cy="21.4" r="5.5" fill="#e6c194" />
+        <ellipse cx="24" cy="29.4" rx="9.6" ry="7.2" fill="#e6c194" />
+        <path
+          d="M15.9 18.6 Q18.8 17.2 21.6 18.4 M26.4 18.4 Q29.2 17.2 32.1 18.6"
+          stroke="#5d3a1f"
+          strokeWidth="1.2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        {/* big brown eyes */}
+        <g className="avp avp-blink" style={{ animationDelay: '-1.6s' }}>
+          <ellipse cx="18.8" cy="22.6" rx="2.9" ry="3.3" fill="#fff" />
+          <ellipse cx="29.2" cy="22.6" rx="2.9" ry="3.3" fill="#fff" />
+          <circle cx="18.8" cy="22.9" r="2.05" fill="#6f4522" />
+          <circle cx="29.2" cy="22.9" r="2.05" fill="#6f4522" />
+          <circle cx="18.8" cy="23" r="1" fill="#241407" />
+          <circle cx="29.2" cy="23" r="1" fill="#241407" />
+          <circle cx="18.1" cy="21.9" r="0.65" fill="#fff" />
+          <circle cx="28.5" cy="21.9" r="0.65" fill="#fff" />
+          <circle cx="19.6" cy="23.8" r="0.3" fill="#fff" />
+          <circle cx="30" cy="23.8" r="0.3" fill="#fff" />
+        </g>
+        {/* cheeks, nose, smile */}
+        <circle cx="14.9" cy="27.8" r="2" fill="#f2a1b0" opacity="0.75" />
+        <circle cx="33.1" cy="27.8" r="2" fill="#f2a1b0" opacity="0.75" />
+        <circle cx="22.6" cy="27.2" r="0.6" fill="#4a2c15" />
+        <circle cx="25.4" cy="27.2" r="0.6" fill="#4a2c15" />
+        <path
+          d="M20.6 30.2 Q24 33.4 27.4 30.2"
+          stroke="#4a2c15"
+          strokeWidth="1.3"
+          fill="none"
+          strokeLinecap="round"
+        />
+      </g>
+    </Glyph>
   ),
   astro: (
     <Glyph>
@@ -524,8 +574,88 @@ const GLYPHS: Record<string, ReactNode> = {
     </Glyph>
   ),
   dragonling: (
-    // the Dragon's Lair dragon, wing-beat played from its sprite sheet
-    <span className="av-live av-live-dragon" />
+    // the Dragon's Lair dragon, face on. The left wing reuses the right
+    // wing's path inside a mirroring <g>, so the shared wingbeat keyframe
+    // plays as an exact mirrored flap (origin lands on the same shoulder).
+    <Glyph>
+      <g className="avp avp-bob" style={{ animationDuration: '2.6s', animationDelay: '-0.7s' }}>
+        <g className="avp avp-wingbeat">
+          <path
+            d="M27.5 23 C33 21.5 37.2 17.4 39.2 9.2 C41.6 12.8 42.6 16.6 42.2 20.2 C40.7 19.4 39.3 19.8 38.2 21.4 C36.6 20.6 35 21 33.8 22.6 C32.2 21.9 30.3 22.3 29 23.8 Z"
+            fill="#a3462b"
+          />
+          <path
+            d="M28.5 22.6 C33.5 21 37.3 17 39.2 9.6"
+            stroke="#c97a52"
+            strokeWidth="1.1"
+            fill="none"
+            strokeLinecap="round"
+          />
+        </g>
+        <g transform="scale(-1 1) translate(-48 0)">
+          <g className="avp avp-wingbeat">
+            <path
+              d="M27.5 23 C33 21.5 37.2 17.4 39.2 9.2 C41.6 12.8 42.6 16.6 42.2 20.2 C40.7 19.4 39.3 19.8 38.2 21.4 C36.6 20.6 35 21 33.8 22.6 C32.2 21.9 30.3 22.3 29 23.8 Z"
+              fill="#a3462b"
+            />
+            <path
+              d="M28.5 22.6 C33.5 21 37.3 17 39.2 9.6"
+              stroke="#c97a52"
+              strokeWidth="1.1"
+              fill="none"
+              strokeLinecap="round"
+            />
+          </g>
+        </g>
+        {/* horns */}
+        <path d="M15.6 17 C13.6 13 13.9 8.6 16.4 5.4 C18.9 7.4 20.1 11 19.8 16.4 Z" fill="#7a4732" />
+        <path d="M32.4 17 C34.4 13 34.1 8.6 31.6 5.4 C29.1 7.4 27.9 11 28.2 16.4 Z" fill="#7a4732" />
+        <path d="M15.1 8.9 C14.9 7.6 15.3 6.4 16.4 5.4 C17.4 6.2 18 7.3 18.2 8.7 C17.2 8 16.1 8.1 15.1 8.9 Z" fill="#5f3423" />
+        <path d="M32.9 8.9 C33.1 7.6 32.7 6.4 31.6 5.4 C30.6 6.2 30 7.3 29.8 8.7 C30.8 8 31.9 8.1 32.9 8.9 Z" fill="#5f3423" />
+        {/* ear fins */}
+        <path d="M12.6 23.4 C8.8 21.8 6.2 22.8 5 26 C7.9 25.4 10.2 26.4 11.9 28.8 Z" fill="#c05a38" />
+        <path d="M35.4 23.4 C39.2 21.8 41.8 22.8 43 26 C40.1 25.4 37.8 26.4 36.1 28.8 Z" fill="#c05a38" />
+        <path d="M11.4 24 C9 23 7.2 23.7 6.2 25.8 C8.1 25.4 9.7 26.1 10.8 27.6 Z" fill="#8f3a24" />
+        <path d="M36.6 24 C39 23 40.8 23.7 41.8 25.8 C39.9 25.4 38.3 26.1 37.2 27.6 Z" fill="#8f3a24" />
+        {/* head + cream chest */}
+        <path
+          d="M24 13.8 C31.8 13.8 37.4 18.4 37.4 25.6 C37.4 32.8 31.8 37.8 24 37.8 C16.2 37.8 10.6 32.8 10.6 25.6 C10.6 18.4 16.2 13.8 24 13.8 Z"
+          fill="#c8623f"
+        />
+        <path d="M15 43.8 C16.6 39.2 19.8 36.8 24 36.8 C28.2 36.8 31.4 39.2 33 43.8 Z" fill="#edc08c" />
+        {/* cream brows + freckles */}
+        <ellipse cx="18" cy="20" rx="3.7" ry="2.2" fill="#f2d4a8" />
+        <ellipse cx="30" cy="20" rx="3.7" ry="2.2" fill="#f2d4a8" />
+        <circle cx="24" cy="16.4" r="1.05" fill="#d98a5f" />
+        <circle cx="21" cy="15.6" r="0.7" fill="#d98a5f" />
+        <circle cx="27" cy="15.6" r="0.7" fill="#d98a5f" />
+        <circle cx="14.6" cy="27.6" r="0.85" fill="#d98a5f" />
+        <circle cx="16.3" cy="29.3" r="0.6" fill="#d98a5f" />
+        <circle cx="33.4" cy="27.6" r="0.85" fill="#d98a5f" />
+        <circle cx="31.7" cy="29.3" r="0.6" fill="#d98a5f" />
+        {/* muzzle behind the eyes, then nostrils + open smile with fangs */}
+        <ellipse cx="24" cy="31.6" rx="8.6" ry="5.4" fill="#f2d4a8" />
+        {/* big amber eyes tucked under the brows */}
+        <g className="avp avp-blink" style={{ animationDelay: '-3.1s' }}>
+          <ellipse cx="18.2" cy="24.4" rx="3.5" ry="3.9" fill="#fff" />
+          <ellipse cx="29.8" cy="24.4" rx="3.5" ry="3.9" fill="#fff" />
+          <circle cx="18.2" cy="24.7" r="2.5" fill="#f0a238" />
+          <circle cx="29.8" cy="24.7" r="2.5" fill="#f0a238" />
+          <circle cx="18.2" cy="24.9" r="1.35" fill="#2f180b" />
+          <circle cx="29.8" cy="24.9" r="1.35" fill="#2f180b" />
+          <circle cx="17.3" cy="23.5" r="0.8" fill="#fff" />
+          <circle cx="28.9" cy="23.5" r="0.8" fill="#fff" />
+          <circle cx="19.2" cy="26" r="0.4" fill="#fff" />
+          <circle cx="30.8" cy="26" r="0.4" fill="#fff" />
+        </g>
+        <ellipse cx="21.7" cy="29.9" rx="0.72" ry="1.02" fill="#5b2415" />
+        <ellipse cx="26.3" cy="29.9" rx="0.72" ry="1.02" fill="#5b2415" />
+        <path d="M18.9 32.6 Q24 37.6 29.1 32.6 Z" fill="#63241a" />
+        <ellipse cx="24" cy="34.2" rx="1.9" ry="0.8" fill="#e0705c" />
+        <path d="M20.3 32.7 L22 32.7 L21.15 34.05 Z" fill="#fff" />
+        <path d="M26 32.7 L27.7 32.7 L26.85 34.05 Z" fill="#fff" />
+      </g>
+    </Glyph>
   ),
   sloth: (
     <Glyph>
