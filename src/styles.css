@@ -2979,6 +2979,7 @@ input, select {
   .tb-comet,
   .tb-monkey-sprite,
   .tb-monkey-leap,
+  .tb-jungle-pause,
   .tb-prey,
   .tb-dragon-layer {
     display: none;
@@ -3000,6 +3001,10 @@ input, select {
   .tb-haze {
     filter: blur(24px);
   }
+
+  /* narrow screens: one smaller tree is enough of a frame */
+  .tb-tree.left { height: 56vh !important; }
+  .tb-tree.right { display: none; }
 }
 
 /* ---------------- deep space ---------------- */
@@ -4261,4 +4266,146 @@ input, select {
   color: var(--accent-strong);
   border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   background: var(--accent-dim);
+}
+
+/* ================= jungle & dragon polish ================= */
+
+/* moon rays slanting through the canopy */
+.tb-moonray {
+  top: -6%;
+  height: 68%;
+  width: 11%;
+  background: linear-gradient(180deg, rgba(190, 255, 190, 0.11), rgba(140, 220, 150, 0.04) 55%, transparent);
+  filter: blur(16px);
+}
+
+.tb-moonray.r1 { left: 22%; animation: tb-ray 11s ease-in-out infinite alternate; }
+.tb-moonray.r2 { left: 47%; width: 7%; animation: tb-ray 14s ease-in-out infinite alternate-reverse; }
+.tb-moonray.r3 { left: 72%; width: 13%; animation: tb-ray 12.5s ease-in-out infinite alternate; animation-delay: -5s; }
+
+/* low drifting mist in front of the treeline */
+.tb-mist {
+  bottom: 3vh;
+  height: 18vh;
+  width: 55vw;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(150, 190, 150, 0.14), transparent 70%);
+  filter: blur(26px);
+  animation-name: tb-cloud-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.tb-mist.m1 { left: -8vw; animation-duration: 34s; }
+.tb-mist.m2 { right: -10vw; animation-duration: 44s; animation-direction: alternate-reverse; }
+
+/* the monkey's pause visit: rappels down a vine over the modal */
+.tb-jungle-pause {
+  position: fixed;
+  top: 0;
+  width: 0;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.tb-jp-drop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(-105%);
+  animation: tb-jp-in 0.95s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.tb-jp-drop.leaving {
+  animation: tb-jp-out 0.72s ease-in forwards;
+}
+
+@keyframes tb-jp-in {
+  from { transform: translateY(-105%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes tb-jp-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(-108%); }
+}
+
+.tb-jp-sway {
+  position: relative;
+  width: 26px;
+  margin-left: -13px;
+  transform-origin: 50% 0;
+  animation: tb-jp-sway 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes tb-jp-sway {
+  from { transform: rotate(-4.5deg); }
+  to { transform: rotate(4.5deg); }
+}
+
+.tb-jp-vine {
+  display: block;
+  overflow: visible;
+}
+
+.tb-monkey-sprite.pause {
+  top: auto;
+  bottom: -12px;
+  margin-left: -36px;
+}
+
+/* dragon's lair: cave mouth, hoard and crystals */
+.tb-stalactites {
+  left: -1%;
+  right: -1%;
+  top: 0;
+  width: 102%;
+  height: 9vh;
+}
+
+.tb-hoard {
+  left: -1%;
+  right: -1%;
+  bottom: 0;
+  width: 102%;
+  height: 15vh;
+}
+
+.tb-hoard-glow {
+  left: 15%;
+  right: 15%;
+  bottom: 0;
+  height: 22vh;
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 184, 77, 0.14), transparent 65%);
+  transform-origin: 50% 100%;
+  animation: tb-heat-pulse 7s ease-in-out infinite;
+}
+
+.tb-gold-spark {
+  width: 6px;
+  height: 6px;
+  background: #ffd98a;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  animation-name: sparkle-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.tb-crystal {
+  bottom: 8vh;
+  width: 26px;
+  filter: drop-shadow(0 0 8px rgba(255, 80, 60, 0.35));
+  animation-name: tb-crystal-pulse;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.tb-crystal.c1 { left: 3.5%; animation-duration: 5s; }
+.tb-crystal.c2 { right: 4.5%; bottom: 12vh; animation-duration: 6.5s; animation-delay: -2s; }
+.tb-crystal.c3 { left: 11%; bottom: 3.5vh; width: 18px; animation-duration: 7.5s; animation-delay: -4s; }
+
+@keyframes tb-crystal-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.85; }
 }

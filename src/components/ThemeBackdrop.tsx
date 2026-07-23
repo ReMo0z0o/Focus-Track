@@ -141,6 +141,12 @@ const DRAGON_EMBERS = gen(51, 13, (r) => ({
   dur: 7 + r() * 6,
   dx: -30 + r() * 60,
 }))
+const GOLD_SPARKS = gen(53, 8, (r) => ({
+  left: 4 + r() * 92,
+  bottom: 1 + r() * 9,
+  delay: r() * 3.4,
+  dur: 2.6 + r() * 2.2,
+}))
 const SMOKE = gen(52, 5, (r) => ({
   left: 10 + r() * 80,
   size: 130 + r() * 130,
@@ -401,6 +407,9 @@ function renderLayers(theme: string): ReactNode | null {
               </g>
             ))}
           </svg>
+          <div className="tb-moonray r1" />
+          <div className="tb-moonray r2" />
+          <div className="tb-moonray r3" />
           {LIANAS.map((l, i) => (
             <svg
               key={i}
@@ -472,6 +481,8 @@ function renderLayers(theme: string): ReactNode | null {
               }
             />
           ))}
+          <div className="tb-mist m1" />
+          <div className="tb-mist m2" />
           {FERNS.map((f, i) => (
             <FernSvg
               key={i}
@@ -522,6 +533,52 @@ function renderLayers(theme: string): ReactNode | null {
       return (
         <>
           <div className="tb-lair-glow" />
+          {/* cave mouth */}
+          <svg className="tb-stalactites" viewBox="0 0 1200 110" preserveAspectRatio="none">
+            <path
+              d="M0 0 L1200 0 L1200 30 L1160 34 L1130 78 L1100 36 L1060 42 L1030 92 L1000 40 L950 34 L915 70 L880 32 L830 38 L800 104 L770 40 L720 34 L690 66 L650 30 L600 36 L570 88 L540 38 L490 32 L460 58 L420 30 L380 36 L350 96 L320 40 L270 32 L240 62 L200 30 L160 36 L130 80 L100 34 L60 40 L30 26 L0 32 Z"
+              fill="#1a0d0b"
+            />
+            <path
+              d="M0 0 L1200 0 L1200 20 L1150 24 L1115 52 L1080 24 L1020 28 L985 60 L950 24 L900 22 L860 46 L820 22 L760 26 L730 50 L700 24 L640 22 L610 44 L580 24 L520 22 L485 54 L450 24 L400 22 L370 42 L340 24 L280 22 L245 48 L210 24 L150 22 L120 40 L90 22 L40 26 L0 22 Z"
+              fill="#241110"
+            />
+          </svg>
+          {/* the hoard */}
+          <svg className="tb-hoard" viewBox="0 0 1200 140" preserveAspectRatio="none">
+            <path
+              d="M0 140 L0 96 C60 76 140 70 220 82 C280 90 330 104 400 108 C480 76 560 64 660 74 C740 82 800 100 880 104 C960 86 1060 82 1200 98 L1200 140 Z"
+              fill="#2e1d0d"
+            />
+            <path d="M120 96 C180 78 260 76 320 90 C280 97 200 98 120 96 Z" fill="#4a3114" opacity="0.9" />
+            <path d="M560 78 C640 64 720 68 780 84 C700 89 620 87 560 78 Z" fill="#4a3114" opacity="0.9" />
+            <path d="M900 104 C960 92 1030 90 1090 100 C1030 106 960 107 900 104 Z" fill="#40290f" opacity="0.9" />
+          </svg>
+          <div className="tb-hoard-glow" />
+          {GOLD_SPARKS.map((g, i) => (
+            <span
+              key={i}
+              className="tb-gold-spark"
+              style={{
+                left: `${g.left}%`,
+                bottom: `${g.bottom}vh`,
+                animationDelay: `-${g.delay}s`,
+                animationDuration: `${g.dur}s`,
+              }}
+            />
+          ))}
+          {/* wall crystals */}
+          {[
+            { cls: 'c1', vb: '0 0 40 62' },
+            { cls: 'c2', vb: '0 0 40 62' },
+            { cls: 'c3', vb: '0 0 40 62' },
+          ].map((c) => (
+            <svg key={c.cls} className={`tb-crystal ${c.cls}`} viewBox={c.vb}>
+              <polygon points="20,2 34,24 20,60 6,24" fill="#a3322a" />
+              <polygon points="20,2 34,24 20,38" fill="#d8534a" opacity="0.85" />
+              <polygon points="20,10 26,24 20,44 14,24" fill="#ff8a76" opacity="0.7" />
+            </svg>
+          ))}
           {SMOKE.map((s, i) => (
             <span
               key={i}
@@ -790,6 +847,7 @@ export function ThemeBackdrop() {
       {/* The dragon lives outside the backdrop so it can rise above the
           pause modal when it comes to sleep on it. */}
       {theme === 'dragon' && <DragonLayer />}
+      {theme === 'jungle' && <JunglePauseLayer />}
     </>
   )
 }
@@ -1037,6 +1095,10 @@ function JungleRiders() {
       let k = 0
 
       const clingNext = () => {
+        if (document.querySelector('.modal-overlay .modal')) {
+          setState({ phase: 'idle' })
+          return
+        }
         setState({ phase: 'cling', liana: order[k]!, dir })
         later(() => {
           const r = tipRect(order[k]!)
@@ -1060,7 +1122,8 @@ function JungleRiders() {
     }
 
     const cycle = () => {
-      crossing()
+      // hold the traverse while the pause companion hangs over the modal
+      if (!document.querySelector('.modal-overlay .modal')) crossing()
       later(cycle, 16000)
     }
     later(cycle, 3000)
@@ -1102,6 +1165,83 @@ function JungleRiders() {
       ))}
       {state.phase === 'leap' && <span ref={leapRef} className="tb-monkey-leap" />}
     </>
+  )
+}
+
+/**
+ * Jungle pause companion: when the pause modal opens, the monkey rappels
+ * down a vine right above the popup, hangs there swaying while you rest,
+ * and climbs back up the moment you resume. Lives outside the backdrop
+ * (fixed, z 120) so it can hang over the modal overlay.
+ */
+function JunglePauseLayer() {
+  const [pause, setPause] = useState<{ x: number; h: number; leaving: boolean } | null>(null)
+  const pauseRef = useRef(pause)
+  const [reduced] = useState(prefersReducedMotion)
+
+  useEffect(() => {
+    if (reduced) return
+    let out = 0
+    const watch = window.setInterval(() => {
+      const modal = document.querySelector('.modal-overlay .modal')
+      const cur = pauseRef.current
+      if (modal) {
+        clearTimeout(out)
+        const r = modal.getBoundingClientRect()
+        const next = {
+          x: Math.round(r.left + r.width / 2),
+          h: Math.max(110, Math.round(r.top) - 24),
+          leaving: false,
+        }
+        if (!cur || cur.x !== next.x || cur.h !== next.h || cur.leaving) {
+          pauseRef.current = next
+          setPause(next)
+        }
+      } else if (cur && !cur.leaving) {
+        const next = { ...cur, leaving: true }
+        pauseRef.current = next
+        setPause(next)
+        out = window.setTimeout(() => {
+          pauseRef.current = null
+          setPause(null)
+        }, 780)
+      }
+    }, 350)
+    return () => {
+      clearInterval(watch)
+      clearTimeout(out)
+    }
+  }, [reduced])
+
+  if (reduced || !pause) return null
+  return (
+    <div className="tb-jungle-pause" style={{ left: pause.x }} aria-hidden="true">
+      <div className={`tb-jp-drop${pause.leaving ? ' leaving' : ''}`}>
+        <div className="tb-jp-sway" style={{ height: pause.h }}>
+          <svg
+            className="tb-jp-vine"
+            viewBox="0 0 40 300"
+            width={26}
+            height={pause.h}
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M20 0 C27 55 12 130 22 205 C27 255 16 280 20 300"
+              stroke="#3f6d2c"
+              strokeWidth="4.5"
+              fill="none"
+            />
+            {[52, 118, 186, 248].map((y, j) => (
+              <g key={j} fill="#4d8a35">
+                <ellipse cx="12" cy={y} rx="8" ry="3.2" transform={`rotate(-28 12 ${y})`} />
+                <ellipse cx="28" cy={y + 22} rx="8" ry="3.2" transform={`rotate(28 28 ${y + 22})`} />
+              </g>
+            ))}
+          </svg>
+          <span className="tb-monkey-sprite pause" />
+        </div>
+      </div>
+    </div>
   )
 }
 
