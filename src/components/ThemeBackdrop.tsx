@@ -67,11 +67,27 @@ const FLAKES = gen(22, 10, (r) => ({
   opacity: 0.5 + r() * 0.45,
   gustDelay: r() * 0.9,
 }))
-const WINDS = gen(23, 4, (r, i) => ({
-  top: 12 + i * 20 + r() * 8,
-  width: 160 + r() * 140,
-  delay: r() * 1.2,
-}))
+/** Swirling wind wisps (flowing tails that curl up), swept in with the gust. */
+const WISPS = [
+  { design: 'curl', top: 20, width: 310, delay: 0.2, strength: 0.85 },
+  { design: 'wave', top: 46, width: 350, delay: 0.9, strength: 0.6 },
+  { design: 'curl', top: 68, width: 230, delay: 1.5, strength: 0.5 },
+] as const
+
+const WISP_PATHS: Record<'curl' | 'wave', { d: string; w: number }[]> = {
+  curl: [
+    { d: 'M4 58 C50 50 110 42 165 38', w: 2.4 },
+    { d: 'M18 70 C70 64 130 56 182 50', w: 1.9 },
+    { d: 'M0 44 C46 36 100 30 150 28', w: 1.5 },
+    // tails flow into a curling loop, like a gust folding over itself
+    { d: 'M150 28 C196 18 242 24 246 44 C249 61 220 71 204 60 C192 52 199 35 216 38', w: 2.8 },
+  ],
+  wave: [
+    { d: 'M2 40 C50 16 110 56 170 32 C205 18 240 26 258 36', w: 2.8 },
+    { d: 'M10 52 C60 30 120 64 180 44 C212 32 240 38 256 46', w: 2 },
+    { d: 'M0 28 C48 8 108 44 168 22 C200 10 236 16 254 24', w: 1.4 },
+  ],
+}
 
 const LEAVES = gen(31, 11, (r) => ({
   left: r() * 100,
@@ -97,13 +113,7 @@ const FIRE_EMBERS = gen(41, 22, (r) => ({
   dur: 4.5 + r() * 4.5,
   dx: -40 + r() * 80,
 }))
-/** Flame tongues that lick up from the bottom once per 25s cycle. */
-const FLAME_TONGUES = gen(42, 7, (r, i) => ({
-  left: 3 + i * 14 + r() * 6,
-  width: 26 + r() * 26,
-  height: 70 + r() * 70,
-  delay: r() * 1.6,
-}))
+// (One big central flame erupts every 25s — see .tb-big-flame in CSS.)
 
 const DRAGON_EMBERS = gen(51, 13, (r) => ({
   left: r() * 100,
@@ -285,12 +295,35 @@ function renderLayers(theme: string): ReactNode | null {
               </svg>
             </span>
           ))}
-          {WINDS.map((w, i) => (
-            <span
+          {WISPS.map((w, i) => (
+            <svg
               key={i}
-              className="tb-wind"
-              style={{ top: `${w.top}%`, width: w.width, animationDelay: `${w.delay}s` }}
-            />
+              className="tb-wisp"
+              viewBox="0 0 260 90"
+              width={w.width}
+              height={(w.width * 90) / 260}
+              style={{ top: `${w.top}%`, animationDelay: `${w.delay}s` }}
+            >
+              <defs>
+                {/* tails fade out behind the head of the gust */}
+                <linearGradient id={`tb-wgr-${i}`} x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" stopColor="#dbeeff" stopOpacity="0" />
+                  <stop offset="0.4" stopColor="#dbeeff" stopOpacity="0.45" />
+                  <stop offset="0.85" stopColor="#f2f9ff" stopOpacity="1" />
+                  <stop offset="1" stopColor="#f2f9ff" stopOpacity="0.75" />
+                </linearGradient>
+              </defs>
+              <g
+                fill="none"
+                stroke={`url(#tb-wgr-${i})`}
+                strokeLinecap="round"
+                opacity={w.strength}
+              >
+                {WISP_PATHS[w.design].map((p, j) => (
+                  <path key={j} d={p.d} strokeWidth={p.w} />
+                ))}
+              </g>
+            </svg>
           ))}
         </>
       )
@@ -338,18 +371,13 @@ function renderLayers(theme: string): ReactNode | null {
         <>
           <div className="tb-heat" />
           <div className="tb-heat-surge" />
-          {FLAME_TONGUES.map((f, i) => (
-            <span
-              key={i}
-              className="tb-flame-tongue"
-              style={{
-                left: `${f.left}%`,
-                width: f.width,
-                height: f.height,
-                animationDelay: `${f.delay}s`,
-              }}
-            />
-          ))}
+          {/* the 25s eruption: burst envelope outside, raging licks inside */}
+          <div className="tb-big-flame">
+            <span className="tb-big-flame-body">
+              <span className="tb-big-flame-inner" />
+              <span className="tb-big-flame-core" />
+            </span>
+          </div>
           {FIRE_EMBERS.map((e, i) => (
             <span
               key={i}

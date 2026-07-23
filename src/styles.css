@@ -2955,6 +2955,7 @@ input, select {
 
 /* ThemeBackdrop toggles this while the tab is hidden. */
 .theme-backdrop.paused *,
+.theme-backdrop.paused *::before,
 .theme-backdrop.paused *::after {
   animation-play-state: paused;
 }
@@ -2965,7 +2966,7 @@ input, select {
 @media (prefers-reduced-motion: reduce) {
   .tb-snow,
   .tb-flake,
-  .tb-wind,
+  .tb-wisp,
   .tb-leaf,
   .tb-scanline,
   .tb-shooting,
@@ -3130,21 +3131,20 @@ input, select {
   100% { transform: translate3d(0, 108vh, 0) rotate(310deg); }
 }
 
-/* wind streaks that sweep the sky during the gust window */
-.tb-wind {
-  left: -30%;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(210, 235, 255, 0.55), transparent);
+/* swirling wisps that ride the gust across the sky */
+.tb-wisp {
+  left: -380px;
+  overflow: visible;
   opacity: 0;
-  animation: tb-wind 16s linear infinite;
+  animation: tb-wisp 16s ease-in-out infinite;
 }
 
-@keyframes tb-wind {
-  0%, 69% { transform: translate3d(0, 0, 0) rotate(-6deg); opacity: 0; }
-  72% { opacity: 0.7; }
-  80% { transform: translate3d(150vw, 6vh, 0) rotate(-6deg); opacity: 0.45; }
-  81%, 100% { transform: translate3d(150vw, 6vh, 0) rotate(-6deg); opacity: 0; }
+@keyframes tb-wisp {
+  0%, 68% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  72% { opacity: 1; }
+  76% { transform: translate3d(45vw, -2.5vh, 0) rotate(-2deg); }
+  81% { transform: translate3d(110vw, 1vh, 0) rotate(1.5deg); opacity: 0.9; }
+  83%, 100% { transform: translate3d(125vw, 2vh, 0) rotate(1.5deg); opacity: 0; }
 }
 
 @keyframes tb-fall {
@@ -3244,30 +3244,86 @@ input, select {
   92%, 100% { opacity: 0; }
 }
 
-/* flame tongues licking up from the bottom, one burst per 25s cycle */
-.tb-flame-tongue {
-  bottom: -6px;
+/* one massive flame erupting from the bottom every 25s: the wrapper
+   carries the burst envelope, the layers inside rage on fast loops */
+.tb-big-flame {
+  left: 32vw;
+  width: 36vw;
+  height: 58vh;
+  bottom: -2vh;
   transform-origin: 50% 100%;
-  border-radius: 50% 50% 24% 24% / 78% 78% 22% 22%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 205, 105, 0.9),
-    rgba(255, 122, 32, 0.85) 45%,
-    rgba(200, 60, 12, 0.55)
-  );
-  filter: blur(3px);
   opacity: 0;
-  transform: scaleY(0.1);
-  animation: tb-flame-burst 25s ease-in-out infinite;
+  transform: scaleY(0.04) scaleX(0.6);
+  animation: tb-big-burst 25s ease-in-out infinite;
 }
 
-@keyframes tb-flame-burst {
-  0%, 76% { opacity: 0; transform: scaleY(0.1) scaleX(1); }
-  79% { opacity: 0.95; transform: scaleY(1) scaleX(1); }
-  82% { opacity: 0.85; transform: scaleY(0.8) scaleX(1.09); }
-  85% { opacity: 0.95; transform: scaleY(1.06) scaleX(0.93); }
-  88% { opacity: 0.8; transform: scaleY(0.74) scaleX(1.06); }
-  91%, 100% { opacity: 0; transform: scaleY(0.1) scaleX(1); }
+.tb-big-flame-body,
+.tb-big-flame-inner,
+.tb-big-flame-core,
+.tb-big-flame-body::before,
+.tb-big-flame-body::after {
+  position: absolute;
+  transform-origin: 50% 100%;
+  border-radius: 50% 50% 30% 30% / 74% 74% 26% 26%;
+}
+
+.tb-big-flame-body {
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    #ffeaa8,
+    #ffb13d 26%,
+    #ff6a1a 55%,
+    rgba(206, 48, 10, 0.72) 82%,
+    transparent
+  );
+  filter: blur(7px);
+  animation: tb-flame-rage 0.7s ease-in-out infinite;
+}
+
+/* side licks breaking the silhouette */
+.tb-big-flame-body::before,
+.tb-big-flame-body::after {
+  content: '';
+  bottom: 0;
+  width: 46%;
+  height: 62%;
+  background: inherit;
+  animation: tb-flame-rage 0.55s ease-in-out infinite;
+}
+
+.tb-big-flame-body::before { left: -16%; animation-delay: -0.2s; }
+.tb-big-flame-body::after { right: -16%; height: 52%; animation-delay: -0.4s; }
+
+.tb-big-flame-inner {
+  inset: 16% 16% 0;
+  background: linear-gradient(0deg, #fff3c4, #ffc554 32%, #ff8a24 70%, transparent);
+  filter: blur(6px);
+  animation: tb-flame-rage 0.5s ease-in-out infinite reverse;
+}
+
+.tb-big-flame-core {
+  inset: 38% 30% 0;
+  background: linear-gradient(0deg, #fffbe8, #ffe28a 45%, transparent);
+  filter: blur(5px);
+  animation: tb-flame-rage 0.34s ease-in-out infinite;
+}
+
+@keyframes tb-big-burst {
+  0%, 75% { opacity: 0; transform: scaleY(0.04) scaleX(0.6); }
+  77% { opacity: 1; transform: scaleY(1.08) scaleX(1); }
+  80% { transform: scaleY(0.92) scaleX(1.04); }
+  83% { transform: scaleY(1.04) scaleX(0.96); }
+  86% { transform: scaleY(0.95) scaleX(1.03); }
+  89% { opacity: 0.95; transform: scaleY(1.01) scaleX(1); }
+  92%, 100% { opacity: 0; transform: scaleY(0.05) scaleX(0.7); }
+}
+
+@keyframes tb-flame-rage {
+  0%, 100% { transform: scaleY(1) skewX(0deg); }
+  30% { transform: scaleY(1.06) skewX(2.6deg); }
+  55% { transform: scaleY(0.94) skewX(-3.2deg); }
+  80% { transform: scaleY(1.05) skewX(1.8deg); }
 }
 
 .tb-lair-glow {
