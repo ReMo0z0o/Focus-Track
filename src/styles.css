@@ -2977,7 +2977,8 @@ input, select {
   .tb-petal,
   .tb-butterfly,
   .tb-comet,
-  .tb-monkey-flip,
+  .tb-monkey-sprite,
+  .tb-monkey-leap,
   .tb-prey,
   .tb-dragon-layer {
     display: none;
@@ -3966,63 +3967,47 @@ input, select {
   to { transform: rotate(4.5deg); }
 }
 
-.tb-monkey-flip {
-  position: absolute;
-  inset: 0;
-}
-
-.tb-monkey-track {
-  position: absolute;
-  top: 6vh;
-  left: 0;
-  animation-name: tb-monkey-cross;
-  animation-timing-function: linear;
-  animation-iteration-count: 1;
-  animation-fill-mode: both;
-}
-
-/* eight arcs: high at each vine grab, dipping through every swing */
-@keyframes tb-monkey-cross {
-  0% { transform: translate3d(-10vw, 2vh, 0); }
-  6.25% { transform: translate3d(-2.5vw, 6.6vh, 0); }
-  12.5% { transform: translate3d(5vw, 2.2vh, 0); }
-  18.75% { transform: translate3d(12.5vw, 6.8vh, 0); }
-  25% { transform: translate3d(20vw, 2vh, 0); }
-  31.25% { transform: translate3d(27.5vw, 6.5vh, 0); }
-  37.5% { transform: translate3d(35vw, 2.3vh, 0); }
-  43.75% { transform: translate3d(42.5vw, 6.9vh, 0); }
-  50% { transform: translate3d(50vw, 2vh, 0); }
-  56.25% { transform: translate3d(57.5vw, 6.6vh, 0); }
-  62.5% { transform: translate3d(65vw, 2.2vh, 0); }
-  68.75% { transform: translate3d(72.5vw, 6.7vh, 0); }
-  75% { transform: translate3d(80vw, 2.1vh, 0); }
-  81.25% { transform: translate3d(87.5vw, 6.8vh, 0); }
-  87.5% { transform: translate3d(95vw, 2.2vh, 0); }
-  93.75% { transform: translate3d(102.5vw, 6.5vh, 0); }
-  100% { transform: translate3d(110vw, 2vh, 0); }
-}
-
-.tb-monkey-swing {
-  display: block;
+/* invisible twins of the decor lianas: same sway keyframes, duration and
+   delay, mounted together — so their tips track the visible lianas exactly */
+.tb-rider-anchor {
+  top: 0;
+  width: 26px;
   transform-origin: 50% 0;
-  animation-name: tb-monkey-pendulum;
+  animation-name: tb-liana-sway;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: alternate;
 }
 
-@keyframes tb-monkey-pendulum {
-  from { transform: rotate(-24deg); }
-  to { transform: rotate(24deg); }
+.tb-rider-tip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
 }
 
-/* the monkey from the reference video, clinging to its leafy vine —
-   the sprite's vine runs to its top edge, which is the pendulum pivot */
+/* clinging monkey: its sprite vine tops out at the liana tip, so the
+   decor liana visually continues into the vine it grips */
 .tb-monkey-sprite {
-  display: block;
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  margin-left: -36px;
   width: 72px;
   height: 105px;
   background: url('/monkey-swing.png') no-repeat center / contain;
+}
+
+/* airborne between lianas (rAF-driven arc) */
+.tb-monkey-leap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 64px;
+  height: 55px;
+  background: url('/monkey-leap.png') no-repeat center / contain;
+  will-change: transform;
 }
 
 /* ---- abyss: anglerfish ---- */

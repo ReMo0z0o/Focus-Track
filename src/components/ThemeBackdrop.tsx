@@ -485,7 +485,7 @@ function renderLayers(theme: string): ReactNode | null {
           ))}
           <JungleTree side="left" />
           <JungleTree side="right" />
-          <JungleMonkey />
+          <JungleRiders />
         </>
       )
     case 'fire':
@@ -963,55 +963,145 @@ function JungleTree({ side }: { side: 'left' | 'right' }) {
 
 /* ---------------- jungle: the swinging monkey ---------------- */
 
+const CLING_MS = 1050
+const LEAP_MS = 700
+
+type RiderState =
+  | { phase: 'idle' }
+  | { phase: 'cling'; liana: number; dir: 1 | -1 }
+  | { phase: 'leap'; dir: 1 | -1 }
+
 /**
- * Every so often a monkey crosses the canopy, swinging vine to vine.
- * Direction is random; the pendulum swing runs on a nested element so it
- * composes with the bouncy crossing path.
+ * The monkey is part of the scenery: invisible anchors replicate each
+ * decor liana's exact sway (same keyframes, duration and delay, mounted
+ * together so the phases match), and the monkey clings to their tips —
+ * riding the real lianas — then leaps tip-to-tip every 16 seconds.
  */
-function JungleMonkey() {
-  const [trip, setTrip] = useState<{ id: number; dir: 1 | -1; dur: number } | null>(null)
+function JungleRiders() {
+  const tipRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const leapRef = useRef<HTMLSpanElement>(null)
+  const [state, setState] = useState<RiderState>({ phase: 'idle' })
 
   useEffect(() => {
     if (prefersReducedMotion()) return
-    const img = new Image()
-    img.src = '/monkey-swing.png'
-    let alive = true
-    let spawnTimer: number
-    let clearTimer: number
-    // one crossing every 16 seconds, direction still random
-    const plan = (delay: number) => {
-      spawnTimer = window.setTimeout(() => {
-        if (!alive) return
-        const dur = 9 + Math.random() * 2.5
-        setTrip({ id: Date.now(), dir: Math.random() < 0.5 ? 1 : -1, dur })
-        clearTimer = window.setTimeout(() => {
-          if (alive) setTrip(null)
-        }, dur * 1000)
-        plan(16000)
-      }, delay)
+    for (const src of ['/monkey-swing.png', '/monkey-leap.png']) {
+      const img = new Image()
+      img.src = src
     }
-    plan(3000)
+    let alive = true
+    const timers: number[] = []
+    let raf = 0
+    const later = (fn: () => void, ms: number) => {
+      timers.push(
+        window.setTimeout(() => {
+          if (alive) fn()
+        }, ms),
+      )
+    }
+    const tipRect = (i: number) => tipRefs.current[i]?.getBoundingClientRect() ?? null
+
+    // rAF arc that homes onto the (still swaying) target tip
+    const leapTo = (
+      from: { x: number; y: number },
+      toIndex: number | null,
+      dir: 1 | -1,
+      exitX: number,
+      then: () => void,
+    ) => {
+      const t0 = performance.now()
+      const step = (t: number) => {
+        if (!alive) return
+        const u = Math.min(1, (t - t0) / LEAP_MS)
+        let target = { x: exitX, y: from.y - 60 }
+        if (toIndex !== null) {
+          const r = tipRect(toIndex)
+          if (r) target = { x: r.left + r.width / 2, y: r.top }
+        }
+        const x = from.x + (target.x - from.x) * u
+        const y = from.y + (target.y - from.y) * u - 90 * 4 * u * (1 - u)
+        if (leapRef.current) {
+          leapRef.current.style.transform = `translate3d(${x - 32}px, ${y - 26}px, 0) scaleX(${dir})`
+        }
+        if (u < 1) raf = requestAnimationFrame(step)
+        else then()
+      }
+      raf = requestAnimationFrame(step)
+    }
+
+    const crossing = () => {
+      const dir: 1 | -1 = Math.random() < 0.5 ? 1 : -1
+      const order = LIANAS.map((_, i) => i).sort(
+        (a, b) => (LIANAS[a]!.left - LIANAS[b]!.left) * dir,
+      )
+      const W = window.innerWidth
+      let k = 0
+
+      const clingNext = () => {
+        setState({ phase: 'cling', liana: order[k]!, dir })
+        later(() => {
+          const r = tipRect(order[k]!)
+          const from = r ? { x: r.left + r.width / 2, y: r.top } : { x: 0, y: 0 }
+          k++
+          setState({ phase: 'leap', dir })
+          if (k < order.length) {
+            leapTo(from, order[k]!, dir, 0, clingNext)
+          } else {
+            leapTo(from, null, dir, dir === 1 ? W + 90 : -90, () =>
+              setState({ phase: 'idle' }),
+            )
+          }
+        }, CLING_MS)
+      }
+
+      const first = tipRect(order[0]!)
+      const entryY = (first?.top ?? 260) - 40
+      setState({ phase: 'leap', dir })
+      leapTo({ x: dir === 1 ? -80 : W + 80, y: entryY }, order[0]!, dir, 0, clingNext)
+    }
+
+    const cycle = () => {
+      crossing()
+      later(cycle, 16000)
+    }
+    later(cycle, 3000)
+
     return () => {
       alive = false
-      clearTimeout(spawnTimer)
-      clearTimeout(clearTimer)
+      timers.forEach(clearTimeout)
+      cancelAnimationFrame(raf)
     }
   }, [])
 
-  if (!trip) return null
   return (
-    <span
-      key={trip.id}
-      className="tb-monkey-flip"
-      style={trip.dir === -1 ? { transform: 'scaleX(-1)' } : undefined}
-    >
-      <span className="tb-monkey-track" style={{ animationDuration: `${trip.dur}s` }}>
-        <span className="tb-monkey-swing" style={{ animationDuration: `${trip.dur / 8}s` }}>
-          {/* the monkey from the reference video, leafy vine in hand */}
-          <span className="tb-monkey-sprite" />
+    <>
+      {LIANAS.map((l, i) => (
+        <span
+          key={i}
+          className="tb-rider-anchor"
+          style={{
+            left: `${l.left}%`,
+            height: `${l.len}vh`,
+            animationDelay: `-${l.delay}s`,
+            animationDuration: `${l.dur}s`,
+          }}
+        >
+          <span
+            className="tb-rider-tip"
+            ref={(el) => {
+              tipRefs.current[i] = el
+            }}
+          >
+            {state.phase === 'cling' && state.liana === i && (
+              <span
+                className="tb-monkey-sprite"
+                style={{ transform: `scaleX(${state.dir})` }}
+              />
+            )}
+          </span>
         </span>
-      </span>
-    </span>
+      ))}
+      {state.phase === 'leap' && <span ref={leapRef} className="tb-monkey-leap" />}
+    </>
   )
 }
 
