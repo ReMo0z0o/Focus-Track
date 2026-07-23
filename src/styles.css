@@ -4152,8 +4152,8 @@ input, select {
   position: fixed;
   left: 0;
   top: 0;
-  width: 190px;
-  height: 132px;
+  width: 220px;
+  height: 177px;
   z-index: -1;
   pointer-events: none;
   will-change: transform;
@@ -4184,96 +4184,75 @@ input, select {
   to { transform: translateY(9px); }
 }
 
-.tb-dragon-fly,
-.tb-dragon-sleep {
+/* the dragon itself: sprite sheets cut from the reference video */
+.tb-dragon-sprite {
   position: absolute;
-  inset: 0;
-  overflow: visible;
   transition: opacity 0.45s ease;
+  background-repeat: no-repeat;
+  image-rendering: auto;
 }
 
-.tb-dragon-sleep { opacity: 0; }
-.tb-dragon-layer.mode-sleep .tb-dragon-sleep { opacity: 1; }
-.tb-dragon-layer.mode-sleep .tb-dragon-fly { opacity: 0; }
-
-.tb-dragon-fly .dw-wing,
-.tb-dragon-fly .dw-tail {
-  transform-box: fill-box;
+/* fly: 11 frames of 220x177 (one full wing beat) */
+.tb-dragon-sprite.fly {
+  inset: 0;
+  background-image: url('/dragon-fly.png');
+  background-size: 2420px 177px;
+  animation: dragon-flap 0.92s steps(11) infinite;
 }
 
-.tb-dragon-fly .dw-wing.near {
-  transform-origin: 22% 92%;
-  animation: dw-flap 0.9s ease-in-out infinite alternate;
+.tb-dragon-layer.mode-approach .tb-dragon-sprite.fly,
+.tb-dragon-layer.mode-depart .tb-dragon-sprite.fly {
+  animation-duration: 0.5s;
 }
 
-.tb-dragon-fly .dw-wing.far {
-  transform-origin: 20% 95%;
-  animation: dw-flap-far 0.9s ease-in-out infinite alternate;
+@keyframes dragon-flap {
+  to { background-position: -2420px 0; }
 }
 
-.tb-dragon-layer.mode-approach .dw-wing.near,
-.tb-dragon-layer.mode-depart .dw-wing.near {
-  animation-duration: 0.45s;
-}
-
-.tb-dragon-layer.mode-approach .dw-wing.far,
-.tb-dragon-layer.mode-depart .dw-wing.far {
-  animation-duration: 0.45s;
-}
-
-@keyframes dw-flap {
-  from { transform: rotate(16deg); }
-  to { transform: rotate(-18deg); }
-}
-
-@keyframes dw-flap-far {
-  from { transform: rotate(-14deg); }
-  to { transform: rotate(12deg); }
-}
-
-.tb-dragon-fly .dw-tail {
-  transform-origin: 5% 40%;
-  animation: dw-tail-sway 2.2s ease-in-out infinite alternate;
-}
-
-@keyframes dw-tail-sway {
-  from { transform: rotate(-5deg); }
-  to { transform: rotate(6deg); }
-}
-
-.tb-dragon-sleep .ds-breathe {
-  transform-box: view-box;
-  transform-origin: 50% 100%;
-  animation: ds-breathe 3.6s ease-in-out infinite alternate;
-}
-
-@keyframes ds-breathe {
-  from { transform: scaleY(1); }
-  to { transform: scaleY(1.03); }
-}
-
-.tb-dragon-sleep .ds-smoke {
-  transform-box: fill-box;
+/* sleep: 6 frames of 220x125 (one real breath), belly on the layer floor */
+.tb-dragon-sprite.sleep {
+  left: 0;
+  bottom: 0;
+  width: 220px;
+  height: 125px;
+  background-image: url('/dragon-sleep.png');
+  background-size: 1320px 125px;
+  animation: dragon-breathe 1.6s steps(6) infinite;
   opacity: 0;
-  animation: ds-smoke 4.5s ease-out infinite;
 }
 
-@keyframes ds-smoke {
-  0% { transform: translate(0, 0) scale(0.7); opacity: 0; }
-  15% { opacity: 0.5; }
-  60% { transform: translate(-12px, -24px) scale(1.6); opacity: 0.15; }
-  100% { transform: translate(-16px, -34px) scale(1.9); opacity: 0; }
+@keyframes dragon-breathe {
+  to { background-position: -1320px 0; }
 }
 
-.tb-dragon-sleep .ds-zzz text {
-  transform-box: fill-box;
+.tb-dragon-layer.mode-sleep .tb-dragon-sprite.sleep { opacity: 1; }
+.tb-dragon-layer.mode-sleep .tb-dragon-sprite.fly { opacity: 0; }
+
+/* floating z's above the sleeper's head */
+.tb-dragon-zzz {
+  position: absolute;
+  left: 30px;
+  bottom: 118px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  color: #ffd9b0;
+  font-weight: 700;
   font-family: var(--font);
+}
+
+.tb-dragon-layer.mode-sleep .tb-dragon-zzz { opacity: 1; }
+
+.tb-dragon-zzz i {
+  position: absolute;
+  bottom: 0;
+  font-style: normal;
   opacity: 0;
   animation: ds-z 3.2s ease-in-out infinite;
 }
 
-.tb-dragon-sleep .z2 { animation-delay: 0.55s; }
-.tb-dragon-sleep .z3 { animation-delay: 1.1s; }
+.tb-dragon-zzz i:nth-child(1) { left: 0; font-size: 13px; }
+.tb-dragon-zzz i:nth-child(2) { left: 13px; bottom: 12px; font-size: 17px; animation-delay: 0.55s; }
+.tb-dragon-zzz i:nth-child(3) { left: 29px; bottom: 26px; font-size: 21px; animation-delay: 1.1s; }
 
 @keyframes ds-z {
   0% { transform: translateY(4px); opacity: 0; }

@@ -1316,128 +1316,12 @@ function Prey({ sx, sy, lx, ly }: { sx: number; sy: number; lx: number; ly: numb
 
 /* ---------------- dragon: roams, then naps on the pause modal ---------------- */
 
-const DRAGON_W = 190
-const DRAGON_H = 132
-
-function DragonFlySvg() {
-  return (
-    <svg className="tb-dragon-fly" viewBox="0 0 190 132">
-      {/* far wing */}
-      <g className="dw-wing far">
-        <path
-          d="M98 58 C86 30 94 10 124 4 C114 18 114 30 120 40 C130 34 142 34 152 40 C134 44 118 52 110 62 Z"
-          fill="#8f2a20"
-        />
-      </g>
-      {/* tail */}
-      <g className="dw-tail">
-        <path
-          d="M128 72 C150 76 166 86 178 102 C170 100 164 102 160 106 C158 98 146 88 126 82 Z"
-          fill="#b03a2e"
-        />
-        <path d="M174 98 L190 106 L176 114 Z" fill="#8f2a20" />
-      </g>
-      {/* body */}
-      <path
-        d="M52 62 C64 50 86 46 104 52 C122 58 132 68 130 78 C118 88 92 90 72 82 C58 76 50 70 52 62 Z"
-        fill="#c8473a"
-      />
-      <path
-        d="M58 70 C72 80 100 84 122 78 C112 86 88 88 70 82 C62 78 58 74 58 70 Z"
-        fill="#e8a765"
-        opacity="0.9"
-      />
-      {/* tucked legs */}
-      <path
-        d="M84 84 C82 92 86 96 92 96 M106 84 C106 92 110 96 116 94"
-        stroke="#8f2a20"
-        strokeWidth="5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      {/* neck */}
-      <path
-        d="M52 62 C40 56 30 48 26 38 C24 32 26 26 32 24 C42 20 52 26 56 36 C60 46 58 56 52 62 Z"
-        fill="#c8473a"
-      />
-      {/* head */}
-      <path
-        d="M34 24 C24 16 12 16 3 23 C10 26 14 29 16 33 C10 35 6 39 4 44 C15 46 27 43 33 37 C36 33 36 28 34 24 Z"
-        fill="#c8473a"
-      />
-      {/* horns */}
-      <path d="M30 22 C34 13 43 8 52 9 C45 15 40 21 38 27 Z" fill="#f2d8a0" />
-      <path d="M38 27 C44 21 52 18 59 20 C53 24 48 29 45 34 Z" fill="#e9c184" />
-      {/* eye */}
-      <circle cx="19" cy="29" r="2.7" fill="#ffd166" />
-      <circle cx="19" cy="29" r="1.1" fill="#5c1010" />
-      {/* near wing */}
-      <g className="dw-wing near">
-        <path
-          d="M88 56 C70 24 78 2 116 -2 L114 6 C106 10 102 17 104 26 C115 16 131 14 145 20 C131 24 121 32 117 42 C130 40 142 44 150 52 C132 54 112 58 100 66 Z"
-          fill="#e2604f"
-        />
-        <path
-          d="M100 60 C96 42 100 26 112 16"
-          stroke="#8f2a20"
-          strokeWidth="2"
-          fill="none"
-          opacity="0.55"
-        />
-      </g>
-    </svg>
-  )
-}
-
-function DragonSleepSvg() {
-  return (
-    <svg className="tb-dragon-sleep" viewBox="0 0 190 132">
-      <g className="ds-breathe">
-        {/* tail curled around the front */}
-        <path
-          d="M44 120 C26 120 14 112 16 101 C18 93 28 91 34 97 C30 99 26 103 30 107 C36 113 52 114 66 112"
-          fill="none"
-          stroke="#b03a2e"
-          strokeWidth="9"
-          strokeLinecap="round"
-        />
-        <path d="M17 99 L3 92 L12 106 Z" fill="#8f2a20" />
-        {/* body mound */}
-        <path d="M44 120 C42 92 62 74 94 74 C126 74 148 93 150 120 Z" fill="#c8473a" />
-        {/* folded wing */}
-        <path
-          d="M74 86 C86 62 118 58 140 74 C122 70 102 78 94 92 C88 100 84 110 86 120 C76 110 70 98 74 86 Z"
-          fill="#e2604f"
-        />
-        <path d="M140 74 C148 82 152 92 152 102" stroke="#8f2a20" strokeWidth="2.5" fill="none" opacity="0.55" />
-        {/* resting head */}
-        <path d="M28 120 C26 105 38 95 56 95 C71 95 81 103 83 113 C83 117 81 120 77 120 Z" fill="#c8473a" />
-        <path d="M28 113 C18 113 9 115 5 120 L30 120 Z" fill="#c8473a" />
-        {/* horn */}
-        <path d="M54 95 C56 86 63 80 71 78 C67 86 65 92 65 97 Z" fill="#f2d8a0" />
-        {/* closed eye + snout line */}
-        <path d="M34 107 Q40 111 46 107" stroke="#5c1010" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        <circle cx="10" cy="116" r="1.2" fill="#5c1010" opacity="0.7" />
-        {/* belly */}
-        <path d="M54 120 C62 110 86 106 106 110 C126 113 142 117 148 120 Z" fill="#e8a765" opacity="0.85" />
-      </g>
-      {/* nostril smoke */}
-      <circle className="ds-smoke" cx="8" cy="110" r="3" fill="#d9c4bb" />
-      {/* Zzz */}
-      <g className="ds-zzz" fill="#ffd9b0" fontWeight="700">
-        <text className="z1" x="88" y="60" fontSize="13">
-          z
-        </text>
-        <text className="z2" x="102" y="46" fontSize="17">
-          z
-        </text>
-        <text className="z3" x="120" y="30" fontSize="21">
-          z
-        </text>
-      </g>
-    </svg>
-  )
-}
+/* Sprite sheets cut frame-by-frame from the user's reference video —
+   this IS that dragon. Fly: one full wing beat (11 frames @ 12fps);
+   sleep: one breath (6 frames). */
+const DRAGON_W = 220
+const DRAGON_H = 177
+const DRAGON_SHEETS = ['/dragon-fly.png', '/dragon-sleep.png']
 
 type DragonMode = 'roam' | 'approach' | 'sleep' | 'depart'
 
@@ -1455,7 +1339,11 @@ function DragonLayer() {
 
   useEffect(() => {
     if (reduced) return
-    const s = { x: 0, y: 0, tx: 0, ty: 0, facing: -1, dwell: 0 }
+    for (const src of DRAGON_SHEETS) {
+      const img = new Image()
+      img.src = src
+    }
+    const s = { x: 0, y: 0, tx: 0, ty: 0, facing: 1, dwell: 0 }
     const W = () => window.innerWidth
     const H = () => window.innerHeight
     const pickRoam = () => {
@@ -1511,7 +1399,7 @@ function DragonLayer() {
           if (m === 'approach') {
             s.x = s.tx
             s.y = s.ty
-            s.facing = -1
+            s.facing = 1 // sleep frames face left natively — no flip
             switchMode('sleep')
           } else if (m === 'depart') {
             switchMode('roam')
@@ -1534,7 +1422,8 @@ function DragonLayer() {
         wrapRef.current.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`
       }
       if (flipRef.current) {
-        flipRef.current.style.transform = `scaleX(${s.facing === 1 ? -1 : 1})`
+        // fly frames face right natively — mirror when heading left
+        flipRef.current.style.transform = `scaleX(${s.facing === -1 ? -1 : 1})`
       }
       raf = requestAnimationFrame(loop)
     }
@@ -1551,8 +1440,13 @@ function DragonLayer() {
     <div ref={wrapRef} className={`tb-dragon-layer mode-${mode}`} aria-hidden="true">
       <div ref={flipRef} className="tb-dragon-flip">
         <div className="tb-dragon-bob">
-          <DragonFlySvg />
-          <DragonSleepSvg />
+          <div className="tb-dragon-sprite fly" />
+          <div className="tb-dragon-sprite sleep" />
+          <span className="tb-dragon-zzz">
+            <i>z</i>
+            <i>z</i>
+            <i>z</i>
+          </span>
         </div>
       </div>
     </div>
