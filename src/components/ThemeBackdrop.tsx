@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 
 /**
@@ -46,6 +46,12 @@ const BIG_STARS = gen(12, 7, (r) => ({
   delay: r() * 5,
   dur: 3 + r() * 3,
   big: true,
+}))
+/** A whole meteor shower instead of the former lonely pair. */
+const SHOOTS = gen(13, 7, (r) => ({
+  top: 4 + r() * 66,
+  delay: r() * 12,
+  dur: 5.5 + r() * 8,
 }))
 
 const SNOW = gen(21, 14, (r) => ({
@@ -104,6 +110,13 @@ const FIREFLIES = gen(32, 9, (r) => ({
   dur: 4 + r() * 5,
   dx: -30 + r() * 60,
   dy: -20 + r() * 40,
+}))
+/** Lianas hanging from the canopy, swaying in the breeze. */
+const LIANAS = gen(33, 5, (r, i) => ({
+  left: 6 + i * 20 + r() * 8,
+  len: 30 + r() * 24,
+  delay: r() * 3,
+  dur: 4.5 + r() * 2.5,
 }))
 
 const FIRE_EMBERS = gen(41, 22, (r) => ({
@@ -229,8 +242,23 @@ function renderLayers(theme: string): ReactNode | null {
               }}
             />
           ))}
-          <span className="tb-shooting" style={{ top: '14%', animationDelay: '3s', animationDuration: '9s' } as Vars} />
-          <span className="tb-shooting" style={{ top: '52%', animationDelay: '8.5s', animationDuration: '13s' } as Vars} />
+          {SHOOTS.map((s, i) => (
+            <span
+              key={i}
+              className="tb-shooting"
+              style={{
+                top: `${s.top}%`,
+                animationDelay: `${s.delay}s`,
+                animationDuration: `${s.dur}s`,
+              }}
+            />
+          ))}
+          {/* the 10s comet: glowing head, twin gradient tails */}
+          <span className="tb-comet">
+            <span className="tb-comet-tail dust" />
+            <span className="tb-comet-tail" />
+            <span className="tb-comet-head" />
+          </span>
         </>
       )
     case 'polar':
@@ -331,6 +359,35 @@ function renderLayers(theme: string): ReactNode | null {
       return (
         <>
           <div className="tb-canopy" />
+          {LIANAS.map((l, i) => (
+            <svg
+              key={i}
+              className="tb-liana"
+              viewBox="0 0 40 300"
+              width={26}
+              preserveAspectRatio="none"
+              style={{
+                left: `${l.left}%`,
+                height: `${l.len}vh`,
+                animationDelay: `-${l.delay}s`,
+                animationDuration: `${l.dur}s`,
+              }}
+            >
+              <path
+                d="M20 0 C27 55 12 130 22 205 C27 255 16 280 20 300"
+                stroke="#3f6d2c"
+                strokeWidth="4.5"
+                fill="none"
+              />
+              {[36, 88, 140, 196, 248].map((y, j) => (
+                <g key={j} fill="#4d8a35">
+                  <ellipse cx="12" cy={y} rx="8" ry="3.2" transform={`rotate(-28 12 ${y})`} />
+                  <ellipse cx="28" cy={y + 20} rx="8" ry="3.2" transform={`rotate(28 28 ${y + 20})`} />
+                </g>
+              ))}
+            </svg>
+          ))}
+          <JungleMonkey />
           {LEAVES.map((l, i) => (
             <span
               key={i}
@@ -543,6 +600,7 @@ function renderLayers(theme: string): ReactNode | null {
               }
             />
           ))}
+          <AnglerFish />
         </>
       )
     case 'storm':
@@ -657,11 +715,571 @@ export function ThemeBackdrop() {
   if (!layers) return null
 
   return (
-    <div
-      className={`theme-backdrop tb-${theme}${paused ? ' paused' : ''}`}
-      aria-hidden="true"
+    <>
+      <div
+        className={`theme-backdrop tb-${theme}${paused ? ' paused' : ''}`}
+        aria-hidden="true"
+      >
+        {layers}
+      </div>
+      {/* The dragon lives outside the backdrop so it can rise above the
+          pause modal when it comes to sleep on it. */}
+      {theme === 'dragon' && <DragonLayer />}
+    </>
+  )
+}
+
+/* ================================================================== */
+/* Scripted creatures                                                  */
+/* ================================================================== */
+
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+/* ---------------- jungle: the swinging monkey ---------------- */
+
+function MonkeySvg() {
+  return (
+    <svg className="tb-monkey" viewBox="0 0 64 84" width="52" height="68">
+      {/* vine bit in the hand */}
+      <path d="M32 0 L32 10" stroke="#4a7a33" strokeWidth="2.6" strokeLinecap="round" />
+      {/* raised arm */}
+      <path d="M32 6 C30 16 28 24 31 33" stroke="#6b4527" strokeWidth="5" fill="none" strokeLinecap="round" />
+      <circle cx="32" cy="5.5" r="4" fill="#6b4527" />
+      {/* tail */}
+      <path
+        d="M36 62 C48 66 55 58 50 49 C46 43 39 46 41 51"
+        stroke="#6b4527"
+        strokeWidth="4.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* body + belly */}
+      <ellipse cx="32" cy="48" rx="11" ry="14" fill="#7a5230" />
+      <ellipse cx="32" cy="52" rx="6.5" ry="8.5" fill="#c9a97e" />
+      {/* tucked legs */}
+      <path
+        d="M25 58 C22 64 24 70 30 70 M39 58 C42 64 40 70 34 70"
+        stroke="#6b4527"
+        strokeWidth="4.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* free arm */}
+      <path d="M36 38 C42 44 44 50 42 55" stroke="#6b4527" strokeWidth="5" fill="none" strokeLinecap="round" />
+      {/* head */}
+      <circle cx="24.5" cy="22" r="3.4" fill="#7a5230" />
+      <circle cx="39.5" cy="22" r="3.4" fill="#7a5230" />
+      <circle cx="32" cy="25" r="9.5" fill="#7a5230" />
+      <path d="M25.5 27 a7 7 0 0 1 13 0 a7.5 7.5 0 0 1 -13 0" fill="#c9a97e" />
+      <ellipse cx="32" cy="23.5" rx="5.5" ry="4" fill="#c9a97e" />
+      <circle cx="29.5" cy="23" r="1.2" fill="#2c1c10" />
+      <circle cx="34.5" cy="23" r="1.2" fill="#2c1c10" />
+      <path d="M30 28.5 Q32 30 34 28.5" stroke="#2c1c10" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/**
+ * Every so often a monkey crosses the canopy, swinging vine to vine.
+ * Direction is random; the pendulum swing runs on a nested element so it
+ * composes with the bouncy crossing path.
+ */
+function JungleMonkey() {
+  const [trip, setTrip] = useState<{ id: number; dir: 1 | -1; dur: number } | null>(null)
+
+  useEffect(() => {
+    if (prefersReducedMotion()) return
+    let alive = true
+    let timer: number
+    const plan = (delay: number) => {
+      timer = window.setTimeout(() => {
+        if (!alive) return
+        const dur = 8.5 + Math.random() * 3
+        setTrip({ id: Date.now(), dir: Math.random() < 0.5 ? 1 : -1, dur })
+        timer = window.setTimeout(() => {
+          if (!alive) return
+          setTrip(null)
+          plan(9000 + Math.random() * 15000)
+        }, dur * 1000)
+      }, delay)
+    }
+    plan(3000)
+    return () => {
+      alive = false
+      clearTimeout(timer)
+    }
+  }, [])
+
+  if (!trip) return null
+  return (
+    <span
+      key={trip.id}
+      className="tb-monkey-flip"
+      style={trip.dir === -1 ? { transform: 'scaleX(-1)' } : undefined}
     >
-      {layers}
+      <span className="tb-monkey-track" style={{ animationDuration: `${trip.dur}s` }}>
+        <span className="tb-monkey-swing" style={{ animationDuration: `${trip.dur / 8}s` }}>
+          <MonkeySvg />
+        </span>
+      </span>
+    </span>
+  )
+}
+
+/* ---------------- abyss: the anglerfish hunt ---------------- */
+
+const ANGLER_W = 170
+const ANGLER_H = 95
+/** Lure position in the (left-facing) angler SVG, scaled to element px. */
+const LURE_X = 21
+const LURE_Y = 22
+
+function AnglerSvg({ biting }: { biting: boolean }) {
+  return (
+    <svg
+      className={`tb-angler${biting ? ' biting' : ''}`}
+      viewBox="0 0 160 90"
+      width={ANGLER_W}
+      height={ANGLER_H}
+    >
+      {/* lure rod + bioluminescent esca */}
+      <path
+        d="M52 24 C42 10 30 8 20 19"
+        stroke="#22333f"
+        strokeWidth="2.4"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <circle className="tb-lure-glow" cx="20" cy="21" r="8" fill="#9ff2ea" />
+      <circle cx="20" cy="21" r="2.6" fill="#eafffb" />
+      {/* tail + body */}
+      <path
+        d="M14 52 C22 34 46 26 74 28 C102 30 120 38 130 48 C138 56 146 58 154 53 C151 63 142 66 133 61 C121 71 98 77 72 75 C46 73 22 66 14 52 Z"
+        fill="#15212d"
+        stroke="rgba(120, 205 ,215, 0.35)"
+        strokeWidth="1.2"
+      />
+      {/* dorsal spines */}
+      <path
+        d="M62 28 L58 18 M76 28 L74 17 M92 31 L92 20"
+        stroke="#22333f"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      {/* belly sheen */}
+      <path d="M26 58 C46 68 86 72 116 64 C96 72 56 72 34 64 Z" fill="#1f3242" opacity="0.9" />
+      {/* pectoral fin */}
+      <path className="tb-angler-fin" d="M84 58 C92 64 94 72 90 80 C82 74 78 66 80 58 Z" fill="#22333f" />
+      {/* mouth cavity + upper teeth */}
+      <path d="M14 52 C22 44 34 41 46 44 L46 56 C32 60 20 58 14 52 Z" fill="#070d13" />
+      <path
+        d="M20 46.5 L22 52 L25 46 L28 51.5 L31 45.5 L34 51 L38 45.5 L40 50"
+        stroke="#dff2f4"
+        strokeWidth="1.6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* lower jaw (snaps shut on the bite) */}
+      <g className="tb-angler-jaw">
+        <path d="M14 53 C24 60 36 62 48 58 C40 68 24 68 14 60 Z" fill="#15212d" stroke="rgba(120,205,215,0.3)" strokeWidth="1" />
+        <path
+          d="M20 57 L22 51.5 M27 59 L29 53 M35 60 L36 54.5"
+          stroke="#dff2f4"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </g>
+      {/* eye */}
+      <circle cx="54" cy="40" r="3.2" fill="#b7dbe4" />
+      <circle cx="54.8" cy="40.5" r="1.4" fill="#0a1218" />
+    </svg>
+  )
+}
+
+function PreySvg() {
+  return (
+    <svg viewBox="0 0 34 16" width="30" height="14">
+      <path
+        d="M4 8 C9 3 18 2 25 8 C18 14 9 13 4 8 Z"
+        fill="#8fd0d8"
+        opacity="0.9"
+      />
+      <path d="M25 8 L32 3 L32 13 Z" fill="#6fb3bd" opacity="0.85" />
+      <circle cx="9" cy="7" r="1.2" fill="#12222b" />
+    </svg>
+  )
+}
+
+/**
+ * A deep-sea anglerfish wanders the dark at random, lamp pulsing. Every
+ * 18 seconds a small fish is drawn to the light — and snapped up.
+ */
+function AnglerFish() {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const state = useRef({ x: 0, y: 0, tx: 0, ty: 0, facing: -1, dwell: 0, hunting: false })
+  const [prey, setPrey] = useState<{ id: number; sx: number; sy: number; lx: number; ly: number } | null>(null)
+  const [biting, setBiting] = useState(false)
+
+  useEffect(() => {
+    const s = state.current
+    const W = () => window.innerWidth
+    const H = () => window.innerHeight
+    const pick = () => {
+      s.tx = W() * (0.06 + Math.random() * 0.6)
+      s.ty = H() * (0.16 + Math.random() * 0.55)
+    }
+    s.x = W() * 0.35
+    s.y = H() * 0.4
+    pick()
+
+    const write = () => {
+      if (wrapRef.current) {
+        wrapRef.current.style.transform = `translate3d(${s.x}px, ${s.y}px, 0) scaleX(${
+          s.facing === 1 ? -1 : 1
+        })`
+      }
+    }
+    if (prefersReducedMotion()) {
+      write()
+      return
+    }
+
+    let raf = 0
+    let last = performance.now()
+    const loop = (t: number) => {
+      const dt = Math.min(64, t - last)
+      last = t
+      if (!document.hidden && !s.hunting) {
+        const dx = s.tx - s.x
+        const dy = s.ty - s.y
+        const d = Math.hypot(dx, dy)
+        if (d < 12) {
+          s.dwell -= dt
+          if (s.dwell <= 0) {
+            pick()
+            s.dwell = 1200 + Math.random() * 2600
+          }
+        } else {
+          const sp = 44 * (dt / 1000)
+          s.x += (dx / d) * sp
+          s.y += (dy / d) * sp
+          if (Math.abs(dx) > 26) s.facing = dx < 0 ? -1 : 1
+        }
+      }
+      write()
+      raf = requestAnimationFrame(loop)
+    }
+    raf = requestAnimationFrame(loop)
+
+    const hunt = window.setInterval(() => {
+      if (document.hidden || s.hunting) return
+      s.hunting = true
+      const lampX = s.x + (s.facing === 1 ? ANGLER_W - LURE_X : LURE_X)
+      const lampY = s.y + LURE_Y
+      const fromLeft = s.facing !== 1
+      const sx = lampX + (fromLeft ? -1 : 1) * (230 + Math.random() * 120)
+      const sy = lampY - 60 + Math.random() * 120
+      setPrey({ id: Date.now(), sx, sy, lx: lampX, ly: lampY })
+      window.setTimeout(() => setBiting(true), 3300)
+      window.setTimeout(() => setPrey(null), 3650)
+      window.setTimeout(() => {
+        setBiting(false)
+        s.hunting = false
+      }, 4400)
+    }, 18000)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      clearInterval(hunt)
+    }
+  }, [])
+
+  return (
+    <>
+      <div ref={wrapRef} className="tb-angler-wrap">
+        <div className="tb-angler-bob">
+          <AnglerSvg biting={biting} />
+        </div>
+      </div>
+      {prey && <Prey key={prey.id} {...prey} />}
+      {biting && (
+        <span
+          className="tb-gulp"
+          style={{ transform: `translate3d(${state.current.x + (state.current.facing === 1 ? ANGLER_W - 30 : 30)}px, ${state.current.y + 50}px, 0)` }}
+        >
+          <i />
+          <i />
+          <i />
+        </span>
+      )}
+    </>
+  )
+}
+
+function Prey({ sx, sy, lx, ly }: { sx: number; sy: number; lx: number; ly: number }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const flip = lx > sx ? -1 : 1 // svg faces left; flip when swimming right
+    el.style.transform = `translate3d(${sx}px, ${sy}px, 0) scaleX(${flip})`
+    void el.getBoundingClientRect()
+    el.style.transition = 'transform 3.2s cubic-bezier(0.45, 0.1, 0.55, 1)'
+    el.style.transform = `translate3d(${lx - 14}px, ${ly + 10}px, 0) scaleX(${flip})`
+  }, [sx, sy, lx, ly])
+  return (
+    <span ref={ref} className="tb-prey">
+      <PreySvg />
+    </span>
+  )
+}
+
+/* ---------------- dragon: roams, then naps on the pause modal ---------------- */
+
+const DRAGON_W = 190
+const DRAGON_H = 132
+
+function DragonFlySvg() {
+  return (
+    <svg className="tb-dragon-fly" viewBox="0 0 190 132">
+      {/* far wing */}
+      <g className="dw-wing far">
+        <path
+          d="M98 58 C86 30 94 10 124 4 C114 18 114 30 120 40 C130 34 142 34 152 40 C134 44 118 52 110 62 Z"
+          fill="#8f2a20"
+        />
+      </g>
+      {/* tail */}
+      <g className="dw-tail">
+        <path
+          d="M128 72 C150 76 166 86 178 102 C170 100 164 102 160 106 C158 98 146 88 126 82 Z"
+          fill="#b03a2e"
+        />
+        <path d="M174 98 L190 106 L176 114 Z" fill="#8f2a20" />
+      </g>
+      {/* body */}
+      <path
+        d="M52 62 C64 50 86 46 104 52 C122 58 132 68 130 78 C118 88 92 90 72 82 C58 76 50 70 52 62 Z"
+        fill="#c8473a"
+      />
+      <path
+        d="M58 70 C72 80 100 84 122 78 C112 86 88 88 70 82 C62 78 58 74 58 70 Z"
+        fill="#e8a765"
+        opacity="0.9"
+      />
+      {/* tucked legs */}
+      <path
+        d="M84 84 C82 92 86 96 92 96 M106 84 C106 92 110 96 116 94"
+        stroke="#8f2a20"
+        strokeWidth="5"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* neck */}
+      <path
+        d="M52 62 C40 56 30 48 26 38 C24 32 26 26 32 24 C42 20 52 26 56 36 C60 46 58 56 52 62 Z"
+        fill="#c8473a"
+      />
+      {/* head */}
+      <path
+        d="M34 24 C24 16 12 16 3 23 C10 26 14 29 16 33 C10 35 6 39 4 44 C15 46 27 43 33 37 C36 33 36 28 34 24 Z"
+        fill="#c8473a"
+      />
+      {/* horns */}
+      <path d="M30 22 C34 13 43 8 52 9 C45 15 40 21 38 27 Z" fill="#f2d8a0" />
+      <path d="M38 27 C44 21 52 18 59 20 C53 24 48 29 45 34 Z" fill="#e9c184" />
+      {/* eye */}
+      <circle cx="19" cy="29" r="2.7" fill="#ffd166" />
+      <circle cx="19" cy="29" r="1.1" fill="#5c1010" />
+      {/* near wing */}
+      <g className="dw-wing near">
+        <path
+          d="M88 56 C70 24 78 2 116 -2 L114 6 C106 10 102 17 104 26 C115 16 131 14 145 20 C131 24 121 32 117 42 C130 40 142 44 150 52 C132 54 112 58 100 66 Z"
+          fill="#e2604f"
+        />
+        <path
+          d="M100 60 C96 42 100 26 112 16"
+          stroke="#8f2a20"
+          strokeWidth="2"
+          fill="none"
+          opacity="0.55"
+        />
+      </g>
+    </svg>
+  )
+}
+
+function DragonSleepSvg() {
+  return (
+    <svg className="tb-dragon-sleep" viewBox="0 0 190 132">
+      <g className="ds-breathe">
+        {/* tail curled around the front */}
+        <path
+          d="M44 120 C26 120 14 112 16 101 C18 93 28 91 34 97 C30 99 26 103 30 107 C36 113 52 114 66 112"
+          fill="none"
+          stroke="#b03a2e"
+          strokeWidth="9"
+          strokeLinecap="round"
+        />
+        <path d="M17 99 L3 92 L12 106 Z" fill="#8f2a20" />
+        {/* body mound */}
+        <path d="M44 120 C42 92 62 74 94 74 C126 74 148 93 150 120 Z" fill="#c8473a" />
+        {/* folded wing */}
+        <path
+          d="M74 86 C86 62 118 58 140 74 C122 70 102 78 94 92 C88 100 84 110 86 120 C76 110 70 98 74 86 Z"
+          fill="#e2604f"
+        />
+        <path d="M140 74 C148 82 152 92 152 102" stroke="#8f2a20" strokeWidth="2.5" fill="none" opacity="0.55" />
+        {/* resting head */}
+        <path d="M28 120 C26 105 38 95 56 95 C71 95 81 103 83 113 C83 117 81 120 77 120 Z" fill="#c8473a" />
+        <path d="M28 113 C18 113 9 115 5 120 L30 120 Z" fill="#c8473a" />
+        {/* horn */}
+        <path d="M54 95 C56 86 63 80 71 78 C67 86 65 92 65 97 Z" fill="#f2d8a0" />
+        {/* closed eye + snout line */}
+        <path d="M34 107 Q40 111 46 107" stroke="#5c1010" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        <circle cx="10" cy="116" r="1.2" fill="#5c1010" opacity="0.7" />
+        {/* belly */}
+        <path d="M54 120 C62 110 86 106 106 110 C126 113 142 117 148 120 Z" fill="#e8a765" opacity="0.85" />
+      </g>
+      {/* nostril smoke */}
+      <circle className="ds-smoke" cx="8" cy="110" r="3" fill="#d9c4bb" />
+      {/* Zzz */}
+      <g className="ds-zzz" fill="#ffd9b0" fontWeight="700">
+        <text className="z1" x="88" y="60" fontSize="13">
+          z
+        </text>
+        <text className="z2" x="102" y="46" fontSize="17">
+          z
+        </text>
+        <text className="z3" x="120" y="30" fontSize="21">
+          z
+        </text>
+      </g>
+    </svg>
+  )
+}
+
+type DragonMode = 'roam' | 'approach' | 'sleep' | 'depart'
+
+/**
+ * The lair's dragon. It cruises the background on random waypoints; when
+ * the pause modal opens it swoops over, curls up on the popup's rim and
+ * sleeps until the session resumes, then flies off.
+ */
+function DragonLayer() {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const flipRef = useRef<HTMLDivElement>(null)
+  const modeRef = useRef<DragonMode>('roam')
+  const [mode, setMode] = useState<DragonMode>('roam')
+  const [reduced] = useState(prefersReducedMotion)
+
+  useEffect(() => {
+    if (reduced) return
+    const s = { x: 0, y: 0, tx: 0, ty: 0, facing: -1, dwell: 0 }
+    const W = () => window.innerWidth
+    const H = () => window.innerHeight
+    const pickRoam = () => {
+      s.tx = W() * (0.04 + Math.random() * 0.76)
+      s.ty = H() * (0.05 + Math.random() * 0.6)
+    }
+    s.x = W() * 0.68
+    s.y = H() * 0.22
+    pickRoam()
+    const switchMode = (m: DragonMode) => {
+      modeRef.current = m
+      setMode(m)
+    }
+
+    const perch = () => {
+      const modal = document.querySelector('.modal-overlay .modal')
+      if (!modal) return null
+      const r = modal.getBoundingClientRect()
+      return { x: r.left + r.width / 2 - DRAGON_W / 2, y: r.top - DRAGON_H + 14 }
+    }
+
+    // Poll for the pause modal — cheap, and robust to any provider layout.
+    const watch = window.setInterval(() => {
+      const p = perch()
+      const m = modeRef.current
+      if (p && (m === 'roam' || m === 'depart')) {
+        s.tx = p.x
+        s.ty = p.y
+        switchMode('approach')
+      } else if (p && m === 'approach') {
+        s.tx = p.x
+        s.ty = p.y
+      } else if (p && m === 'sleep') {
+        s.x = p.x
+        s.y = p.y
+      } else if (!p && (m === 'sleep' || m === 'approach')) {
+        pickRoam()
+        switchMode('depart')
+      }
+    }, 350)
+
+    let raf = 0
+    let last = performance.now()
+    const loop = (t: number) => {
+      const dt = Math.min(64, t - last)
+      last = t
+      const m = modeRef.current
+      if (!document.hidden && m !== 'sleep') {
+        const dx = s.tx - s.x
+        const dy = s.ty - s.y
+        const d = Math.hypot(dx, dy)
+        if (d < 10) {
+          if (m === 'approach') {
+            s.x = s.tx
+            s.y = s.ty
+            s.facing = -1
+            switchMode('sleep')
+          } else if (m === 'depart') {
+            switchMode('roam')
+          } else {
+            s.dwell -= dt
+            if (s.dwell <= 0) {
+              pickRoam()
+              s.dwell = 900 + Math.random() * 2400
+            }
+          }
+        } else {
+          const speed = m === 'roam' ? 62 : 300
+          const sp = speed * (dt / 1000)
+          s.x += (dx / d) * sp
+          s.y += (dy / d) * sp
+          if (Math.abs(dx) > 40) s.facing = dx < 0 ? -1 : 1
+        }
+      }
+      if (wrapRef.current) {
+        wrapRef.current.style.transform = `translate3d(${s.x}px, ${s.y}px, 0)`
+      }
+      if (flipRef.current) {
+        flipRef.current.style.transform = `scaleX(${s.facing === 1 ? -1 : 1})`
+      }
+      raf = requestAnimationFrame(loop)
+    }
+    raf = requestAnimationFrame(loop)
+
+    return () => {
+      clearInterval(watch)
+      cancelAnimationFrame(raf)
+    }
+  }, [reduced])
+
+  if (reduced) return null
+  return (
+    <div ref={wrapRef} className={`tb-dragon-layer mode-${mode}`} aria-hidden="true">
+      <div ref={flipRef} className="tb-dragon-flip">
+        <div className="tb-dragon-bob">
+          <DragonFlySvg />
+          <DragonSleepSvg />
+        </div>
+      </div>
     </div>
   )
 }
