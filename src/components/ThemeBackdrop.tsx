@@ -118,6 +118,12 @@ const LIANAS = gen(33, 5, (r, i) => ({
   delay: r() * 3,
   dur: 4.5 + r() * 2.5,
 }))
+const FERNS = gen(34, 4, (r, i) => ({
+  left: 4 + i * 26 + r() * 10,
+  size: 95 + r() * 70,
+  delay: r() * 4,
+  dur: 5 + r() * 3,
+}))
 
 const FIRE_EMBERS = gen(41, 22, (r) => ({
   left: r() * 100,
@@ -358,7 +364,43 @@ function renderLayers(theme: string): ReactNode | null {
     case 'jungle':
       return (
         <>
+          {/* distant canopy silhouettes */}
+          <svg
+            className="tb-treeline"
+            viewBox="0 0 1200 200"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 200 L0 96 C40 70 90 82 130 60 C180 34 240 52 290 44 C340 36 380 60 430 56 C490 50 530 24 590 32 C650 40 690 70 750 62 C810 54 850 28 910 38 C970 48 1000 74 1060 66 C1110 60 1160 76 1200 62 L1200 200 Z"
+              fill="#0a150a"
+            />
+            <path
+              d="M0 200 L0 132 C60 112 110 124 160 106 C220 84 280 102 340 96 C400 90 440 112 500 106 C560 100 610 78 670 88 C730 98 770 122 830 114 C890 106 940 84 1000 94 C1060 104 1120 122 1200 108 L1200 200 Z"
+              fill="#101f0e"
+            />
+          </svg>
           <div className="tb-canopy" />
+          {/* hanging leaf fringe along the top */}
+          <svg
+            className="tb-canopy-fringe"
+            viewBox="0 0 1200 90"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 0 L1200 0 L1200 26 C1160 44 1120 30 1080 46 C1030 66 990 36 940 50 C890 64 850 34 800 44 C750 54 710 70 660 52 C610 34 570 60 520 56 C470 52 430 30 380 42 C330 54 290 72 240 56 C190 40 150 62 100 52 C60 44 30 32 0 40 Z"
+              fill="#122413"
+            />
+            <path
+              d="M0 0 L1200 0 L1200 16 C1150 30 1100 20 1050 32 C1000 44 950 22 900 34 C850 46 800 24 750 30 C700 36 650 50 600 38 C550 26 500 44 450 40 C400 36 350 20 300 30 C250 40 200 50 150 40 C100 30 50 22 0 28 Z"
+              fill="#1a3319"
+            />
+            {[70, 210, 380, 560, 730, 900, 1070].map((x, i) => (
+              <g key={i} fill="#1a3319">
+                <ellipse cx={x} cy={i % 2 ? 52 : 62} rx="26" ry="9" transform={`rotate(${i % 2 ? -14 : 12} ${x} ${i % 2 ? 52 : 62})`} />
+                <ellipse cx={x + 30} cy={i % 2 ? 44 : 52} rx="20" ry="7" transform={`rotate(${i % 2 ? 18 : -16} ${x + 30} ${i % 2 ? 44 : 52})`} />
+              </g>
+            ))}
+          </svg>
           {LIANAS.map((l, i) => (
             <svg
               key={i}
@@ -387,23 +429,32 @@ function renderLayers(theme: string): ReactNode | null {
               ))}
             </svg>
           ))}
-          <JungleMonkey />
           {LEAVES.map((l, i) => (
-            <span
+            <svg
               key={i}
               className="tb-leaf"
+              viewBox="0 0 24 24"
+              width={l.size}
+              height={l.size}
               style={
                 {
                   left: `${l.left}%`,
-                  width: l.size,
-                  height: l.size * 0.8,
                   animationDelay: `-${l.delay}s`,
                   animationDuration: `${l.dur}s`,
                   '--sway': `${l.sway}px`,
                   '--spin': l.spin,
                 } as Vars
               }
-            />
+            >
+              <path d="M12 2 C18 6.5 20 13 12 22 C4 13 6 6.5 12 2 Z" fill="#5f9c43" />
+              <path d="M12 4 L12 20" stroke="#3c6b28" strokeWidth="1" />
+              <path
+                d="M12 8 C14.5 8.5 16 10 16.5 12 M12 12.5 C9.5 13 8 14.5 7.5 16.5"
+                stroke="#3c6b28"
+                strokeWidth="0.7"
+                fill="none"
+              />
+            </svg>
           ))}
           {FIREFLIES.map((f, i) => (
             <span
@@ -421,6 +472,20 @@ function renderLayers(theme: string): ReactNode | null {
               }
             />
           ))}
+          {FERNS.map((f, i) => (
+            <FernSvg
+              key={i}
+              style={{
+                left: `${f.left}%`,
+                width: f.size,
+                animationDelay: `-${f.delay}s`,
+                animationDuration: `${f.dur}s`,
+              }}
+            />
+          ))}
+          <JungleTree side="left" />
+          <JungleTree side="right" />
+          <JungleMonkey />
         </>
       )
     case 'fire':
@@ -740,46 +805,256 @@ function prefersReducedMotion(): boolean {
   )
 }
 
+/* ---------------- jungle: scenery ---------------- */
+
+function FernSvg({ style }: { style?: CSSProperties }) {
+  return (
+    <svg className="tb-fern" viewBox="0 0 120 100" style={style}>
+      {[
+        { d: 'M60 100 C54 72 40 52 22 40', tip: [22, 40], a: -40 },
+        { d: 'M60 100 C60 66 58 42 61 22', tip: [61, 22], a: 0 },
+        { d: 'M60 100 C66 72 80 52 98 42', tip: [98, 42], a: 40 },
+      ].map((f, i) => (
+        <g key={i}>
+          <path d={f.d} stroke="#1c3a15" strokeWidth="3" fill="none" strokeLinecap="round" />
+          {[0.3, 0.45, 0.6, 0.75, 0.9].map((t, j) => {
+            const x = 60 + (f.tip[0]! - 60) * (t * t * 0.7 + t * 0.3)
+            const y = 100 + (f.tip[1]! - 100) * t
+            const size = 10 - j * 1.6
+            return (
+              <g key={j} fill="#254a1a">
+                <ellipse
+                  cx={x - 3}
+                  cy={y}
+                  rx={size}
+                  ry={2.6}
+                  transform={`rotate(${f.a - 42} ${x - 3} ${y})`}
+                />
+                <ellipse
+                  cx={x + 3}
+                  cy={y}
+                  rx={size}
+                  ry={2.6}
+                  transform={`rotate(${f.a + 42} ${x + 3} ${y})`}
+                />
+              </g>
+            )
+          })}
+          {/* tip leaflet */}
+          <ellipse
+            cx={f.tip[0]!}
+            cy={f.tip[1]!}
+            rx="5"
+            ry="2.2"
+            fill="#2f5d24"
+            transform={`rotate(${f.a === 0 ? -90 : f.a} ${f.tip[0]} ${f.tip[1]})`}
+          />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+/** Foliage cluster: layered ellipses, dark base with a moonlit rim. */
+function Foliage({
+  x,
+  y,
+  s,
+  dur,
+  delay,
+}: {
+  x: number
+  y: number
+  s: number
+  dur: number
+  delay: number
+}) {
+  return (
+    // Outer group carries the static placement; the animated class lives on
+    // an inner group so the CSS transform doesn't override the attribute.
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      <g
+        className="tb-foliage"
+        style={{ animationDuration: `${dur}s`, animationDelay: `-${delay}s` }}
+      >
+        <ellipse cx="0" cy="6" rx="66" ry="30" fill="#132a10" />
+        <ellipse cx="-30" cy="-8" rx="44" ry="24" fill="#183417" />
+        <ellipse cx="30" cy="-6" rx="46" ry="25" fill="#183417" />
+        <ellipse cx="0" cy="-18" rx="40" ry="20" fill="#1e421a" />
+        {/* moonlit rim */}
+        <ellipse cx="-12" cy="-28" rx="22" ry="7" fill="#2f5d24" opacity="0.8" />
+        <ellipse cx="24" cy="-22" rx="14" ry="5" fill="#2f5d24" opacity="0.6" />
+        {/* leaf spikes breaking the blob silhouette */}
+        <path
+          d="M-58 -2 L-74 -12 L-56 -10 Z M52 -10 L70 -20 L54 -18 Z M-8 -34 L-2 -48 L4 -34 Z"
+          fill="#1e421a"
+        />
+      </g>
+    </g>
+  )
+}
+
+/**
+ * Foreground jungle tree: buttress roots, tapered trunk with bark lines,
+ * two limbs, swaying foliage crowns and hanging moss.
+ */
+function JungleTree({ side }: { side: 'left' | 'right' }) {
+  return (
+    <svg
+      className={`tb-tree ${side}`}
+      viewBox="0 0 300 700"
+      style={side === 'left' ? { left: '-3vw', height: '80vh' } : { right: '-4vw', height: '62vh' }}
+    >
+      {/* moss strands from the limbs */}
+      {[
+        { x: 196, y: 262, len: 90 },
+        { x: 236, y: 252, len: 60 },
+        { x: 84, y: 300, len: 74 },
+      ].map((m, i) => (
+        <g key={i} className="tb-moss" style={{ animationDelay: `-${i * 1.3}s` }}>
+          <path
+            d={`M${m.x} ${m.y} C${m.x + 6} ${m.y + m.len * 0.4} ${m.x - 5} ${m.y + m.len * 0.7} ${m.x + 2} ${m.y + m.len}`}
+            stroke="#2c4a22"
+            strokeWidth="3"
+            fill="none"
+            strokeLinecap="round"
+          />
+          <ellipse cx={m.x - 3} cy={m.y + m.len * 0.45} rx="5" ry="2" fill="#33531f" />
+          <ellipse cx={m.x + 5} cy={m.y + m.len * 0.8} rx="5" ry="2" fill="#33531f" />
+        </g>
+      ))}
+      {/* trunk with buttress roots */}
+      <path
+        d="M96 700 C102 640 108 560 112 470 C116 380 118 300 126 220 C130 180 138 150 150 132
+           C162 150 168 180 170 220 C174 300 172 380 172 470 C172 560 176 640 182 700
+           L214 700 C204 690 198 678 196 664 L226 700 L96 700 Z"
+        fill="#241a12"
+      />
+      <path d="M96 700 L60 700 C78 686 88 672 94 656 C96 672 96 686 96 700 Z" fill="#241a12" />
+      <path d="M182 700 L246 700 C222 688 210 674 204 656 C200 674 192 690 182 700 Z" fill="#1c130d" />
+      {/* bark lines + rim light */}
+      <path
+        d="M126 640 C130 540 132 420 138 300 M158 660 C156 560 158 440 156 320"
+        stroke="#17100a"
+        strokeWidth="3"
+        fill="none"
+        opacity="0.8"
+      />
+      <path
+        d="M112 470 C116 380 118 300 126 220"
+        stroke="#3a2c1d"
+        strokeWidth="4"
+        fill="none"
+        opacity="0.7"
+      />
+      {/* limbs */}
+      <path
+        d="M150 210 C176 196 206 264 238 256 L242 268 C206 282 170 226 152 236 Z"
+        fill="#241a12"
+      />
+      <path d="M146 250 C120 244 100 288 76 296 L80 308 C106 302 126 262 148 264 Z" fill="#1c130d" />
+      {/* crowns */}
+      <Foliage x={150} y={96} s={1.15} dur={7} delay={0} />
+      <Foliage x={248} y={222} s={0.72} dur={6.2} delay={2.1} />
+      <Foliage x={64} y={272} s={0.6} dur={7.8} delay={3.6} />
+    </svg>
+  )
+}
+
 /* ---------------- jungle: the swinging monkey ---------------- */
 
 function MonkeySvg() {
   return (
-    <svg className="tb-monkey" viewBox="0 0 64 84" width="52" height="68">
-      {/* vine bit in the hand */}
-      <path d="M32 0 L32 10" stroke="#4a7a33" strokeWidth="2.6" strokeLinecap="round" />
-      {/* raised arm */}
-      <path d="M32 6 C30 16 28 24 31 33" stroke="#6b4527" strokeWidth="5" fill="none" strokeLinecap="round" />
-      <circle cx="32" cy="5.5" r="4" fill="#6b4527" />
-      {/* tail */}
+    <svg className="tb-monkey" viewBox="0 0 72 96" width="60" height="80">
+      {/* curved vine segment held in the hand */}
       <path
-        d="M36 62 C48 66 55 58 50 49 C46 43 39 46 41 51"
-        stroke="#6b4527"
-        strokeWidth="4.5"
+        d="M38 -4 C34 2 38 8 35 14"
+        stroke="#4a7a33"
+        strokeWidth="3"
         fill="none"
         strokeLinecap="round"
       />
-      {/* body + belly */}
-      <ellipse cx="32" cy="48" rx="11" ry="14" fill="#7a5230" />
-      <ellipse cx="32" cy="52" rx="6.5" ry="8.5" fill="#c9a97e" />
-      {/* tucked legs */}
+      <ellipse cx="40" cy="1" rx="5" ry="2" fill="#4d8a35" transform="rotate(30 40 1)" />
+      <ellipse cx="33" cy="11" rx="4.5" ry="1.8" fill="#4d8a35" transform="rotate(-24 33 11)" />
+
+      {/* tail — curls and sways on its own */}
+      <g className="tb-monkey-tail">
+        <path
+          d="M46 70 C58 74 67 68 65 57 C63.5 48 55 47 55.5 53.5 C56 58 61 58.5 62 55"
+          stroke="#6b4527"
+          strokeWidth="5"
+          fill="none"
+          strokeLinecap="round"
+        />
+      </g>
+
+      {/* carrying arm: shoulder-elbow-hand with a closed grip */}
       <path
-        d="M25 58 C22 64 24 70 30 70 M39 58 C42 64 40 70 34 70"
-        stroke="#6b4527"
-        strokeWidth="4.5"
+        d="M36 8 C42 13 42.5 20 39 27 C37 31 35 34 34.5 38"
+        stroke="#5c3d22"
+        strokeWidth="6"
         fill="none"
         strokeLinecap="round"
       />
-      {/* free arm */}
-      <path d="M36 38 C42 44 44 50 42 55" stroke="#6b4527" strokeWidth="5" fill="none" strokeLinecap="round" />
+      <circle cx="36" cy="7.5" r="4.6" fill="#5c3d22" />
+      <path d="M32.5 5.5 C31 7.5 31.5 9.5 33.5 10.5" stroke="#3d2814" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+
+      {/* body */}
+      <ellipse cx="38" cy="64" rx="12" ry="14" fill="#7a5230" transform="rotate(-8 38 64)" />
+      <ellipse cx="36" cy="66" rx="6.5" ry="9" fill="#c9a97e" />
+      <path d="M30 52 C33 49 40 48.5 45 51" stroke="#5c3d22" strokeWidth="2" fill="none" opacity="0.6" />
+
+      {/* free arm trailing behind */}
+      <path
+        d="M45 56 C51 62 53 70 50 77"
+        stroke="#5c3d22"
+        strokeWidth="6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <circle cx="49.5" cy="78.5" r="3.6" fill="#5c3d22" />
+
+      {/* legs — bent, kicking gently with the swing */}
+      <g className="tb-monkey-legs">
+        <path
+          d="M32 72 C27 80 28 87 34 90"
+          stroke="#5c3d22"
+          strokeWidth="6"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          d="M42 74 C44 83 41 89 35 92"
+          stroke="#5c3d22"
+          strokeWidth="6"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <ellipse cx="34.5" cy="90.5" rx="4.4" ry="2.6" fill="#4a3016" transform="rotate(-16 34.5 90.5)" />
+        <ellipse cx="35" cy="92.5" rx="4.4" ry="2.6" fill="#3d2814" transform="rotate(12 35 92.5)" />
+      </g>
+
       {/* head */}
-      <circle cx="24.5" cy="22" r="3.4" fill="#7a5230" />
-      <circle cx="39.5" cy="22" r="3.4" fill="#7a5230" />
-      <circle cx="32" cy="25" r="9.5" fill="#7a5230" />
-      <path d="M25.5 27 a7 7 0 0 1 13 0 a7.5 7.5 0 0 1 -13 0" fill="#c9a97e" />
-      <ellipse cx="32" cy="23.5" rx="5.5" ry="4" fill="#c9a97e" />
-      <circle cx="29.5" cy="23" r="1.2" fill="#2c1c10" />
-      <circle cx="34.5" cy="23" r="1.2" fill="#2c1c10" />
-      <path d="M30 28.5 Q32 30 34 28.5" stroke="#2c1c10" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+      <circle cx="17.5" cy="36" r="5" fill="#7a5230" stroke="#4a3016" strokeWidth="1.2" />
+      <circle cx="17.5" cy="36" r="2.4" fill="#c9a97e" />
+      <circle cx="44.5" cy="36" r="5" fill="#7a5230" stroke="#4a3016" strokeWidth="1.2" />
+      <circle cx="44.5" cy="36" r="2.4" fill="#c9a97e" />
+      <circle cx="31" cy="40" r="12.5" fill="#7a5230" stroke="#4a3016" strokeWidth="1.4" />
+      {/* fur tufts on the crown */}
+      <path d="M25 29.5 L23.5 25 L27.5 27.8 Z M30 28 L30.5 23.5 L33 27.5 Z M35.5 29 L38 25.5 L38.5 29.8 Z" fill="#7a5230" />
+      {/* face: brow patch + muzzle */}
+      <ellipse cx="31" cy="39" rx="8.6" ry="6" fill="#c9a97e" />
+      <ellipse cx="31" cy="45.5" rx="6.6" ry="5" fill="#d9bc93" />
+      {/* eyes with highlights + brows */}
+      <circle cx="27" cy="38.5" r="2.1" fill="#241505" />
+      <circle cx="35" cy="38.5" r="2.1" fill="#241505" />
+      <circle cx="26.3" cy="37.8" r="0.7" fill="#fff8ec" />
+      <circle cx="34.3" cy="37.8" r="0.7" fill="#fff8ec" />
+      <path d="M24.5 35 Q27 33.8 29 35 M33 35 Q35 33.8 37.5 35" stroke="#4a3016" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+      {/* nostrils + mouth */}
+      <circle cx="29.6" cy="45" r="0.8" fill="#4a3016" />
+      <circle cx="32.4" cy="45" r="0.8" fill="#4a3016" />
+      <path d="M28.5 48 Q31 50 33.5 48" stroke="#4a3016" strokeWidth="1.2" fill="none" strokeLinecap="round" />
     </svg>
   )
 }
