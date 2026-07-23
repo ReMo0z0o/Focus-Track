@@ -963,102 +963,6 @@ function JungleTree({ side }: { side: 'left' | 'right' }) {
 
 /* ---------------- jungle: the swinging monkey ---------------- */
 
-function MonkeySvg() {
-  return (
-    <svg className="tb-monkey" viewBox="0 0 72 96" width="60" height="80">
-      {/* curved vine segment held in the hand */}
-      <path
-        d="M38 -4 C34 2 38 8 35 14"
-        stroke="#4a7a33"
-        strokeWidth="3"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <ellipse cx="40" cy="1" rx="5" ry="2" fill="#4d8a35" transform="rotate(30 40 1)" />
-      <ellipse cx="33" cy="11" rx="4.5" ry="1.8" fill="#4d8a35" transform="rotate(-24 33 11)" />
-
-      {/* tail — curls and sways on its own */}
-      <g className="tb-monkey-tail">
-        <path
-          d="M46 70 C58 74 67 68 65 57 C63.5 48 55 47 55.5 53.5 C56 58 61 58.5 62 55"
-          stroke="#6b4527"
-          strokeWidth="5"
-          fill="none"
-          strokeLinecap="round"
-        />
-      </g>
-
-      {/* carrying arm: shoulder-elbow-hand with a closed grip */}
-      <path
-        d="M36 8 C42 13 42.5 20 39 27 C37 31 35 34 34.5 38"
-        stroke="#5c3d22"
-        strokeWidth="6"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <circle cx="36" cy="7.5" r="4.6" fill="#5c3d22" />
-      <path d="M32.5 5.5 C31 7.5 31.5 9.5 33.5 10.5" stroke="#3d2814" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-
-      {/* body */}
-      <ellipse cx="38" cy="64" rx="12" ry="14" fill="#7a5230" transform="rotate(-8 38 64)" />
-      <ellipse cx="36" cy="66" rx="6.5" ry="9" fill="#c9a97e" />
-      <path d="M30 52 C33 49 40 48.5 45 51" stroke="#5c3d22" strokeWidth="2" fill="none" opacity="0.6" />
-
-      {/* free arm trailing behind */}
-      <path
-        d="M45 56 C51 62 53 70 50 77"
-        stroke="#5c3d22"
-        strokeWidth="6"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <circle cx="49.5" cy="78.5" r="3.6" fill="#5c3d22" />
-
-      {/* legs — bent, kicking gently with the swing */}
-      <g className="tb-monkey-legs">
-        <path
-          d="M32 72 C27 80 28 87 34 90"
-          stroke="#5c3d22"
-          strokeWidth="6"
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M42 74 C44 83 41 89 35 92"
-          stroke="#5c3d22"
-          strokeWidth="6"
-          fill="none"
-          strokeLinecap="round"
-        />
-        <ellipse cx="34.5" cy="90.5" rx="4.4" ry="2.6" fill="#4a3016" transform="rotate(-16 34.5 90.5)" />
-        <ellipse cx="35" cy="92.5" rx="4.4" ry="2.6" fill="#3d2814" transform="rotate(12 35 92.5)" />
-      </g>
-
-      {/* head */}
-      <circle cx="17.5" cy="36" r="5" fill="#7a5230" stroke="#4a3016" strokeWidth="1.2" />
-      <circle cx="17.5" cy="36" r="2.4" fill="#c9a97e" />
-      <circle cx="44.5" cy="36" r="5" fill="#7a5230" stroke="#4a3016" strokeWidth="1.2" />
-      <circle cx="44.5" cy="36" r="2.4" fill="#c9a97e" />
-      <circle cx="31" cy="40" r="12.5" fill="#7a5230" stroke="#4a3016" strokeWidth="1.4" />
-      {/* fur tufts on the crown */}
-      <path d="M25 29.5 L23.5 25 L27.5 27.8 Z M30 28 L30.5 23.5 L33 27.5 Z M35.5 29 L38 25.5 L38.5 29.8 Z" fill="#7a5230" />
-      {/* face: brow patch + muzzle */}
-      <ellipse cx="31" cy="39" rx="8.6" ry="6" fill="#c9a97e" />
-      <ellipse cx="31" cy="45.5" rx="6.6" ry="5" fill="#d9bc93" />
-      {/* eyes with highlights + brows */}
-      <circle cx="27" cy="38.5" r="2.1" fill="#241505" />
-      <circle cx="35" cy="38.5" r="2.1" fill="#241505" />
-      <circle cx="26.3" cy="37.8" r="0.7" fill="#fff8ec" />
-      <circle cx="34.3" cy="37.8" r="0.7" fill="#fff8ec" />
-      <path d="M24.5 35 Q27 33.8 29 35 M33 35 Q35 33.8 37.5 35" stroke="#4a3016" strokeWidth="1.1" fill="none" strokeLinecap="round" />
-      {/* nostrils + mouth */}
-      <circle cx="29.6" cy="45" r="0.8" fill="#4a3016" />
-      <circle cx="32.4" cy="45" r="0.8" fill="#4a3016" />
-      <path d="M28.5 48 Q31 50 33.5 48" stroke="#4a3016" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 /**
  * Every so often a monkey crosses the canopy, swinging vine to vine.
  * Direction is random; the pendulum swing runs on a nested element so it
@@ -1069,24 +973,28 @@ function JungleMonkey() {
 
   useEffect(() => {
     if (prefersReducedMotion()) return
+    const img = new Image()
+    img.src = '/monkey-swing.png'
     let alive = true
-    let timer: number
+    let spawnTimer: number
+    let clearTimer: number
+    // one crossing every 16 seconds, direction still random
     const plan = (delay: number) => {
-      timer = window.setTimeout(() => {
+      spawnTimer = window.setTimeout(() => {
         if (!alive) return
-        const dur = 8.5 + Math.random() * 3
+        const dur = 9 + Math.random() * 2.5
         setTrip({ id: Date.now(), dir: Math.random() < 0.5 ? 1 : -1, dur })
-        timer = window.setTimeout(() => {
-          if (!alive) return
-          setTrip(null)
-          plan(9000 + Math.random() * 15000)
+        clearTimer = window.setTimeout(() => {
+          if (alive) setTrip(null)
         }, dur * 1000)
+        plan(16000)
       }, delay)
     }
     plan(3000)
     return () => {
       alive = false
-      clearTimeout(timer)
+      clearTimeout(spawnTimer)
+      clearTimeout(clearTimer)
     }
   }, [])
 
@@ -1099,7 +1007,8 @@ function JungleMonkey() {
     >
       <span className="tb-monkey-track" style={{ animationDuration: `${trip.dur}s` }}>
         <span className="tb-monkey-swing" style={{ animationDuration: `${trip.dur / 8}s` }}>
-          <MonkeySvg />
+          {/* the monkey from the reference video, leafy vine in hand */}
+          <span className="tb-monkey-sprite" />
         </span>
       </span>
     </span>
