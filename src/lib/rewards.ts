@@ -496,6 +496,12 @@ export const AVATARS: AvatarDef[] = [
     tagline: 'Never hurries, never pauses.',
     condition: { kind: 'ratioTier', tier: 5 },
   },
+  {
+    id: 'polarbear',
+    name: 'Polar Bear',
+    tagline: 'Thick fur, thicker focus.',
+    condition: { kind: 'sessions', count: 20 },
+  },
 ]
 
 export const AVATAR_IDS = AVATARS.map((a) => a.id)

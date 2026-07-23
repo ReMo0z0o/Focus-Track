@@ -615,6 +615,48 @@ const GLYPHS: Record<string, ReactNode> = {
       </g>
     </Glyph>
   ),
+  polarbear: (
+    <Glyph>
+      {/* cold breath puffing from the muzzle */}
+      <g className="avp avp-breath">
+        <circle cx="12.5" cy="32.5" r="2.6" fill="#dff2fb" opacity="0.85" />
+        <circle cx="8.5" cy="31" r="1.9" fill="#dff2fb" opacity="0.6" />
+        <circle cx="10.5" cy="35.5" r="1.5" fill="#dff2fb" opacity="0.5" />
+      </g>
+      {/* ears */}
+      <g className="avp avp-ear" style={{ animationDelay: '-1.1s' }}>
+        <circle cx="13" cy="14" r="4.6" fill="#f4f8fa" />
+        <circle cx="13" cy="14.5" r="2.2" fill="#b9cfd8" />
+      </g>
+      <circle cx="35" cy="14" r="4.6" fill="#f4f8fa" />
+      <circle cx="35" cy="14.5" r="2.2" fill="#b9cfd8" />
+      {/* head */}
+      <circle cx="24" cy="26" r="13.2" fill="#f4f8fa" />
+      {/* cheek fluff */}
+      <path
+        d="M12 30 C10.8 32 11 34 12.6 35.2 M36 30 C37.2 32 37 34 35.4 35.2"
+        stroke="#d5e4ea"
+        strokeWidth="1.2"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {/* eyes */}
+      <g className="avp avp-blink" style={{ animationDelay: '-3s' }}>
+        <circle cx="18.5" cy="23" r="1.9" fill="#22303a" />
+        <circle cx="29.5" cy="23" r="1.9" fill="#22303a" />
+      </g>
+      {/* muzzle + nose + mouth */}
+      <ellipse cx="24" cy="31" rx="6.8" ry="5.4" fill="#ffffff" />
+      <ellipse cx="24" cy="29" rx="2.6" ry="1.9" fill="#22303a" />
+      <path
+        d="M24 31 Q24 33 22 33.6 M24 31 Q24 33 26 33.6"
+        stroke="#22303a"
+        strokeWidth="1.1"
+        fill="none"
+        strokeLinecap="round"
+      />
+    </Glyph>
+  ),
 }
 
 export function Avatar({
