@@ -1474,7 +1474,21 @@ function DragonLayer() {
   const flipRef = useRef<HTMLDivElement>(null)
   const modeRef = useRef<DragonMode>('roam')
   const [mode, setMode] = useState<DragonMode>('roam')
+  const [burp, setBurp] = useState(false)
   const [reduced] = useState(prefersReducedMotion)
+
+  // While asleep on the modal, wake for a flame burp every 60s.
+  useEffect(() => {
+    if (reduced || mode !== 'sleep') return
+    const iv = window.setInterval(() => setBurp(true), 60000)
+    return () => clearInterval(iv)
+  }, [mode, reduced])
+
+  useEffect(() => {
+    if (!burp) return
+    const t = window.setTimeout(() => setBurp(false), 1800)
+    return () => clearTimeout(t)
+  }, [burp])
 
   useEffect(() => {
     if (reduced) return
@@ -1501,7 +1515,7 @@ function DragonLayer() {
       const modal = document.querySelector('.modal-overlay .modal')
       if (!modal) return null
       const r = modal.getBoundingClientRect()
-      return { x: r.left + r.width / 2 - DRAGON_W / 2, y: r.top - DRAGON_H + 14 }
+      return { x: r.left + r.width / 2 - DRAGON_W / 2, y: r.top - DRAGON_H + 28 }
     }
 
     // Poll for the pause modal — cheap, and robust to any provider layout.
@@ -1576,11 +1590,18 @@ function DragonLayer() {
 
   if (reduced) return null
   return (
-    <div ref={wrapRef} className={`tb-dragon-layer mode-${mode}`} aria-hidden="true">
+    <div
+      ref={wrapRef}
+      className={`tb-dragon-layer mode-${mode}${burp ? ' burping' : ''}`}
+      aria-hidden="true"
+    >
       <div ref={flipRef} className="tb-dragon-flip">
         <div className="tb-dragon-bob">
           <div className="tb-dragon-sprite fly" />
+          {/* fire breath every 30s while airborne */}
+          <span className="tb-dragon-fire" />
           <div className="tb-dragon-sprite sleep" />
+          {burp && <span className="tb-dragon-burp" />}
           <span className="tb-dragon-zzz">
             <i>z</i>
             <i>z</i>
