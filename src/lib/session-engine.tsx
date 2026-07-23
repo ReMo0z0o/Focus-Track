@@ -12,7 +12,7 @@ import { useServerFn } from '@tanstack/react-start'
 import { endSession, getProfile, startSession } from '@/lib/sessions.functions'
 import { useIdleDetector } from '@/hooks/use-idle-detector'
 import type { IdleDetectorAPI, IdleState } from '@/hooks/use-idle-detector'
-import { playReminderChime, unlockAudio } from '@/lib/audio'
+import { DEFAULT_REMINDER_SOUND, playReminderSound, unlockAudio } from '@/lib/audio'
 import { fmtClock, fmtDuration } from '@/lib/stats'
 import { useToast } from '@/components/Toaster'
 import { useAuth } from '@/routes/__root'
@@ -106,6 +106,7 @@ export function SessionEngineProvider({ children }: { children: ReactNode }) {
   })
   const thresholdSeconds = profileQuery.data?.idle_threshold_seconds ?? 120
   const soundEnabled = profileQuery.data?.sound_enabled ?? true
+  const reminderSound = profileQuery.data?.reminder_sound ?? DEFAULT_REMINDER_SOUND
 
   /* ---------------- state ---------------- */
 
@@ -286,13 +287,13 @@ export function SessionEngineProvider({ children }: { children: ReactNode }) {
             // Notification construction can throw on some platforms; ignore.
           }
         }
-        if (soundEnabled) playReminderChime()
+        if (soundEnabled) playReminderSound(reminderSound)
       }
     } else {
       // Activity came back during grace — dismiss quietly.
       setShowIdleModal(false)
     }
-  }, [active, modalShouldOpen, manualPause, soundEnabled])
+  }, [active, modalShouldOpen, manualPause, soundEnabled, reminderSound])
 
   /* ---------------- cross-tab coordination ---------------- */
 

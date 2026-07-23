@@ -18,6 +18,7 @@ export interface Database {
           username: string
           idle_threshold_seconds: number
           sound_enabled: boolean
+          reminder_sound: string
           theme: string
           avatar: string
           milestones: Json
@@ -28,6 +29,7 @@ export interface Database {
           username?: string
           idle_threshold_seconds?: number
           sound_enabled?: boolean
+          reminder_sound?: string
           theme?: string
           avatar?: string
           milestones?: Json
@@ -38,6 +40,7 @@ export interface Database {
           username?: string
           idle_threshold_seconds?: number
           sound_enabled?: boolean
+          reminder_sound?: string
           theme?: string
           avatar?: string
           milestones?: Json

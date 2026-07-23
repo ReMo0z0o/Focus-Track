@@ -4,6 +4,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServerFn } from '@tanstack/react-start'
 import { getProfile, updateProfile } from '@/lib/sessions.functions'
+import {
+  DEFAULT_REMINDER_SOUND,
+  REMINDER_SOUNDS,
+  playReminderSound,
+} from '@/lib/audio'
 import { useToast } from '@/components/Toaster'
 
 export const Route = createFileRoute('/_authenticated/settings')({
@@ -42,6 +47,7 @@ function SettingsPage() {
   const [username, setUsername] = useState('')
   const [threshold, setThreshold] = useState(120)
   const [soundEnabled, setSoundEnabled] = useState(true)
+  const [reminderSound, setReminderSound] = useState(DEFAULT_REMINDER_SOUND)
   const [hydrated, setHydrated] = useState(false)
 
   // Populate the form once the profile arrives (only the first time, so we
@@ -51,6 +57,7 @@ function SettingsPage() {
       setUsername(profileQuery.data.username ?? '')
       setThreshold(profileQuery.data.idle_threshold_seconds)
       setSoundEnabled(profileQuery.data.sound_enabled)
+      setReminderSound(profileQuery.data.reminder_sound ?? DEFAULT_REMINDER_SOUND)
       setHydrated(true)
     }
   }, [profileQuery.data, hydrated])
@@ -63,9 +70,15 @@ function SettingsPage() {
       const usernameChanged =
         nextUsername.length > 0 &&
         nextUsername !== (profileQuery.data?.username ?? '')
+      // Same guard as username: only send when changed so a pre-migration
+      // DB (no reminder_sound column) can still save the other settings.
+      const soundChanged =
+        reminderSound !==
+        (profileQuery.data?.reminder_sound ?? DEFAULT_REMINDER_SOUND)
       return updateProfileFn({
         data: {
           ...(usernameChanged ? { username: nextUsername } : {}),
+          ...(soundChanged ? { reminder_sound: reminderSound } : {}),
           idle_threshold_seconds: threshold,
           sound_enabled: soundEnabled,
         },
@@ -188,6 +201,45 @@ function SettingsPage() {
               <span className="thumb" />
             </label>
           </div>
+
+          <div
+            className={`field sound-picker${soundEnabled ? '' : ' muted'}`}
+            style={{ marginTop: '1.2rem' }}
+          >
+            <label id="reminder-sound-label">Reminder sound</label>
+            <p
+              style={{
+                fontSize: '0.82rem',
+                color: 'var(--text-faint)',
+                marginBottom: '0.6rem',
+              }}
+            >
+              Pick the sound that calls you back — click one to hear it.
+            </p>
+            <div
+              className="sound-grid"
+              role="radiogroup"
+              aria-labelledby="reminder-sound-label"
+            >
+              {REMINDER_SOUNDS.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={reminderSound === s.id}
+                  className={`sound-chip${reminderSound === s.id ? ' active' : ''}`}
+                  title={s.description}
+                  onClick={() => {
+                    setReminderSound(s.id)
+                    playReminderSound(s.id)
+                  }}
+                >
+                  <SpeakerIcon />
+                  {s.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <button
@@ -199,5 +251,25 @@ function SettingsPage() {
         </button>
       </form>
     </div>
+  )
+}
+
+function SpeakerIcon() {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 9.5 H8 L13 5 V19 L8 14.5 H4 Z" fill="currentColor" stroke="none" />
+      <path d="M16.5 9 C17.8 10.6 17.8 13.4 16.5 15" />
+      <path d="M19 6.5 C21.4 9.4 21.4 14.6 19 17.5" />
+    </svg>
   )
 }

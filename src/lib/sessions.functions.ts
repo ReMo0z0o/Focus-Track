@@ -126,6 +126,9 @@ export const getProfile = createServerFn({ method: 'GET' })
       username: row?.username ?? row?.display_name ?? null,
       idle_threshold_seconds: row?.idle_threshold_seconds ?? 120,
       sound_enabled: row?.sound_enabled ?? true,
+      // Tolerate a pre-migration DB missing the column.
+      reminder_sound:
+        (row as { reminder_sound?: string } | null)?.reminder_sound ?? 'chime',
       theme: row?.theme ?? 'amber',
       avatar: row?.avatar ?? 'spark',
       milestones: (row?.milestones ?? {}) as Record<string, number>,
@@ -150,6 +153,7 @@ export const updateProfile = createServerFn({ method: 'POST' })
       username?: string
       idle_threshold_seconds?: number
       sound_enabled?: boolean
+      reminder_sound?: string
       theme?: string
       avatar?: string
       milestones?: Record<string, number>
@@ -158,6 +162,7 @@ export const updateProfile = createServerFn({ method: 'POST' })
         username?: string
         idle_threshold_seconds?: number
         sound_enabled?: boolean
+        reminder_sound?: string
         theme?: string
         avatar?: string
         milestones?: Record<string, number>
@@ -183,6 +188,9 @@ export const updateProfile = createServerFn({ method: 'POST' })
       }
       if (input.sound_enabled !== undefined) {
         out.sound_enabled = Boolean(input.sound_enabled)
+      }
+      if (input.reminder_sound !== undefined) {
+        out.reminder_sound = asToken(input.reminder_sound, 'reminder_sound')
       }
       if (input.theme !== undefined) {
         out.theme = asToken(input.theme, 'theme')
