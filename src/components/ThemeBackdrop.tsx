@@ -1247,84 +1247,170 @@ function JunglePauseLayer() {
 
 /* ---------------- abyss: the anglerfish hunt ---------------- */
 
-const ANGLER_W = 170
-const ANGLER_H = 95
+const ANGLER_W = 200
+const ANGLER_H = 116
 /** Lure position in the (left-facing) angler SVG, scaled to element px. */
-const LURE_X = 21
-const LURE_Y = 22
+const LURE_X = 18
+const LURE_Y = 18
 
+/**
+ * Deep-sea anglerfish styled after the user's reference: massive mottled
+ * head-body, crescent mouth bristling with interlocked needle teeth, X-shaped
+ * scars, glassy eye, ragged spiny fins and a drooping bioluminescent esca.
+ */
 function AnglerSvg({ biting }: { biting: boolean }) {
   return (
     <svg
       className={`tb-angler${biting ? ' biting' : ''}`}
-      viewBox="0 0 160 90"
+      viewBox="0 0 190 110"
       width={ANGLER_W}
       height={ANGLER_H}
     >
-      {/* lure rod + bioluminescent esca */}
+      {/* tail fan */}
       <path
-        d="M52 24 C42 10 30 8 20 19"
-        stroke="#22333f"
-        strokeWidth="2.4"
-        fill="none"
+        d="M134 50 C152 38 164 32 179 30 C173 40 171 48 171 55 C171 62 173 70 179 78 C164 76 149 68 135 58 Z"
+        fill="#1c2a36"
+        stroke="rgba(120, 205, 215, 0.22)"
+        strokeWidth="1"
+      />
+      <path
+        d="M144 48 L172 35 M146 53 L170 46 M146 58 L171 56 M144 62 L172 68"
+        stroke="#31434f"
+        strokeWidth="1.1"
         strokeLinecap="round"
       />
-      <circle className="tb-lure-glow" cx="20" cy="21" r="8" fill="#9ff2ea" />
-      <circle cx="20" cy="21" r="2.6" fill="#eafffb" />
-      {/* tail + body */}
+      <path d="M168 34 C173 44 173 62 168 74 C176 66 176 42 168 34 Z" fill="rgba(122, 84, 68, 0.28)" />
+      {/* dorsal crest of ragged spines */}
       <path
-        d="M14 52 C22 34 46 26 74 28 C102 30 120 38 130 48 C138 56 146 58 154 53 C151 63 142 66 133 61 C121 71 98 77 72 75 C46 73 22 66 14 52 Z"
-        fill="#15212d"
-        stroke="rgba(120, 205 ,215, 0.35)"
+        d="M50 18 L57 2 L62 15 L72 0 L77 13 L88 2 L92 14 L103 5 L106 16 L116 9 L119 20 C96 12 70 12 50 18 Z"
+        fill="#1c2a36"
+      />
+      <path
+        d="M57 3 L59 15 M72 1 L75 13 M88 3 L90 14 M103 6 L104 16 M116 10 L117 19"
+        stroke="#33475a"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
+      {/* anal + pelvic fins */}
+      <path d="M114 80 L120 94 L128 78 L134 88 L138 74 Z" fill="#1c2a36" />
+      <path d="M58 84 L64 96 L70 84 Z" fill="#18242f" />
+      {/* body: one huge scarred head */}
+      <path
+        d="M13 50 C20 28 40 15 66 13 C96 11 122 21 136 36 C143 44 147 52 148 57 C144 67 134 77 118 83 C98 90 72 91 52 85 C32 79 16 66 13 50 Z"
+        fill="#1f2c38"
+        stroke="rgba(120, 205, 215, 0.3)"
         strokeWidth="1.2"
       />
-      {/* dorsal spines */}
+      {/* mottled skin: brow patch, flank blotches, belly sheen, speckles */}
+      <path d="M28 30 C40 20 58 16 74 19 C60 28 44 33 28 30 Z" fill="rgba(122, 100, 96, 0.32)" />
+      <path d="M84 34 C100 29 116 36 126 47 C112 53 94 48 84 40 Z" fill="rgba(90, 105, 115, 0.5)" />
+      <path d="M64 66 C76 62 90 64 98 70 C88 76 72 74 64 66 Z" fill="rgba(70, 85, 96, 0.45)" />
+      <path d="M30 66 C52 80 92 84 122 74 C102 85 60 85 36 74 Z" fill="#26374a" opacity="0.8" />
+      <g fill="rgba(190, 215, 220, 0.5)">
+        <circle cx="70" cy="26" r="1.1" />
+        <circle cx="82" cy="22" r="0.8" />
+        <circle cx="94" cy="28" r="1.2" />
+        <circle cx="108" cy="34" r="0.9" />
+        <circle cx="118" cy="44" r="1.1" />
+        <circle cx="102" cy="44" r="0.8" />
+        <circle cx="76" cy="36" r="0.9" />
+        <circle cx="88" cy="56" r="1" />
+        <circle cx="110" cy="62" r="0.8" />
+        <circle cx="126" cy="56" r="0.9" />
+        <circle cx="48" cy="28" r="0.8" />
+        <circle cx="60" cy="54" r="0.9" />
+      </g>
+      {/* X-shaped scars */}
       <path
-        d="M62 28 L58 18 M76 28 L74 17 M92 31 L92 20"
-        stroke="#22333f"
-        strokeWidth="2"
+        d="M64 22 L72 30 M72 22 L64 30 M100 54 L108 62 M108 54 L100 62"
+        stroke="#5d4a50"
+        strokeWidth="1.7"
         strokeLinecap="round"
       />
-      {/* belly sheen */}
-      <path d="M26 58 C46 68 86 72 116 64 C96 72 56 72 34 64 Z" fill="#1f3242" opacity="0.9" />
-      {/* pectoral fin */}
-      <path className="tb-angler-fin" d="M84 58 C92 64 94 72 90 80 C82 74 78 66 80 58 Z" fill="#22333f" />
-      {/* mouth cavity + upper teeth */}
-      <path d="M14 52 C22 44 34 41 46 44 L46 56 C32 60 20 58 14 52 Z" fill="#070d13" />
+      {/* nostril */}
+      <circle cx="34" cy="33" r="2" fill="#0d151c" />
+      <path d="M31.8 31.4 A2.6 2.6 0 0 1 36.2 31.6" stroke="#4a3f42" strokeWidth="1" fill="none" />
+      {/* mouth: a huge crescent hugging the snout — cavity, dark gums,
+          long uneven needle fangs (front ones longest, all interlocking) */}
       <path
-        d="M20 46.5 L22 52 L25 46 L28 51.5 L31 45.5 L34 51 L38 45.5 L40 50"
-        stroke="#dff2f4"
-        strokeWidth="1.6"
+        d="M12 40 C22 35 36 35 48 40 C52 42 55 45 56 49 L60 68 C42 58 24 54 12 52 Z"
+        fill="#120a10"
+      />
+      <path
+        d="M12 40 C22 35 36 35 48 40 C52 42 55 45 56 49 C44 43.5 26 43 12 46 Z"
+        fill="#45161f"
+      />
+      <path
+        d="M14 43 L17.5 66 L20 43.6 Z M21 42 L25 70 L28 42.8 Z M29 41.6 L32.5 64 L35.5 42.2 Z M36.5 42 L40 68 L43 43 Z M44 43.2 L47 60 L49.5 44.4 Z M50 45 L52.5 55 L54.5 46.5 Z"
+        fill="#e9efec"
+      />
+      {/* lower jaw: juts forward, swings open on the hunt, snaps on the bite */}
+      <g className="tb-angler-jaw">
+        <path
+          d="M10 54 C22 60 40 66 58 65 C52 80 30 84 12 72 C9.5 66 9 60 10 54 Z"
+          fill="#1d2b37"
+          stroke="rgba(120, 205, 215, 0.28)"
+          strokeWidth="1"
+        />
+        <path d="M12 57 C26 63 42 66 55 65 C40 69 22 66 12 60 Z" fill="#3a151c" opacity="0.9" />
+        <path
+          d="M15 58 L18 44 L21 59 Z M24 60.5 L27.5 41 L31 61.5 Z M33 62.5 L36.5 46 L40 63 Z M42 63.5 L45 51 L48 63.5 Z M50 64 L52 56 L54 63.5 Z"
+          fill="#e9efec"
+        />
+      </g>
+      {/* glassy eye */}
+      <circle cx="58" cy="40" r="8" fill="#0a1118" />
+      <circle cx="58" cy="40" r="8" fill="none" stroke="rgba(160, 190, 200, 0.55)" strokeWidth="1.3" />
+      <circle cx="55" cy="36.5" r="2.3" fill="#dff2f4" />
+      <path d="M53 44.5 A6.4 6.4 0 0 0 62 42.5" stroke="rgba(160, 190, 200, 0.3)" strokeWidth="1.1" fill="none" />
+      {/* pectoral fin */}
+      <path
+        className="tb-angler-fin"
+        d="M88 60 C97 63 103 70 105 78 L100 76 L102 86 L95 79 L96 88 L88 78 C85 71 84 65 88 60 Z"
+        fill="#22333f"
+      />
+      {/* illicium + drooping esca */}
+      <path
+        d="M52 16 C42 3 28 0 17 8 C15.4 9.2 14.6 10.8 15 13"
+        stroke="#2b3a44"
+        strokeWidth="2.6"
         fill="none"
         strokeLinecap="round"
       />
-      {/* lower jaw (snaps shut on the bite) */}
-      <g className="tb-angler-jaw">
-        <path d="M14 53 C24 60 36 62 48 58 C40 68 24 68 14 60 Z" fill="#15212d" stroke="rgba(120,205,215,0.3)" strokeWidth="1" />
-        <path
-          d="M20 57 L22 51.5 M27 59 L29 53 M35 60 L36 54.5"
-          stroke="#dff2f4"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </g>
-      {/* eye */}
-      <circle cx="54" cy="40" r="3.2" fill="#b7dbe4" />
-      <circle cx="54.8" cy="40.5" r="1.4" fill="#0a1218" />
+      <circle className="tb-lure-glow" cx="16.5" cy="17.5" r="9" fill="#9ff2ea" />
+      <path
+        d="M16 11 C12.5 14 11.5 18 14 21.5 C17 24.5 21 23 21.5 19 C22 15 19.5 12 16 11 Z"
+        fill="#eafffb"
+      />
+      <circle cx="17" cy="18" r="2.4" fill="#fff" />
     </svg>
   )
 }
 
 function PreySvg() {
   return (
-    <svg viewBox="0 0 34 16" width="30" height="14">
+    <svg viewBox="0 0 40 20" width="36" height="18">
+      {/* forked tail */}
       <path
-        d="M4 8 C9 3 18 2 25 8 C18 14 9 13 4 8 Z"
-        fill="#8fd0d8"
-        opacity="0.9"
+        d="M28 10 C32 6 35 4 38 3 C36.5 6 36 8.5 36 10 C36 11.5 36.5 14 38 17 C35 16 32 14 28 10 Z"
+        fill="#7f929c"
       />
-      <path d="M25 8 L32 3 L32 13 Z" fill="#6fb3bd" opacity="0.85" />
-      <circle cx="9" cy="7" r="1.2" fill="#12222b" />
+      {/* silvery body */}
+      <path
+        d="M4 10 C8 4.5 15 2.5 21 3.5 C26 4.3 29 7 30 10 C29 13 26 15.7 21 16.5 C15 17.5 8 15.5 4 10 Z"
+        fill="#b9c7cf"
+      />
+      <path
+        d="M6 8 C11 4 18 3 24 4.6 C27 5.4 29 7.5 30 10 C26 7.4 20 6 14 6.6 C11 6.9 8 7.4 6 8 Z"
+        fill="#8fa2ad"
+      />
+      <path d="M6 12 C12 15.5 20 16 27 13 C23 15.8 15 16.6 8 13.8 Z" fill="#dde7ec" opacity="0.7" />
+      {/* fins, gill, eye */}
+      <path d="M14 3.8 L16 0.6 L19 3.4 Z" fill="#8fa2ad" />
+      <path d="M15 16 L17 19 L20 15.8 Z" fill="#8fa2ad" opacity="0.8" />
+      <path d="M10 6.5 C11.5 8 11.5 12 10 13.5" stroke="#7f929c" strokeWidth="0.9" fill="none" />
+      <circle cx="7.5" cy="9" r="1.7" fill="#eef4f6" />
+      <circle cx="7.2" cy="9" r="1" fill="#101c24" />
     </svg>
   )
 }
@@ -1424,7 +1510,7 @@ function AnglerFish() {
       {biting && (
         <span
           className="tb-gulp"
-          style={{ transform: `translate3d(${state.current.x + (state.current.facing === 1 ? ANGLER_W - 30 : 30)}px, ${state.current.y + 50}px, 0)` }}
+          style={{ transform: `translate3d(${state.current.x + (state.current.facing === 1 ? ANGLER_W - 32 : 32)}px, ${state.current.y + 58}px, 0)` }}
         >
           <i />
           <i />
@@ -1444,7 +1530,8 @@ function Prey({ sx, sy, lx, ly }: { sx: number; sy: number; lx: number; ly: numb
     el.style.transform = `translate3d(${sx}px, ${sy}px, 0) scaleX(${flip})`
     void el.getBoundingClientRect()
     el.style.transition = 'transform 3.2s cubic-bezier(0.45, 0.1, 0.55, 1)'
-    el.style.transform = `translate3d(${lx - 14}px, ${ly + 10}px, 0) scaleX(${flip})`
+    // drift to the esca, ending just over the open jaws below it
+    el.style.transform = `translate3d(${lx - 12}px, ${ly + 30}px, 0) scaleX(${flip})`
   }, [sx, sy, lx, ly])
   return (
     <span ref={ref} className="tb-prey">

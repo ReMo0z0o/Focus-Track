@@ -3654,7 +3654,8 @@ input, select {
 .tb-fish {
   left: 0;
   border-radius: 50% 60% 60% 50% / 55% 55% 45% 45%;
-  background: rgba(31, 84, 102, 0.75);
+  /* the silvery baitfish school the angler feeds on */
+  background: linear-gradient(180deg, rgba(158, 182, 196, 0.6), rgba(84, 108, 124, 0.5));
   animation-name: tb-swim-ltr;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
@@ -4016,9 +4017,9 @@ input, select {
   position: absolute;
   left: 0;
   top: 0;
-  width: 170px;
-  height: 95px;
-  transform-origin: 85px 47px;
+  width: 200px;
+  height: 116px;
+  transform-origin: 100px 58px;
   will-change: transform;
 }
 
@@ -4052,16 +4053,25 @@ input, select {
 
 .tb-angler .tb-angler-jaw {
   transform-origin: 95% 20%;
+  animation: tb-jaw-idle 5.2s ease-in-out infinite;
+}
+
+/* resting: the maw slowly works, needle teeth parting slightly */
+@keyframes tb-jaw-idle {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg); }
 }
 
 .tb-angler.biting .tb-angler-jaw {
-  animation: tb-bite 0.55s ease-in-out;
+  animation: tb-bite 0.9s ease-in-out;
 }
 
+/* the strike: gape wide, inhale, snap shut with a little overshoot */
 @keyframes tb-bite {
   0% { transform: rotate(0deg); }
-  30% { transform: rotate(-16deg); }
-  55% { transform: rotate(-14deg); }
+  22% { transform: rotate(-26deg); }
+  55% { transform: rotate(-24deg); }
+  74% { transform: rotate(3deg); }
   100% { transform: rotate(0deg); }
 }
 
