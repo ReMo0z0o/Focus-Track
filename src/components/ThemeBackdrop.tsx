@@ -199,6 +199,24 @@ const KELP = gen(84, 7, (r, i) => ({
   delay: r() * 5,
   dur: 5.5 + r() * 4,
 }))
+const VENT_EMBERS = gen(85, 9, (r) => ({
+  left: 34 + r() * 60,
+  delay: r() * 5,
+  dur: 2.6 + r() * 2.4,
+  dx: -16 + r() * 32,
+}))
+/** Hand-placed seafloor garden: coral clusters + anemones (left %, scale, mirror, variant). */
+const CORALS = [
+  { left: 2, scale: 1, flip: false, v: 0 },
+  { left: 16, scale: 0.7, flip: true, v: 1 },
+  { left: 44, scale: 0.78, flip: false, v: 1 },
+  { left: 71, scale: 1.06, flip: true, v: 0 },
+  { left: 89, scale: 0.85, flip: false, v: 1 },
+]
+const ANEMONES = [
+  { left: 11, scale: 1, delay: 0 },
+  { left: 81, scale: 0.8, delay: -2.1 },
+]
 
 const RAIN = gen(91, 34, (r) => ({
   left: -5 + r() * 112,
@@ -664,7 +682,9 @@ function renderLayers(theme: string): ReactNode | null {
           <div className="tb-ray tb-ray-1" />
           <div className="tb-ray tb-ray-2" />
           <div className="tb-ray tb-ray-3" />
+          <RockLine />
           <div className="tb-abyss-floor" />
+          <Vent />
           {KELP.map((k, i) => (
             <span
               key={i}
@@ -676,6 +696,30 @@ function renderLayers(theme: string): ReactNode | null {
                 animationDuration: `${k.dur}s`,
               }}
             />
+          ))}
+          {CORALS.map((c, i) => (
+            <span
+              key={i}
+              className="tb-coral"
+              style={
+                {
+                  left: `${c.left}%`,
+                  '--cs': c.scale,
+                  '--cf': c.flip ? -1 : 1,
+                } as Vars
+              }
+            >
+              <CoralSvg variant={c.v} />
+            </span>
+          ))}
+          {ANEMONES.map((a, i) => (
+            <span
+              key={i}
+              className="tb-anemone"
+              style={{ left: `${a.left}%`, '--cs': a.scale } as Vars}
+            >
+              <AnemoneSvg phase={a.delay} />
+            </span>
           ))}
           {FISH.map((f, i) => (
             <span
@@ -1241,6 +1285,172 @@ function JunglePauseLayer() {
           <span className="tb-monkey-sprite pause" />
         </div>
       </div>
+    </div>
+  )
+}
+
+/* ---------------- abyss: seafloor decor ---------------- */
+
+/** Two staggered ridges of distant rock formations along the horizon. */
+function RockLine() {
+  return (
+    <svg className="tb-rockline" viewBox="0 0 1200 190" preserveAspectRatio="none" aria-hidden="true">
+      <path
+        d="M0 190 L0 130 L70 96 L150 128 L230 84 L330 122 L420 70 L520 118 L600 92 L700 126 L790 78 L880 120 L980 96 L1060 130 L1140 104 L1200 126 L1200 190 Z"
+        fill="#08151f"
+        opacity="0.85"
+      />
+      <path
+        d="M0 190 L0 156 L90 130 L200 158 L300 118 L420 152 L540 128 L660 156 L780 122 L900 150 L1020 130 L1120 158 L1200 140 L1200 190 Z"
+        fill="#0c1e2b"
+        opacity="0.9"
+      />
+    </svg>
+  )
+}
+
+/** A coral cluster: branching coral + tube sponges (v0) or a sea fan (v1). */
+function CoralSvg({ variant }: { variant: number }) {
+  if (variant === 0) {
+    return (
+      <svg viewBox="0 0 120 90" width="100%" height="100%" aria-hidden="true">
+        <ellipse cx="58" cy="87" rx="52" ry="7" fill="#0b1b26" />
+        {/* branching coral */}
+        <path
+          d="M60 88 C58 70 60 56 52 42 M56 64 C48 56 44 48 44 38 M60 74 C66 62 70 52 68 40 M67 58 C73 52 77 46 78 38 M52 52 C46 48 42 44 40 44"
+          stroke="#8a5a6e"
+          strokeWidth="5"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          d="M60 88 C58 70 60 56 52 42 M56 64 C48 56 44 48 44 38 M60 74 C66 62 70 52 68 40 M67 58 C73 52 77 46 78 38"
+          stroke="#a97487"
+          strokeWidth="2.2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <g fill="#c9909f">
+          <circle cx="52" cy="41" r="2.6" />
+          <circle cx="44" cy="37" r="2.2" />
+          <circle cx="68" cy="39" r="2.4" />
+          <circle cx="78" cy="37" r="2" />
+          <circle cx="40" cy="43" r="1.8" />
+        </g>
+        {/* tube sponges */}
+        <g fill="#3d7d80">
+          <path d="M92 88 C91 70 92 60 95 56 C98 60 99 70 98 88 Z" />
+          <path d="M102 88 C101 66 102 54 105 50 C108 54 109 66 108 88 Z" />
+          <path d="M84 88 C83.5 74 84 68 86.5 65 C89 68 89.5 74 89 88 Z" />
+        </g>
+        <g fill="#123236">
+          <ellipse cx="95" cy="57" rx="1.8" ry="1.1" />
+          <ellipse cx="105" cy="51" rx="1.8" ry="1.1" />
+          <ellipse cx="86.5" cy="66" rx="1.4" ry="0.9" />
+        </g>
+      </svg>
+    )
+  }
+  return (
+    <svg viewBox="0 0 120 90" width="100%" height="100%" aria-hidden="true">
+      <ellipse cx="60" cy="87" rx="46" ry="6" fill="#0b1b26" />
+      {/* sea fan */}
+      <path
+        d="M62 88 C40 72 32 50 40 26 C50 36 56 36 61 29 C66 36 72 36 82 27 C89 50 82 72 62 88 Z"
+        fill="#5a4a74"
+        opacity="0.9"
+      />
+      <path
+        d="M62 86 C50 70 46 52 48 34 M62 86 C58 66 58 48 56 30 M62 86 C64 66 66 48 66 30 M62 86 C72 68 76 52 76 34 M50 62 C58 58 68 58 76 61 M46 46 C56 42 68 42 78 45"
+        stroke="#8e7aa5"
+        strokeWidth="1.4"
+        fill="none"
+        opacity="0.85"
+      />
+      {/* side branch coral */}
+      <path
+        d="M22 88 C22 76 24 68 20 60 M22 78 C27 72 29 66 28 60"
+        stroke="#8a5a6e"
+        strokeWidth="4"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <circle cx="20" cy="59" r="2.2" fill="#c9909f" />
+      <circle cx="28" cy="59" r="1.9" fill="#c9909f" />
+      {/* polyp glints */}
+      <circle cx="48" cy="34" r="1.1" fill="#9fd8d0" opacity="0.8" />
+      <circle cx="76" cy="36" r="1.1" fill="#9fd8d0" opacity="0.7" />
+      <circle cx="66" cy="30" r="0.9" fill="#9fd8d0" opacity="0.75" />
+    </svg>
+  )
+}
+
+/** Anemone with slow-waving tentacles around a squat trunk. */
+function AnemoneSvg({ phase = 0 }: { phase?: number }) {
+  const tentacles = [
+    { d: 'M40 50 C36 40 32 32 25 26', delay: 0 },
+    { d: 'M40 50 C38 38 36 28 33 21', delay: -0.7 },
+    { d: 'M40 50 C40 36 40 27 40 18', delay: -1.4 },
+    { d: 'M40 50 C42 38 44 28 47 21', delay: -2.1 },
+    { d: 'M40 50 C44 40 48 32 55 26', delay: -2.8 },
+    { d: 'M40 50 C46 44 51 38 59 35', delay: -3.4 },
+    { d: 'M40 50 C34 44 29 38 21 35', delay: -0.4 },
+  ]
+  return (
+    <svg viewBox="0 0 80 70" width="100%" height="100%" aria-hidden="true">
+      {tentacles.map((t, i) => (
+        <path
+          key={i}
+          className="tb-tentacle"
+          d={t.d}
+          stroke="#c98299"
+          strokeWidth="3.2"
+          fill="none"
+          strokeLinecap="round"
+          style={{ animationDelay: `${t.delay + phase}s` }}
+          opacity="0.9"
+        />
+      ))}
+      <path d="M26 70 C25 56 31 47 40 47 C49 47 55 56 54 70 Z" fill="#74495c" />
+      <path d="M28 66 C34 62 46 62 52 66 C46 64 34 64 28 66 Z" fill="#8e5c72" opacity="0.8" />
+      <ellipse cx="40" cy="69" rx="18" ry="3" fill="#0b1b26" />
+    </svg>
+  )
+}
+
+/** Hydrothermal chimney with a pulsing magma seam and rising embers. */
+function Vent() {
+  return (
+    <div className="tb-vent">
+      <span className="tb-vent-glow" />
+      <svg viewBox="0 0 140 110" width="100%" height="100%" aria-hidden="true">
+        <path d="M14 110 L24 66 L38 46 L52 68 L60 110 Z" fill="#0a1620" />
+        <path d="M56 110 L68 78 L82 62 L96 84 L104 110 Z" fill="#0d1b26" />
+        <path d="M96 110 L104 88 L116 78 L128 92 L134 110 Z" fill="#0a1620" />
+        {/* magma seams */}
+        <path
+          d="M38 50 L36 66 L42 82 M82 66 L78 82 L84 96"
+          stroke="#ff8a4d"
+          strokeWidth="1.6"
+          fill="none"
+          strokeLinecap="round"
+          opacity="0.75"
+        />
+      </svg>
+      {VENT_EMBERS.map((e, i) => (
+        <span
+          key={i}
+          className="tb-vent-ember"
+          style={
+            {
+              left: e.left,
+              animationDelay: `-${e.delay}s`,
+              animationDuration: `${e.dur}s`,
+              '--dx': `${e.dx}px`,
+            } as Vars
+          }
+        />
+      ))}
     </div>
   )
 }

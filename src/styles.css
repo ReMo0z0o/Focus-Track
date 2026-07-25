@@ -2976,6 +2976,7 @@ input, select {
   .tb-monkey-leap,
   .tb-jungle-pause,
   .tb-prey,
+  .tb-vent-ember,
   .tb-dragon-layer {
     display: none;
   }
@@ -3000,6 +3001,11 @@ input, select {
   /* narrow screens: one smaller tree is enough of a frame */
   .tb-tree.left { height: 56vh !important; }
   .tb-tree.right { display: none; }
+
+  /* narrow screens: shrink the seafloor garden so it doesn't crowd */
+  .tb-coral { transform: scale(calc(var(--cs, 1) * 0.72)) scaleX(var(--cf, 1)); }
+  .tb-anemone { transform: scale(calc(var(--cs, 1) * 0.72)); }
+  .tb-vent { width: 108px; height: 86px; }
 }
 
 /* ---------------- deep space ---------------- */
@@ -3632,6 +3638,93 @@ input, select {
   bottom: -8%;
   height: 30%;
   background: radial-gradient(ellipse at 50% 100%, rgba(10, 46, 60, 0.75), rgba(6, 28, 40, 0.35) 60%, transparent);
+}
+
+/* distant rock ridges along the seafloor horizon */
+.tb-rockline {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 24%;
+}
+
+/* seafloor garden */
+.tb-coral {
+  bottom: -6px;
+  width: 120px;
+  height: 90px;
+  transform-origin: 50% 100%;
+  transform: scale(var(--cs, 1)) scaleX(var(--cf, 1));
+}
+
+.tb-anemone {
+  bottom: -4px;
+  width: 80px;
+  height: 70px;
+  transform-origin: 50% 100%;
+  transform: scale(var(--cs, 1));
+}
+
+.tb-anemone .tb-tentacle {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: tb-tentacle-sway 4s ease-in-out infinite alternate;
+}
+
+@keyframes tb-tentacle-sway {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(7deg); }
+}
+
+/* hydrothermal chimney: pulsing magma light + rising embers */
+.tb-vent {
+  left: 58%;
+  bottom: -6px;
+  width: 140px;
+  height: 110px;
+}
+
+.tb-vent svg {
+  position: absolute;
+  inset: 0;
+}
+
+.tb-vent-glow {
+  position: absolute;
+  left: 22px;
+  bottom: 0;
+  width: 78px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 80%, rgba(255, 138, 77, 0.5), rgba(214, 84, 38, 0.2) 55%, transparent 75%);
+  filter: blur(6px);
+  animation: tb-vent-pulse 3.6s ease-in-out infinite;
+}
+
+@keyframes tb-vent-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+.tb-vent-ember {
+  position: absolute;
+  bottom: 12px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffab73;
+  box-shadow: 0 0 5px rgba(255, 138, 77, 0.8);
+  animation-name: tb-ember-rise;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes tb-ember-rise {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: 0.95; }
+  70% { opacity: 0.55; }
+  100% { transform: translate3d(var(--dx, 0px), -96px, 0); opacity: 0; }
 }
 
 .tb-kelp {
