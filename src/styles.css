@@ -4017,9 +4017,9 @@ input, select {
   position: absolute;
   left: 0;
   top: 0;
-  width: 200px;
-  height: 116px;
-  transform-origin: 100px 58px;
+  width: 210px;
+  height: 130px;
+  transform-origin: 105px 65px;
   will-change: transform;
 }
 
@@ -4052,7 +4052,8 @@ input, select {
 }
 
 .tb-angler .tb-angler-jaw {
-  transform-origin: 95% 20%;
+  /* hinge at the mouth corner, below the eye */
+  transform-origin: 97% 62%;
   animation: tb-jaw-idle 5.2s ease-in-out infinite;
 }
 
@@ -4076,6 +4077,8 @@ input, select {
 }
 
 .tb-angler-fin {
+  /* pivot at the shoulder joint of the pectoral fan */
+  transform-origin: 13% 4%;
   animation: tb-fin-wave 1.6s ease-in-out infinite alternate;
 }
 
@@ -4100,6 +4103,16 @@ input, select {
   to { transform: translateY(2px); }
 }
 
+/* snatched into the mouth: frantic thrashing until the jaws close */
+.tb-prey.doomed svg {
+  animation: tb-prey-struggle 0.16s linear infinite alternate;
+}
+
+@keyframes tb-prey-struggle {
+  from { transform: rotate(-16deg) translateY(-1px); }
+  to { transform: rotate(14deg) translateY(2px); }
+}
+
 .tb-gulp {
   position: absolute;
   left: 0;
@@ -4117,6 +4130,8 @@ input, select {
 
 .tb-gulp i:nth-child(2) { left: 10px; animation-delay: 0.12s; }
 .tb-gulp i:nth-child(3) { left: -8px; animation-delay: 0.22s; }
+.tb-gulp i:nth-child(4) { left: 18px; width: 3.5px; height: 3.5px; animation-delay: 0.3s; }
+.tb-gulp i:nth-child(5) { left: -15px; width: 3.5px; height: 3.5px; animation-delay: 0.06s; }
 
 @keyframes tb-gulp-rise {
   from { transform: translateY(0); opacity: 0.9; }
