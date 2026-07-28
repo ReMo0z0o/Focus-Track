@@ -55,8 +55,8 @@ badges.
   aperiodic schedule and dims the UI with it. Every minute or so a hooded
   writer walks in, shakes a can and sprays a piece on the concrete; the work
   stays up, accumulates across four wall slots and survives a reload.
-  An optional warehouse ambience (synthesized, off by default) lives in
-  Settings while that theme is active.
+  An optional warehouse ambience — steady synthesized white noise, off by
+  default — lives in Settings while that theme is active.
   Grade emblems render as
   draggable 3D badges (CSS 3D, no dependencies). Unlocks are high-water
   marks persisted in `profiles.milestones`, so a dip in recent form never

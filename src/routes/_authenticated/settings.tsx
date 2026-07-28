@@ -263,8 +263,8 @@ function SettingsPage() {
               <div className="toggle-text">
                 <div className="t-label">Warehouse ambience</div>
                 <div className="t-sub">
-                  Distant ventilation and the odd metallic knock, under the Street
-                  Art theme. Off by default.
+                  Steady white noise under the Street Art theme — nothing with a
+                  pitch to it. Off by default.
                 </div>
               </div>
               <label className="switch">

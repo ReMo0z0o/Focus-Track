@@ -136,16 +136,17 @@ export function playReminderSound(id: string): void {
 /* ---------------- room ambience ---------------- */
 
 /**
- * The warehouse hum behind the Street Art theme: distant ventilation,
- * the odd metallic knock from somewhere down the hall. Synthesized, so
- * there is nothing to download, and off unless the user asks for it.
+ * The room tone behind the Street Art theme: plain steady white noise,
+ * nothing else. Anything with a pitch — a hum, a knock, a rattle — turns
+ * into a whistle you notice, which is the opposite of what background
+ * noise is for. Synthesized, so there is nothing to download, and off
+ * unless the user asks for it.
  */
 const AMBIENCE_KEY = 'focusguard.ambience'
 
 let ambience: {
   master: GainNode
   nodes: AudioScheduledSourceNode[]
-  timer: number
 } | null = null
 
 export function ambienceEnabled(): boolean {
@@ -165,15 +166,20 @@ export function setAmbienceEnabled(on: boolean): void {
   }
 }
 
-/** Brown-ish noise, the cheapest convincing air-handling rumble. */
+/**
+ * Flat white noise. The buffer is long and its ends are cross-faded, so
+ * looping it doesn't introduce a click or an audible period — a short
+ * loop is the one way noise can start to sound like a pattern.
+ */
 function noiseBuffer(c: AudioContext, seconds: number): AudioBuffer {
-  const buf = c.createBuffer(1, Math.floor(c.sampleRate * seconds), c.sampleRate)
+  const len = Math.floor(c.sampleRate * seconds)
+  const buf = c.createBuffer(1, len, c.sampleRate)
   const data = buf.getChannelData(0)
-  let last = 0
-  for (let i = 0; i < data.length; i++) {
-    const white = Math.random() * 2 - 1
-    last = (last + 0.02 * white) / 1.02
-    data[i] = last * 3.2
+  for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1
+  const fade = Math.min(2048, Math.floor(len / 8))
+  for (let i = 0; i < fade; i++) {
+    const k = i / fade
+    data[i] = data[i]! * k + data[len - fade + i]! * (1 - k)
   }
   return buf
 }
@@ -210,62 +216,28 @@ function build(c: AudioContext): void {
   master.gain.exponentialRampToValueAtTime(0.05, c.currentTime + 2.5)
   master.connect(c.destination)
 
-  // ventilation: filtered noise, slowly breathing
+  // One steady noise bed. No oscillator, no modulation, nothing that can
+  // ring: a gentle shelf just takes the sharpest top off so it sits behind
+  // the work instead of in front of it.
   const src = c.createBufferSource()
-  src.buffer = noiseBuffer(c, 4)
+  src.buffer = noiseBuffer(c, 8)
   src.loop = true
-  const lp = c.createBiquadFilter()
-  lp.type = 'lowpass'
-  lp.frequency.value = 320
-  const swell = c.createGain()
-  swell.gain.value = 0.85
-  const lfo = c.createOscillator()
-  lfo.frequency.value = 0.045
-  const lfoGain = c.createGain()
-  lfoGain.gain.value = 0.3
-  lfo.connect(lfoGain)
-  lfoGain.connect(swell.gain)
-  src.connect(lp)
-  lp.connect(swell)
-  swell.connect(master)
+  const shelf = c.createBiquadFilter()
+  shelf.type = 'highshelf'
+  shelf.frequency.value = 3500
+  shelf.gain.value = -9
+  src.connect(shelf)
+  shelf.connect(master)
   src.start()
-  lfo.start()
 
-  // Occasional metallic knock somewhere down the hall. Routed through
-  // master so it fades with everything else rather than ringing out over
-  // the silence after a stop.
-  const knock = () => {
-    if (!ambience) return
-    const t = c.currentTime
-    const f = 180 + Math.random() * 420
-    const osc = c.createOscillator()
-    osc.type = 'triangle'
-    osc.frequency.setValueAtTime(f, t)
-    const g = c.createGain()
-    g.gain.setValueAtTime(0.0001, t)
-    g.gain.exponentialRampToValueAtTime(0.24, t + 0.02)
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5 + Math.random() * 0.6)
-    const lpf = c.createBiquadFilter()
-    lpf.type = 'lowpass'
-    lpf.frequency.value = 1400
-    osc.connect(g)
-    g.connect(lpf)
-    lpf.connect(master)
-    osc.start(t)
-    osc.stop(t + 1.3)
-    ambience.timer = window.setTimeout(knock, 9000 + Math.random() * 26000)
-  }
-
-  ambience = { master, nodes: [src, lfo], timer: 0 }
-  ambience.timer = window.setTimeout(knock, 6000 + Math.random() * 12000)
+  ambience = { master, nodes: [src] }
 }
 
 export function stopAmbience(): void {
   if (!ambience) return
   const c = getContext()
-  const { master, nodes, timer } = ambience
+  const { master, nodes } = ambience
   ambience = null
-  clearTimeout(timer)
   if (c) {
     master.gain.cancelScheduledValues(c.currentTime)
     master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), c.currentTime)
@@ -294,17 +266,4 @@ export function stopAmbience(): void {
       /* already detached */
     }
   }, 900)
-}
-
-/** The rattle of a can being shaken — fired by the graffiti scene. */
-export function playSprayShake(): void {
-  const c = getContext()
-  if (!c || c.state !== 'running') return
-  const t = c.currentTime
-  for (let i = 0; i < 7; i++) {
-    note(c, 2200 + Math.random() * 1800, t + i * 0.13, 0.05, 0.006, {
-      type: 'square',
-      lowpass: 5200,
-    })
-  }
 }

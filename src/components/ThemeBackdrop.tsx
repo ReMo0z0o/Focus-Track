@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, RefObject } from 'react'
-import { ambienceEnabled, playSprayShake, startAmbience, stopAmbience } from '@/lib/audio'
+import { ambienceEnabled, startAmbience, stopAmbience } from '@/lib/audio'
 
 /**
  * Full-screen animated backdrop for the "world" themes (fire, jungle,
@@ -2789,7 +2789,6 @@ function StreetLayer() {
       setArtistX(off, from === 1)
       walk(off, target, WALK_MS, from === 1, () => {
         setPhase('shake')
-        if (ambienceEnabled()) playSprayShake()
         later(() => {
           setPhase('spray')
           runSpray(next, () => {
