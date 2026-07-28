@@ -179,15 +179,32 @@ function noiseBuffer(c: AudioContext, seconds: number): AudioBuffer {
 }
 
 /**
- * Start the loop. Must be called from a user gesture — browsers refuse
- * to start audio otherwise. Safe to call twice.
+ * Start the loop. Returns false when the audio context is still locked —
+ * browsers only unlock it from a user gesture — so the caller can retry
+ * on the next click instead of leaving a silent graph running. Safe to
+ * call repeatedly.
  */
-export function startAmbience(): void {
-  if (ambience) return
+export function startAmbience(): boolean {
+  if (ambience) return true
   const c = getContext()
-  if (!c) return
-  if (c.state === 'suspended') void c.resume().catch(() => {})
+  if (!c) return false
+  if (c.state !== 'running') {
+    // Locked until a gesture. Ask to resume and build only if that
+    // succeeds; report failure so the caller keeps listening for the
+    // next click rather than leaving a silent graph in place.
+    void c
+      .resume()
+      .then(() => {
+        if (!ambience && c.state === 'running') build(c)
+      })
+      .catch(() => {})
+    return false
+  }
+  build(c)
+  return true
+}
 
+function build(c: AudioContext): void {
   const master = c.createGain()
   master.gain.setValueAtTime(0.0001, c.currentTime)
   master.gain.exponentialRampToValueAtTime(0.05, c.currentTime + 2.5)
@@ -214,13 +231,28 @@ export function startAmbience(): void {
   src.start()
   lfo.start()
 
-  // occasional metallic knock somewhere down the hall
+  // Occasional metallic knock somewhere down the hall. Routed through
+  // master so it fades with everything else rather than ringing out over
+  // the silence after a stop.
   const knock = () => {
     if (!ambience) return
     const t = c.currentTime
     const f = 180 + Math.random() * 420
-    note(c, f, t, 0.5 + Math.random() * 0.6, 0.012, { type: 'triangle', lowpass: 1400 })
-    note(c, f * 2.41, t + 0.01, 0.35, 0.005, { type: 'sine' })
+    const osc = c.createOscillator()
+    osc.type = 'triangle'
+    osc.frequency.setValueAtTime(f, t)
+    const g = c.createGain()
+    g.gain.setValueAtTime(0.0001, t)
+    g.gain.exponentialRampToValueAtTime(0.24, t + 0.02)
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5 + Math.random() * 0.6)
+    const lpf = c.createBiquadFilter()
+    lpf.type = 'lowpass'
+    lpf.frequency.value = 1400
+    osc.connect(g)
+    g.connect(lpf)
+    lpf.connect(master)
+    osc.start(t)
+    osc.stop(t + 1.3)
     ambience.timer = window.setTimeout(knock, 9000 + Math.random() * 26000)
   }
 
@@ -246,6 +278,22 @@ export function stopAmbience(): void {
       /* already stopped */
     }
   })
+  // release the graph once the fade is done, so repeated start/stop
+  // cycles (every tab hide and show) don't pile up dead nodes
+  window.setTimeout(() => {
+    nodes.forEach((n) => {
+      try {
+        n.disconnect()
+      } catch {
+        /* already detached */
+      }
+    })
+    try {
+      master.disconnect()
+    } catch {
+      /* already detached */
+    }
+  }, 900)
 }
 
 /** The rattle of a can being shaken — fired by the graffiti scene. */

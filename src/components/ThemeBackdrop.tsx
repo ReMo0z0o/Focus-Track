@@ -1113,6 +1113,9 @@ function Lamp() {
     }
     const later = (fn: () => void, ms: number) => {
       const id = window.setTimeout(() => {
+        // drop the spent id: on a tab left open for hours this list would
+        // otherwise grow by a couple of thousand entries an hour
+        timers = timers.filter((t) => t !== id)
         if (alive) fn()
       }, ms)
       timers.push(id)
@@ -2472,15 +2475,34 @@ type Particle = {
   size: number
 }
 
+/**
+ * Rebuild saved work defensively: every field is clamped to something
+ * renderable. A hand-edited or half-written entry would otherwise index
+ * past the piece table and take the whole app down with it — nothing
+ * here is worth a blank page.
+ */
 function readSaved(): Placed[] {
   try {
     const raw = localStorage.getItem(PIECES_KEY)
     if (!raw) return []
-    const rows = JSON.parse(raw) as Placed[]
+    const rows: unknown = JSON.parse(raw)
     if (!Array.isArray(rows)) return []
-    return rows
-      .filter((r) => typeof r?.piece === 'number' && typeof r?.slot === 'number')
-      .slice(-MAX_PIECES)
+    const idx = (v: unknown, len: number) =>
+      typeof v === 'number' && Number.isFinite(v) ? ((Math.floor(v) % len) + len) % len : 0
+    const num = (v: unknown, fallback: number) =>
+      typeof v === 'number' && Number.isFinite(v) ? v : fallback
+    return rows.slice(-MAX_PIECES).map((r, i) => {
+      const row = (r ?? {}) as Partial<Placed>
+      return {
+        id: num(row.id, i),
+        piece: idx(row.piece, PIECES.length),
+        slot: idx(row.slot, WALL_SLOTS.length),
+        ink: idx(row.ink, PIECE_INKS.length),
+        flip: row.flip === true,
+        rot: Math.max(-6, Math.min(6, num(row.rot, 0))),
+        y: typeof row.y === 'number' && Number.isFinite(row.y) ? row.y : undefined,
+      }
+    })
   } catch {
     return []
   }
@@ -2513,24 +2535,26 @@ function StreetLayer() {
     img.src = '/tag-locked-in.webp'
   }, [reduced])
 
-  // Room tone, only if the user asked for it. Audio can't start without a
-  // gesture, so if none has happened yet we wait for the first one.
+  // Room tone, only if the user asked for it. The audio context is locked
+  // until a real gesture, so the first attempt usually fails on a fresh
+  // load — keep listening for a click until it takes. This effect always
+  // registers its cleanup, even when ambience is off, because the Settings
+  // toggle can start the hum while the theme is already mounted and it
+  // must not outlive the theme.
   useEffect(() => {
-    if (!ambienceEnabled()) return
-    let done = false
     const begin = () => {
-      if (done) return
-      done = true
-      startAmbience()
-      window.removeEventListener('pointerdown', begin)
-      window.removeEventListener('keydown', begin)
+      if (!ambienceEnabled() || document.hidden) return
+      if (startAmbience()) {
+        window.removeEventListener('pointerdown', begin)
+        window.removeEventListener('keydown', begin)
+      }
     }
     begin()
-    window.addEventListener('pointerdown', begin, { once: true })
-    window.addEventListener('keydown', begin, { once: true })
+    window.addEventListener('pointerdown', begin)
+    window.addEventListener('keydown', begin)
     const onVisibility = () => {
       if (document.hidden) stopAmbience()
-      else if (ambienceEnabled()) startAmbience()
+      else begin()
     }
     document.addEventListener('visibilitychange', onVisibility)
     return () => {
@@ -2550,6 +2574,8 @@ function StreetLayer() {
   const dropRefs = useRef<(HTMLSpanElement | null)[]>([])
   const phaseRef = useRef<ArtPhase>('idle')
   const activeRef = useRef<(Placed & { from: -1 | 1 }) | null>(null)
+  // read by the scheduler, which must not be torn down when the wall changes
+  const piecesRef = useRef<Placed[]>([])
 
   // restore after mount so the first client render still matches the server
   useEffect(() => {
@@ -2563,6 +2589,9 @@ function StreetLayer() {
   useEffect(() => {
     activeRef.current = active
   }, [active])
+  useEffect(() => {
+    piecesRef.current = pieces
+  }, [pieces])
 
   useEffect(() => {
     if (reduced) return
@@ -2596,6 +2625,7 @@ function StreetLayer() {
       let lastEmit = 0
       let lastDrop = 0
       let last = t0
+      let tinted = false
       const ink = PIECE_INKS[piece.ink % PIECE_INKS.length]!
 
       // hang the piece off the can's real height, so paint lands where
@@ -2656,20 +2686,22 @@ function StreetLayer() {
         const step = (arr: Particle[], refs: (HTMLSpanElement | null)[], gravity: number, grow: number) => {
           arr.forEach((p, i) => {
             const el = refs[i]
-            if (!el) return
             if (!p.alive) {
-              el.style.opacity = '0'
+              if (el) el.style.opacity = '0'
               return
             }
+            // age first, and regardless of the ref — a particle that never
+            // ages stays alive and the loop below would never finish
             p.life += dt
             if (p.life >= p.max) {
               p.alive = false
-              el.style.opacity = '0'
+              if (el) el.style.opacity = '0'
               return
             }
             p.vy += gravity * dt
             p.x += p.vx * dt
             p.y += p.vy * dt
+            if (!el) return
             const k = p.life / p.max
             el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) scale(${(0.4 + k * grow).toFixed(2)})`
             el.style.opacity = String((1 - k) * 0.5)
@@ -2679,8 +2711,12 @@ function StreetLayer() {
         }
         step(mist, mistRefs.current, -6, 1.9)
         step(drops, dropRefs.current, 420, 0.2)
-        if (mistRefs.current[0]) {
+        // the can colour is fixed for the visit — paint it once, not 1000
+        // style writes a second
+        if (!tinted && mistRefs.current[0]) {
+          tinted = true
           mistRefs.current.forEach((el) => el && (el.style.background = ink.fill))
+          dropRefs.current.forEach((el) => el && (el.style.background = ink.fill))
         }
 
         if (u < 1 || mist.some((m) => m.alive) || drops.some((d) => d.alive)) {
@@ -2705,8 +2741,9 @@ function StreetLayer() {
       raf = requestAnimationFrame(frame)
     }
 
-    const fire = () => {
-      if (!alive || phaseRef.current !== 'idle') return
+    const fire = (): boolean => {
+      if (!alive || phaseRef.current !== 'idle' || activeRef.current) return false
+      const pieces = piecesRef.current
       const used = new Set(pieces.map((p) => p.slot))
       const free = WALL_SLOTS.map((_, i) => i).filter((i) => !used.has(i))
       const slot = free.length
@@ -2731,6 +2768,10 @@ function StreetLayer() {
         rot: -1.5 + Math.random() * 3,
         from,
       }
+      // set the refs synchronously: state lags a render, and the guard in
+      // fire() has to hold between two back-to-back timer callbacks
+      activeRef.current = next
+      phaseRef.current = 'enter'
       setActive(next)
 
       // stand where the can lands on the edge of the piece: entering from
@@ -2757,21 +2798,32 @@ function StreetLayer() {
               setPhase('exit')
               const away = Math.random() < 0.5 ? -220 : window.innerWidth + 60
               walk(target, away, EXIT_MS, away > 0, () => {
-                setPieces((prev) => {
-                  const rows = [...prev.filter((p) => p.slot !== slot), next].slice(-MAX_PIECES)
-                  saveSaved(rows)
-                  return rows
-                })
+                const rows = [
+                  ...piecesRef.current.filter((p) => p.slot !== slot),
+                  next,
+                ].slice(-MAX_PIECES)
+                piecesRef.current = rows
+                setPieces(rows)
+                saveSaved(rows)
+                activeRef.current = null
+                phaseRef.current = 'idle'
                 setActive(null)
                 setPhase('idle')
-                scheduleNext()
+                // now and then the writer is back before you expect
+                scheduleNext(Math.random() < 0.1 ? 12000 + Math.random() * 8000 : undefined)
               })
             }, ADMIRE_MS)
           })
         }, SHAKE_MS)
       })
+      return true
     }
 
+    /**
+     * One chain, always re-armed. Every path either starts a visit (whose
+     * completion schedules the next) or schedules a retry — otherwise a
+     * single refused visit would end the writer's career for the session.
+     */
     function scheduleNext(overrideGap?: number) {
       if (!alive) return
       const gap = overrideGap ?? ART_GAP_MIN + Math.random() * (ART_GAP_MAX - ART_GAP_MIN)
@@ -2782,9 +2834,7 @@ function StreetLayer() {
           scheduleNext(9000)
           return
         }
-        fire()
-        // now and then the writer comes back straight away
-        if (Math.random() < 0.1) later(() => scheduleNext(12000 + Math.random() * 8000), 100)
+        if (!fire()) scheduleNext(9000)
       }, gap)
     }
 
@@ -2794,6 +2844,7 @@ function StreetLayer() {
       ;(window as unknown as { __street?: unknown }).__street = {
         fire,
         clear: () => {
+          piecesRef.current = []
           setPieces([])
           saveSaved([])
         },
@@ -2807,9 +2858,12 @@ function StreetLayer() {
       cancelAnimationFrame(raf)
       if (import.meta.env.DEV) delete (window as unknown as { __street?: unknown }).__street
     }
-    // `pieces` is read inside fire() through the closure on purpose: the
-    // effect re-registers when the wall changes so slot picking stays fresh.
-  }, [reduced, pieces])
+    // Deliberately mount-only: the scheduler must outlive every visit.
+    // Listing `pieces` here would tear the whole chain down each time a
+    // piece lands and restart it on the short first-visit delay, so the
+    // writer would return every ten seconds. Current work is read from
+    // piecesRef instead.
+  }, [reduced])
 
   const renderPiece = (p: Placed, done: boolean) => {
     const def = PIECES[p.piece % PIECES.length]!

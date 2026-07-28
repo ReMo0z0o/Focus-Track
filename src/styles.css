@@ -49,7 +49,6 @@
   --chrome-bg: color-mix(in srgb, var(--bg) 82%, transparent);
   --btn-radius: 999px;
   --title-tracking: 0.08em;
-  --title-transform: uppercase;
 
   --font:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
@@ -2051,11 +2050,10 @@ input, select {
   --font-display: 'Oswald', 'Arial Narrow', 'Roboto Condensed', ui-sans-serif, system-ui, sans-serif;
   --title-tracking: 0.14em;
 
-  /* the can palette — used by the scene and the graffiti pieces */
-  --gc-orange: #ff8a2b;
+  /* can colours borrowed for the interface's own indicators; the pieces
+     themselves carry their palette in PIECE_INKS */
   --gc-cyan: #35d7f5;
   --gc-lime: #b6f24a;
-  --gc-pink: #ff4fa3;
 }
 
 :root[data-theme='space'] {
@@ -2998,11 +2996,6 @@ input, select {
     color-mix(in srgb, var(--surface) 88%, transparent),
     color-mix(in srgb, var(--bg-raise) 92%, transparent)
   );
-  --panel-bg-solid: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--surface) 88%, transparent),
-    color-mix(in srgb, var(--bg-raise) 92%, transparent)
-  );
 }
 /* street opts out: it ships its own smoked-glass panel treatment, and this
    rule sits after the theme blocks (equal specificity) so it would win. */
@@ -3048,8 +3041,7 @@ input, select {
 
 /* Weaker mobile GPUs: shrink the expensive blur radii. */
 @media (max-width: 640px) {
-  .tb-nebula,
-  .tb-paint {
+  .tb-nebula {
     filter: blur(38px);
   }
 
@@ -3677,9 +3669,12 @@ input, select {
 
 /* ---- the lamp and what it lights ---- */
 
-/* --lamp is written by the Lamp component (0 = dark, 1 = full). The
-   @property declaration keeps it typed; the plain fallback covers
-   browsers without it and the reduced-motion case. */
+/* --lamp is written by the Lamp component as an inline style on <html>
+   (0 = dark, 1 = full). @property keeps it typed; the plain declaration
+   is the value everything falls back to when no scene is running.
+   Reduced motion is handled in the component — it never schedules a
+   flicker, so the lamp simply stays at full. A stylesheet rule could not
+   do that job anyway: an inline style outranks it. */
 @property --lamp {
   syntax: '<number>';
   inherits: true;
@@ -3688,12 +3683,6 @@ input, select {
 
 :root {
   --lamp: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --lamp: 1;
-  }
 }
 
 .tb-st-lamp {
@@ -4015,7 +4004,10 @@ input, select {
    the other fifteen themes never fetch it. */
 @font-face {
   font-family: 'Oswald';
-  src: url('/fonts/oswald-latin.woff2') format('woff2-variations');
+  /* Plain `woff2`: the `woff2-variations` hint comes from an abandoned
+     draft and browsers that don't know it skip the source entirely,
+     which would leave the theme on a fallback that ships nowhere. */
+  src: url('/fonts/oswald-latin.woff2') format('woff2');
   font-weight: 200 700;
   font-style: normal;
   font-display: swap;
@@ -4025,7 +4017,7 @@ input, select {
 /* Frosted surfaces — deliberately a short list. Every element with a
    backdrop-filter is its own backdrop root; /rewards alone renders
    sixteen theme cards, so .tile and .theme-card stay opaque instead. */
-:root[data-theme='street'] :is(.card, .modal, .site-header, .toast) {
+:root[data-theme='street'] :is(.card, .modal, .site-header) {
   backdrop-filter: blur(var(--panel-blur)) saturate(0.88);
   -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(0.88);
 }
@@ -4131,14 +4123,22 @@ input, select {
   border-color: color-mix(in srgb, var(--gc-lime) 45%, transparent);
 }
 
+/* The dot and its pulse follow the chip, or the pill reads lime with an
+   orange light beside it. The halo is animated, so the keyframe has to be
+   swapped too — a static box-shadow would just lose to it. */
+:root[data-theme='street'] .status-chip.running .status-dot {
+  background: var(--gc-lime);
+  animation: tb-st-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes tb-st-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--gc-lime) 50%, transparent); }
+  55% { box-shadow: 0 0 0 7px transparent; }
+}
+
 @media (max-width: 640px) {
   :root[data-theme='street'] {
     --panel-blur: 8px;
-  }
-
-  :root[data-theme='street'] .toast {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
   }
 }
 
