@@ -3843,6 +3843,167 @@ input, select {
   opacity: calc(1.08 - 0.16 * var(--lamp, 1));
 }
 
+/* ---- the writer's visit ----
+   Mounted outside .theme-backdrop so it paints over the wall, but it
+   never rises above the interface: this is scenery, not a companion. */
+
+.tb-st-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tb-st-piece {
+  position: absolute;
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
+}
+
+.tb-st-piece svg,
+.tb-st-piece img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* The reveal follows the nozzle: --rv is rewritten every frame by the
+   spray loop, so the paint lands exactly where the can is pointing. The
+   soft leading edge is the paint fading in, not a wipe. */
+.tb-st-piece {
+  -webkit-mask-image: linear-gradient(96deg, #000 0 calc(var(--rv, 0%) - 7%), transparent var(--rv, 0%));
+  mask-image: linear-gradient(96deg, #000 0 calc(var(--rv, 0%) - 7%), transparent var(--rv, 0%));
+}
+
+/* entering from the right means painting back the other way */
+.tb-st-piece.rtl {
+  -webkit-mask-image: linear-gradient(276deg, #000 0 calc(var(--rv, 0%) - 7%), transparent var(--rv, 0%));
+  mask-image: linear-gradient(276deg, #000 0 calc(var(--rv, 0%) - 7%), transparent var(--rv, 0%));
+}
+
+.tb-st-piece.done {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.tb-st-drip {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+}
+
+.tb-st-piece.dripping .tb-st-drip {
+  animation: tb-st-drip 1s cubic-bezier(0.3, 0.8, 0.4, 1) forwards;
+}
+
+@keyframes tb-st-drip {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.tb-st-artist {
+  position: absolute;
+  left: 0;
+  bottom: 12vh;
+  width: 150px;
+  height: 260px;
+  will-change: transform;
+}
+
+.tb-st-artist-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.65));
+}
+
+/* the arm is rotated from the spray loop; the anchor only positions */
+.tb-st-artist .sa-arm {
+  transform-box: view-box;
+  transform-origin: 52px 92px;
+}
+
+.tb-st-artist .sa-forearm {
+  transform-box: view-box;
+  transform-origin: 24px 116px;
+}
+
+.tb-st-artist[data-phase='enter'] .sa-legs,
+.tb-st-artist[data-phase='exit'] .sa-legs {
+  animation: tb-st-walk 0.52s ease-in-out infinite alternate;
+}
+
+.tb-st-artist .sa-legs {
+  transform-box: view-box;
+  transform-origin: 76px 168px;
+}
+
+@keyframes tb-st-walk {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(6deg); }
+}
+
+.tb-st-artist[data-phase='enter'] {
+  animation: tb-st-fade-in 0.5s ease both;
+}
+
+@keyframes tb-st-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tb-st-artist[data-phase='exit'] {
+  animation: tb-st-fade-out 2.2s ease-in forwards;
+}
+
+@keyframes tb-st-fade-out {
+  0%, 55% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* shaking the can: the ball rattles */
+.tb-st-artist[data-phase='shake'] .sa-forearm {
+  animation: tb-st-shake 0.16s ease-in-out infinite alternate;
+}
+
+@keyframes tb-st-shake {
+  from { transform: rotate(-7deg) translateY(-2px); }
+  to { transform: rotate(6deg) translateY(2px); }
+}
+
+/* torso breathes so the silhouette never looks pasted on */
+.tb-st-artist .sa-torso {
+  transform-box: view-box;
+  transform-origin: 76px 168px;
+  animation: tb-st-breathe 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes tb-st-breathe {
+  from { transform: translateY(0.6px); }
+  to { transform: translateY(-1.4px); }
+}
+
+/* spray mist and the heavier spatter, both driven by the same loop */
+.tb-st-mist,
+.tb-st-drop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.tb-st-mist {
+  filter: blur(3px);
+  mix-blend-mode: screen;
+}
+
+.tb-st-drop {
+  background: #e8eef2;
+}
+
 /* Phones: drop the heaviest sheet and shrink the rest of the blur
    budget. Lives here, after the layers, because these selectors carry
    the same specificity as the ones they override. */

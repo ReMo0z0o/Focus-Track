@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, ReactNode, RefObject } from 'react'
 
 /**
  * Full-screen animated backdrop for the "world" themes (fire, jungle,
@@ -926,6 +926,8 @@ export function ThemeBackdrop() {
           pause modal when it comes to sleep on it. */}
       {theme === 'dragon' && <DragonLayer />}
       {theme === 'jungle' && <JunglePauseLayer />}
+      {/* The writer paints on top of the wall but stays behind the UI. */}
+      {theme === 'street' && <StreetLayer />}
     </>
   )
 }
@@ -1209,6 +1211,244 @@ function Lamp() {
       {/* bulb + its immediate halo */}
       <circle className="tb-st-glow" cx="60" cy="62" r="26" fill="url(#tbst-bulb)" />
       <circle className="tb-st-bulb" cx="60" cy="60" r="7.5" fill="#fff3d6" />
+    </svg>
+  )
+}
+
+/* ---------------- street art: the pieces ---------------- */
+
+/**
+ * Wildstyle lettering, built the way a writer builds it: a fat drop
+ * shadow block, the fill, a highlight, then the outline on top — plus
+ * drips that only start running once the paint is down.
+ */
+type PieceDef = {
+  id: string
+  w: number
+  h: number
+  /** Raster pieces are real artwork; SVG pieces recolour per slot. */
+  src?: string
+  render?: (p: { fill: string; glow: string }) => ReactNode
+}
+
+/** Drips hang off the bottom of the letters and grow after the sweep. */
+function Drips({ at, fill }: { at: number[]; fill: string }) {
+  return (
+    <g className="tb-st-drips" fill={fill}>
+      {at.map((x, i) => (
+        <path
+          key={i}
+          className="tb-st-drip"
+          style={{ animationDelay: `${i * 0.14}s` }}
+          d={`M${x} 0 h5 v${16 + (i % 3) * 9} a2.5 2.5 0 0 1 -5 0 Z`}
+        />
+      ))}
+    </g>
+  )
+}
+
+const PIECES: PieceDef[] = [
+  {
+    /* The writer's own piece, lifted from the reference footage: the
+       wall is desaturated concrete and the paint is not, so a saturation
+       mask cuts it out cleanly. Five frames are merged because the
+       artist stands in front of a different part of it in each one. */
+    id: 'locked-in',
+    w: 480,
+    h: 240,
+    src: '/tag-locked-in.webp',
+  },
+  {
+    /* A throw-up: fat interlocking bubble forms, cast shadow, inner
+       shadow, highlight and an outline — the shapes writers actually
+       put up fast, not lettering. */
+    id: 'throwup',
+    w: 330,
+    h: 150,
+    render: ({ fill, glow }) => {
+      const body =
+        'M26 30 h54 a40 40 0 0 1 6 78 h-56 a34 34 0 0 1 -4 -78 Z M150 24 h48 a44 44 0 0 1 10 86 h-52 a38 38 0 0 1 -6 -86 Z M236 44 c26 -18 52 -6 54 18 c2 24 -22 40 -46 32'
+      return (
+        <>
+          <path transform="translate(9 11)" d={body} fill="#08090b" opacity="0.9" />
+          <path d={body} fill={fill} />
+          <g fill="rgba(0,0,0,0.35)">
+            <path d="M44 52 h32 a20 20 0 0 1 2 38 h-34 a18 18 0 0 1 0 -38 Z" />
+            <path d="M170 46 h28 a22 22 0 0 1 4 44 h-30 a20 20 0 0 1 -2 -44 Z" />
+          </g>
+          <g stroke="rgba(255,255,255,0.6)" strokeWidth="5" fill="none" strokeLinecap="round">
+            <path d="M36 42 C30 58 30 78 36 94" />
+            <path d="M162 36 C154 56 154 80 162 100" />
+          </g>
+          <path d={body} fill="none" stroke={glow} strokeWidth="5" strokeLinejoin="round" />
+          {/* the fat cap overspray around the edges */}
+          <g fill={glow} opacity="0.3">
+            <circle cx="18" cy="118" r="7" />
+            <circle cx="300" cy="34" r="6" />
+            <circle cx="120" cy="18" r="5" />
+          </g>
+          <g transform="translate(0 106)">
+            <Drips at={[40, 96, 178, 248]} fill={fill} />
+          </g>
+        </>
+      )
+    },
+  },
+  {
+    /* A hand-style tag: one flowing stroke, crowned. */
+    id: 'crown-tag',
+    w: 260,
+    h: 150,
+    render: ({ fill, glow }) => {
+      const script =
+        'M20 108 c16 -40 30 -54 40 -42 c10 12 -6 40 4 46 c10 6 22 -20 36 -36 c14 -16 26 -14 28 2 c2 16 -10 30 0 34 c10 4 26 -10 42 -32 c8 -11 18 -10 22 2'
+      return (
+        <>
+          <path
+            transform="translate(7 9)"
+            d={script}
+            stroke="#08090b"
+            strokeWidth="15"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            opacity="0.9"
+          />
+          <path
+            d={script}
+            stroke={fill}
+            strokeWidth="14"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d={script}
+            stroke="rgba(255,255,255,0.45)"
+            strokeWidth="3.5"
+            fill="none"
+            strokeLinecap="round"
+            opacity="0.7"
+          />
+          {/* three-point crown, the writer's mark */}
+          <path d="M66 52 L86 16 L108 46 L130 12 L152 44 L172 14 L166 60 L72 60 Z" fill={fill} />
+          <path
+            d="M66 52 L86 16 L108 46 L130 12 L152 44 L172 14 L166 60 L72 60 Z"
+            fill="none"
+            stroke={glow}
+            strokeWidth="4"
+            strokeLinejoin="round"
+          />
+          <g fill={glow} opacity="0.35">
+            <circle cx="206" cy="90" r="5" />
+            <circle cx="30" cy="60" r="4" />
+          </g>
+          <g transform="translate(0 104)">
+            <Drips at={[54, 132, 196]} fill={fill} />
+          </g>
+        </>
+      )
+    },
+  },
+  {
+    /* A blockbuster arrow with a splat — pure mark-making. */
+    id: 'arrow',
+    w: 280,
+    h: 130,
+    render: ({ fill, glow }) => {
+      const arrow = 'M14 96 L150 30 L136 12 L214 22 L196 92 L180 72 L44 122 Z'
+      return (
+        <>
+          <path transform="translate(8 10)" d={arrow} fill="#08090b" opacity="0.9" />
+          <path d={arrow} fill={fill} />
+          <path d={arrow} fill="none" stroke={glow} strokeWidth="5" strokeLinejoin="round" />
+          <path d="M30 92 L146 38" stroke="rgba(255,255,255,0.5)" strokeWidth="5" strokeLinecap="round" />
+          <g fill={fill} opacity="0.55">
+            <circle cx="240" cy="52" r="10" />
+            <circle cx="258" cy="74" r="6" />
+            <circle cx="230" cy="82" r="4" />
+            <circle cx="252" cy="34" r="4" />
+          </g>
+          <g transform="translate(0 112)">
+            <Drips at={[52, 170]} fill={fill} />
+          </g>
+        </>
+      )
+    },
+  },
+]
+
+/* ---------------- street art: the writer ---------------- */
+
+/** Hooded, back to the room, can in hand — drawn as a silhouette. */
+function ArtistSvg({
+  armRef,
+  nozzleRef,
+}: {
+  armRef?: RefObject<SVGGElement | null>
+  nozzleRef?: RefObject<SVGCircleElement | null>
+}) {
+  return (
+    <svg className="tb-st-artist-svg" viewBox="0 0 150 260" aria-hidden="true">
+      <defs>
+        <linearGradient id="tbst-hood" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#0e1013" />
+          <stop offset="0.62" stopColor="#1a1e23" />
+          <stop offset="0.9" stopColor="#2b3138" />
+          <stop offset="1" stopColor="#3a424b" />
+        </linearGradient>
+        <linearGradient id="tbst-jeans" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#0b0d10" />
+          <stop offset="0.7" stopColor="#171b21" />
+          <stop offset="1" stopColor="#262c34" />
+        </linearGradient>
+      </defs>
+      {/* legs */}
+      <g className="sa-legs">
+        <path className="sa-leg back" d="M56 168 L58 240 L74 240 L76 168 Z" fill="url(#tbst-jeans)" />
+        <path className="sa-leg front" d="M80 168 L82 240 L98 240 L96 168 Z" fill="url(#tbst-jeans)" />
+      </g>
+      <path d="M52 238 h26 l3 10 h-32 Z" fill="#0a0c0e" />
+      <path d="M78 238 h26 l3 10 h-32 Z" fill="#101317" />
+      {/* torso: hoodie with the hood up */}
+      <g className="sa-torso">
+        <path
+          d="M46 84 C46 62 60 48 76 48 C92 48 106 62 106 84 L112 168 C96 176 58 176 42 168 Z"
+          fill="url(#tbst-hood)"
+        />
+        {/* hood */}
+        <path
+          d="M56 60 C56 34 70 20 78 20 C88 20 102 34 102 62 C94 52 66 50 56 60 Z"
+          fill="#141820"
+        />
+        <path d="M60 58 C68 48 92 48 100 60 C92 68 68 68 60 58 Z" fill="#07080a" />
+        {/* folds catching the lamp */}
+        <path
+          d="M96 92 C100 116 100 142 96 164 M62 96 C58 118 58 142 62 162"
+          stroke="rgba(255,255,255,0.07)"
+          strokeWidth="3"
+          fill="none"
+        />
+        {/* the arm that paints — outer group places, inner group rotates */}
+        <g className="sa-arm-anchor">
+          <g className="sa-arm" ref={armRef}>
+            <path d="M52 92 C34 96 24 108 20 122 L34 130 C40 118 46 110 58 106 Z" fill="#171b21" />
+            <g className="sa-forearm">
+              <path d="M22 118 C14 106 8 94 6 82 L20 76 C24 88 30 98 36 108 Z" fill="#1b2027" />
+              {/* the can */}
+              <g className="sa-can">
+                <rect x="0" y="58" width="17" height="26" rx="3" fill="#c8ced6" />
+                <rect x="0" y="58" width="17" height="7" rx="3" fill="#8f97a1" />
+                <rect x="4" y="49" width="9" height="10" rx="2" fill="#2b3138" />
+                <rect x="6" y="45" width="5" height="5" rx="1.5" fill="#454c56" />
+                <circle className="sa-nozzle" cx="8.5" cy="44" r="1" fill="none" ref={nozzleRef} />
+              </g>
+            </g>
+          </g>
+        </g>
+        {/* free hand */}
+        <path d="M108 96 C118 112 120 132 116 150 L104 146 C108 130 106 112 100 100 Z" fill="#171b21" />
+      </g>
     </svg>
   )
 }
@@ -2173,6 +2413,446 @@ function Prey({
     <span ref={ref} className={`tb-prey${doomed ? ' doomed' : ''}`}>
       <PreySvg />
     </span>
+  )
+}
+
+/* ---------------- street art: the writer's visit ---------------- */
+
+/**
+ * Where a piece can land. `lift` is how high the writer reaches for it,
+ * so the wall doesn't end up with everything in one neat row.
+ */
+const WALL_SLOTS = [
+  { x: 5, y: 44, s: 0.9, lift: 30 },
+  { x: 34, y: 30, s: 1, lift: 210 },
+  { x: 58, y: 46, s: 0.8, lift: 0 },
+  { x: 20, y: 22, s: 0.72, lift: 260 },
+]
+/** Artist sprite box, and where the can sits inside it. */
+const ART_W = 150
+const ART_CAN_X = 10
+const PIECE_INKS = [
+  { fill: '#35d7f5', glow: '#ff4fa3' },
+  { fill: '#ff8a2b', glow: '#35d7f5' },
+  { fill: '#ff4fa3', glow: '#b6f24a' },
+  { fill: '#b6f24a', glow: '#ff8a2b' },
+]
+const ART_GAP_MIN = 44_000
+const ART_GAP_MAX = 82_000
+const WALK_MS = 2600
+const SHAKE_MS = 1100
+const SPRAY_MS = 5200
+const ADMIRE_MS = 1500
+const EXIT_MS = 2400
+const MIST_POOL = 18
+const DROP_POOL = 8
+const MAX_PIECES = 4
+const PIECES_KEY = 'focusguard.street.pieces.v1'
+
+type ArtPhase = 'idle' | 'enter' | 'shake' | 'spray' | 'admire' | 'exit'
+type Placed = {
+  id: number
+  piece: number
+  slot: number
+  ink: number
+  flip: boolean
+  rot: number
+  /** vh, measured off the can when the piece was painted */
+  y?: number
+}
+type Particle = {
+  alive: boolean
+  x: number
+  y: number
+  vx: number
+  vy: number
+  life: number
+  max: number
+  size: number
+}
+
+function readSaved(): Placed[] {
+  try {
+    const raw = localStorage.getItem(PIECES_KEY)
+    if (!raw) return []
+    const rows = JSON.parse(raw) as Placed[]
+    if (!Array.isArray(rows)) return []
+    return rows
+      .filter((r) => typeof r?.piece === 'number' && typeof r?.slot === 'number')
+      .slice(-MAX_PIECES)
+  } catch {
+    return []
+  }
+}
+
+function saveSaved(rows: Placed[]) {
+  try {
+    localStorage.setItem(PIECES_KEY, JSON.stringify(rows.slice(-MAX_PIECES)))
+  } catch {
+    /* private mode, quota — the wall just won't persist */
+  }
+}
+
+/**
+ * Every minute or so a writer walks in, shakes a can, paints a piece and
+ * leaves. The paint appears exactly where the nozzle passes because one
+ * rAF drives the arm, the reveal mask and the mist together. Finished
+ * pieces stay on the wall — and survive a reload.
+ */
+function StreetLayer() {
+  const [reduced] = useState(prefersReducedMotion)
+  const [pieces, setPieces] = useState<Placed[]>([])
+  const [phase, setPhase] = useState<ArtPhase>('idle')
+  const [active, setActive] = useState<(Placed & { from: -1 | 1 }) | null>(null)
+
+  // the raster piece must be in cache before it is revealed
+  useEffect(() => {
+    if (reduced) return
+    const img = new Image()
+    img.src = '/tag-locked-in.webp'
+  }, [reduced])
+
+  const layerRef = useRef<HTMLDivElement>(null)
+  const artistRef = useRef<HTMLDivElement>(null)
+  const armRef = useRef<SVGGElement>(null)
+  const nozzleRef = useRef<SVGCircleElement>(null)
+  const pieceRef = useRef<HTMLSpanElement>(null)
+  const mistRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const dropRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const phaseRef = useRef<ArtPhase>('idle')
+  const activeRef = useRef<(Placed & { from: -1 | 1 }) | null>(null)
+
+  // restore after mount so the first client render still matches the server
+  useEffect(() => {
+    const saved = readSaved()
+    if (saved.length) setPieces(saved)
+  }, [])
+
+  useEffect(() => {
+    phaseRef.current = phase
+  }, [phase])
+  useEffect(() => {
+    activeRef.current = active
+  }, [active])
+
+  useEffect(() => {
+    if (reduced) return
+    let alive = true
+    let timers: number[] = []
+    let raf = 0
+    const later = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(() => {
+        if (alive) fn()
+      }, ms)
+      timers.push(id)
+      return id
+    }
+
+    const mist: Particle[] = Array.from({ length: MIST_POOL }, () => ({
+      alive: false, x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, size: 1,
+    }))
+    const drops: Particle[] = Array.from({ length: DROP_POOL }, () => ({
+      alive: false, x: 0, y: 0, vx: 0, vy: 0, life: 0, max: 1, size: 1,
+    }))
+
+    const setArtistX = (x: number, flip: boolean) => {
+      if (artistRef.current) {
+        artistRef.current.style.transform = `translate3d(${x}px, 0, 0) scaleX(${flip ? -1 : 1})`
+      }
+    }
+
+    /** One frame loop: walking, spraying and every particle. */
+    const runSpray = (piece: Placed & { from: -1 | 1 }, onDone: () => void) => {
+      const t0 = performance.now()
+      let lastEmit = 0
+      let lastDrop = 0
+      let last = t0
+      const ink = PIECE_INKS[piece.ink % PIECE_INKS.length]!
+
+      // hang the piece off the can's real height, so paint lands where
+      // the writer is actually reaching
+      if (pieceRef.current && nozzleRef.current) {
+        const n = nozzleRef.current.getBoundingClientRect()
+        const h = pieceRef.current.getBoundingClientRect().height
+        const lift = WALL_SLOTS[piece.slot % WALL_SLOTS.length]!.lift
+        const top = Math.max(6, n.top + n.height / 2 - h * 0.55 - lift)
+        pieceRef.current.style.top = `${top}px`
+        piece.y = (top / window.innerHeight) * 100
+      }
+
+      const frame = (t: number) => {
+        if (!alive) return
+        const dt = Math.min(64, t - last) / 1000
+        last = t
+        const u = Math.min(1, (t - t0) / SPRAY_MS)
+        // the hand wanders — never a mechanical wipe
+        const s = Math.max(0, Math.min(1.06, u + 0.05 * Math.sin(u * 17)))
+
+        pieceRef.current?.style.setProperty('--rv', `${s * 112 - 6}%`)
+        if (armRef.current) armRef.current.style.transform = `rotate(${-10 + s * 36}deg)`
+
+        // emit from wherever the nozzle actually is
+        if (t - lastEmit > 55 && u < 1 && nozzleRef.current && layerRef.current) {
+          lastEmit = t
+          const n = nozzleRef.current.getBoundingClientRect()
+          const dir = piece.from
+          for (let k = 0; k < 2; k++) {
+            const p = mist.find((m) => !m.alive)
+            if (!p) break
+            p.alive = true
+            p.x = n.left + n.width / 2
+            p.y = n.top + n.height / 2
+            p.vx = dir * (30 + Math.random() * 70)
+            p.vy = -24 + Math.random() * 48
+            p.life = 0
+            p.max = 0.7 + Math.random() * 0.4
+            p.size = 5 + Math.random() * 9
+          }
+          if (t - lastDrop > 180) {
+            lastDrop = t
+            const d = drops.find((m) => !m.alive)
+            if (d) {
+              d.alive = true
+              d.x = n.left + n.width / 2
+              d.y = n.top + n.height / 2
+              d.vx = dir * (10 + Math.random() * 40)
+              d.vy = -30 + Math.random() * 20
+              d.life = 0
+              d.max = 0.5
+              d.size = 2 + Math.random() * 2
+            }
+          }
+        }
+
+        const step = (arr: Particle[], refs: (HTMLSpanElement | null)[], gravity: number, grow: number) => {
+          arr.forEach((p, i) => {
+            const el = refs[i]
+            if (!el) return
+            if (!p.alive) {
+              el.style.opacity = '0'
+              return
+            }
+            p.life += dt
+            if (p.life >= p.max) {
+              p.alive = false
+              el.style.opacity = '0'
+              return
+            }
+            p.vy += gravity * dt
+            p.x += p.vx * dt
+            p.y += p.vy * dt
+            const k = p.life / p.max
+            el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) scale(${(0.4 + k * grow).toFixed(2)})`
+            el.style.opacity = String((1 - k) * 0.5)
+            el.style.width = `${p.size}px`
+            el.style.height = `${p.size}px`
+          })
+        }
+        step(mist, mistRefs.current, -6, 1.9)
+        step(drops, dropRefs.current, 420, 0.2)
+        if (mistRefs.current[0]) {
+          mistRefs.current.forEach((el) => el && (el.style.background = ink.fill))
+        }
+
+        if (u < 1 || mist.some((m) => m.alive) || drops.some((d) => d.alive)) {
+          raf = requestAnimationFrame(frame)
+        } else {
+          onDone()
+        }
+      }
+      raf = requestAnimationFrame(frame)
+    }
+
+    const walk = (fromX: number, toX: number, ms: number, flip: boolean, onDone: () => void) => {
+      const t0 = performance.now()
+      const frame = (t: number) => {
+        if (!alive) return
+        const u = Math.min(1, (t - t0) / ms)
+        const e = 1 - Math.pow(1 - u, 3)
+        setArtistX(fromX + (toX - fromX) * e, flip)
+        if (u < 1) raf = requestAnimationFrame(frame)
+        else onDone()
+      }
+      raf = requestAnimationFrame(frame)
+    }
+
+    const fire = () => {
+      if (!alive || phaseRef.current !== 'idle') return
+      const used = new Set(pieces.map((p) => p.slot))
+      const free = WALL_SLOTS.map((_, i) => i).filter((i) => !used.has(i))
+      const slot = free.length
+        ? free[Math.floor(Math.random() * free.length)]!
+        : Math.floor(Math.random() * WALL_SLOTS.length)
+      // the writer's own piece is the headline act; the rest fill in,
+      // and nothing already up there gets painted twice
+      const onWall = new Set(pieces.map((p) => p.piece))
+      const fresh = PIECES.map((_, i) => i).filter((i) => !onWall.has(i))
+      const pool = fresh.length ? fresh : PIECES.map((_, i) => i)
+      const piece =
+        pool.includes(0) && Math.random() < 0.45
+          ? 0
+          : pool[Math.floor(Math.random() * pool.length)]!
+      const from: -1 | 1 = Math.random() < 0.5 ? -1 : 1
+      const next = {
+        id: performance.now(),
+        piece,
+        slot,
+        ink: Math.floor(Math.random() * PIECE_INKS.length),
+        flip: from === 1,
+        rot: -1.5 + Math.random() * 3,
+        from,
+      }
+      setActive(next)
+
+      // stand where the can lands on the edge of the piece: entering from
+      // the left puts the writer to its right, spraying back across it
+      const slotDef = WALL_SLOTS[slot]!
+      const def = PIECES[piece]!
+      const pieceLeft = (window.innerWidth * slotDef.x) / 100
+      const pieceRight = pieceLeft + def.w * slotDef.s
+      const target =
+        from === -1
+          ? Math.min(window.innerWidth - ART_W, pieceRight - ART_CAN_X + 4)
+          : Math.max(0, pieceLeft - (ART_W - ART_CAN_X) - 4)
+      const off = from === -1 ? -180 : window.innerWidth + 40
+      setPhase('enter')
+      setArtistX(off, from === 1)
+      walk(off, target, WALK_MS, from === 1, () => {
+        setPhase('shake')
+        later(() => {
+          setPhase('spray')
+          runSpray(next, () => {
+            setPhase('admire')
+            later(() => {
+              setPhase('exit')
+              const away = Math.random() < 0.5 ? -220 : window.innerWidth + 60
+              walk(target, away, EXIT_MS, away > 0, () => {
+                setPieces((prev) => {
+                  const rows = [...prev.filter((p) => p.slot !== slot), next].slice(-MAX_PIECES)
+                  saveSaved(rows)
+                  return rows
+                })
+                setActive(null)
+                setPhase('idle')
+                scheduleNext()
+              })
+            }, ADMIRE_MS)
+          })
+        }, SHAKE_MS)
+      })
+    }
+
+    function scheduleNext(overrideGap?: number) {
+      if (!alive) return
+      const gap = overrideGap ?? ART_GAP_MIN + Math.random() * (ART_GAP_MAX - ART_GAP_MIN)
+      later(() => {
+        // don't start a visit over the pause dialog; a piece already
+        // being painted is allowed to finish
+        if (document.hidden || document.querySelector('.modal-overlay .modal')) {
+          scheduleNext(9000)
+          return
+        }
+        fire()
+        // now and then the writer comes back straight away
+        if (Math.random() < 0.1) later(() => scheduleNext(12000 + Math.random() * 8000), 100)
+      }, gap)
+    }
+
+    scheduleNext(9000 + Math.random() * 9000)
+
+    if (import.meta.env.DEV) {
+      ;(window as unknown as { __street?: unknown }).__street = {
+        fire,
+        clear: () => {
+          setPieces([])
+          saveSaved([])
+        },
+      }
+    }
+
+    return () => {
+      alive = false
+      timers.forEach(clearTimeout)
+      timers = []
+      cancelAnimationFrame(raf)
+      if (import.meta.env.DEV) delete (window as unknown as { __street?: unknown }).__street
+    }
+    // `pieces` is read inside fire() through the closure on purpose: the
+    // effect re-registers when the wall changes so slot picking stays fresh.
+  }, [reduced, pieces])
+
+  const renderPiece = (p: Placed, done: boolean) => {
+    const def = PIECES[p.piece % PIECES.length]!
+    const ink = PIECE_INKS[p.ink % PIECE_INKS.length]!
+    const slot = WALL_SLOTS[p.slot % WALL_SLOTS.length]!
+    // the paint appears from the edge the writer started at
+    const rtl = !done && active?.from === -1
+    return (
+      <span
+        key={p.id}
+        ref={done ? undefined : pieceRef}
+        className={`tb-st-piece${done ? ' done' : ''}${rtl ? ' rtl' : ''}${
+          phase === 'admire' || done ? ' dripping' : ''
+        }`}
+        style={{
+          left: `${slot.x}vw`,
+          top: `${p.y ?? slot.y}vh`,
+          width: def.w * slot.s,
+          transform: `rotate(${p.rot}deg)`,
+        }}
+      >
+        {def.src ? (
+          <img src={def.src} alt="" width={def.w} height={def.h} draggable={false} />
+        ) : (
+          <svg viewBox={`0 0 ${def.w} ${def.h + 40}`} aria-hidden="true">
+            {def.render?.(ink)}
+          </svg>
+        )}
+      </span>
+    )
+  }
+
+  if (reduced) {
+    // saved work is scenery; only the choreography is motion
+    return (
+      <div className="tb-st-layer" aria-hidden="true">
+        {pieces.map((p) => renderPiece(p, true))}
+      </div>
+    )
+  }
+
+  return (
+    <div ref={layerRef} className="tb-st-layer" aria-hidden="true">
+      {pieces.map((p) => renderPiece(p, true))}
+      {active && renderPiece(active, false)}
+      {active && (
+        <div ref={artistRef} className="tb-st-artist" data-phase={phase}>
+          <ArtistSvg armRef={armRef} nozzleRef={nozzleRef} />
+        </div>
+      )}
+      {phase === 'spray' && (
+        <>
+          {Array.from({ length: MIST_POOL }, (_, i) => (
+            <span
+              key={`m${i}`}
+              className="tb-st-mist"
+              ref={(el) => {
+                mistRefs.current[i] = el
+              }}
+            />
+          ))}
+          {Array.from({ length: DROP_POOL }, (_, i) => (
+            <span
+              key={`d${i}`}
+              className="tb-st-drop"
+              ref={(el) => {
+                dropRefs.current[i] = el
+              }}
+            />
+          ))}
+        </>
+      )}
+    </div>
   )
 }
 
