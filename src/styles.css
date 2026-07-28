@@ -37,12 +37,28 @@
   --radius-lg: 20px;
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
 
+  /* Surface/chrome tokens. Defaults reproduce the base look exactly; a
+     theme re-points them to restyle every panel at once (see street). */
+  --panel-bg: linear-gradient(180deg, var(--surface), var(--bg-raise));
+  --panel-bg-solid: linear-gradient(180deg, var(--surface), var(--bg-raise));
+  --panel-border: var(--border);
+  --panel-shadow: none;
+  --panel-blur: 0px;
+  --modal-bg: linear-gradient(180deg, var(--surface-2), var(--surface));
+  --overlay-bg: rgba(5, 7, 11, 0.72);
+  --chrome-bg: color-mix(in srgb, var(--bg) 82%, transparent);
+  --btn-radius: 999px;
+  --title-tracking: 0.08em;
+  --title-transform: uppercase;
+
   --font:
     ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
   --font-mono:
     ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
     monospace;
+  /* Display face for titles/controls — themes may swap in a condensed one. */
+  --font-display: var(--font);
 }
 
 *,
@@ -138,7 +154,7 @@ input, select {
   z-index: 40;
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: var(--chrome-bg);
   border-bottom: 1px solid var(--border);
 }
 
@@ -279,7 +295,7 @@ input, select {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.62rem 1.25rem;
-  border-radius: 999px;
+  border-radius: var(--btn-radius);
   font-weight: 620;
   font-size: 0.95rem;
   line-height: 1;
@@ -352,9 +368,10 @@ input, select {
 /* ---------- cards & tiles ---------- */
 
 .card {
-  background: linear-gradient(180deg, var(--surface), var(--bg-raise));
-  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
   padding: 1.5rem;
 }
 
@@ -362,7 +379,7 @@ input, select {
   font-size: 0.82rem;
   font-weight: 650;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--title-tracking);
   color: var(--text-faint);
   margin-bottom: 1rem;
 }
@@ -594,7 +611,7 @@ input, select {
   align-items: center;
   justify-content: center;
   padding: 1.2rem;
-  background: rgba(5, 7, 11, 0.72);
+  background: var(--overlay-bg);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   animation: fade-in 0.18s ease;
@@ -607,7 +624,7 @@ input, select {
 
 .modal {
   width: min(420px, 100%);
-  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  background: var(--modal-bg);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
@@ -2925,7 +2942,8 @@ input, select {
   pointer-events: none;
 }
 
-/* Let the animated worlds glow faintly through surfaces. */
+/* Let the animated worlds glow faintly through surfaces. Re-points the
+   panel token, so every surface follows without a second background rule. */
 :root:is(
   [data-theme='fire'],
   [data-theme='jungle'],
@@ -2937,8 +2955,8 @@ input, select {
   [data-theme='abyss'],
   [data-theme='storm'],
   [data-theme='sakura']
-) .card {
-  background: linear-gradient(
+) {
+  --panel-bg: linear-gradient(
     180deg,
     color-mix(in srgb, var(--surface) 88%, transparent),
     color-mix(in srgb, var(--bg-raise) 92%, transparent)
