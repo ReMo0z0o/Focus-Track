@@ -154,13 +154,24 @@ const SMOKE = gen(52, 5, (r) => ({
   dur: 17 + r() * 10,
 }))
 
-const SPRAY = gen(61, 16, (r) => ({
+/* street art: an abandoned warehouse. 62 dust, 63 rubble, 64 tie holes. */
+const DUST = gen(62, 22, (r, i) => ({
+  // two thirds are seeded into the lit band so the lamp catches them
+  left: i % 3 === 0 ? r() * 100 : 26 + r() * 48,
+  top: 12 + r() * 76,
+  size: 1 + r() * 1.6,
+  delay: r() * 26,
+  dur: 22 + r() * 26,
+  dx: -30 + r() * 60,
+  dy: -50 - r() * 60,
+}))
+const RUBBLE = gen(63, 15, (r) => ({
   left: r() * 100,
-  top: r() * 100,
-  size: 2 + r() * 4,
-  delay: r() * 8,
-  dur: 7 + r() * 9,
-  hue: [340, 190, 55, 280][Math.floor(r() * 4)]!,
+  w: 8 + r() * 26,
+  h: 4 + r() * 9,
+  tilt: -18 + r() * 36,
+  lift: r() * 22,
+  shade: 0.3 + r() * 0.45,
 }))
 
 const ORBS = gen(71, 6, (r) => ({
@@ -631,26 +642,49 @@ function renderLayers(theme: string): ReactNode | null {
     case 'street':
       return (
         <>
-          <div className="tb-paint tb-paint-1" />
-          <div className="tb-paint tb-paint-2" />
-          <div className="tb-paint tb-paint-3" />
-          {SPRAY.map((s, i) => (
+          {/* the wall itself, on a slowly drifting deep plate */}
+          <div className="tb-st-plate deep">
+            <div className="tb-st-wall" />
+            <div className="tb-st-grain" />
+            <div className="tb-st-mottle" />
+            <div className="tb-st-panels" />
+            <div className="tb-st-stains" />
+            <WallMarks />
+            <div className="tb-st-baseshadow" />
+          </div>
+          {/* structure sits closer to camera and drifts a touch more */}
+          <div className="tb-st-plate mid">
+            <div className="tb-st-column" />
+            <Ironwork />
+          </div>
+          <div className="tb-st-pool" />
+          <div className="tb-st-cone" />
+          <Lamp />
+          <div className="tb-st-shaft" />
+          <div className="tb-st-floor" />
+          <Rubble />
+          <div className="tb-st-fog f1" />
+          <div className="tb-st-fog f2" />
+          <div className="tb-st-fog f3" />
+          {DUST.map((d, i) => (
             <span
               key={i}
-              className="tb-spray"
+              className="tb-st-dust"
               style={
                 {
-                  left: `${s.left}%`,
-                  top: `${s.top}%`,
-                  width: s.size,
-                  height: s.size,
-                  animationDelay: `-${s.delay}s`,
-                  animationDuration: `${s.dur}s`,
-                  '--h': s.hue,
+                  left: `${d.left}%`,
+                  top: `${d.top}%`,
+                  width: d.size,
+                  height: d.size,
+                  animationDelay: `-${d.delay}s`,
+                  animationDuration: `${d.dur}s`,
+                  '--dx': `${d.dx}px`,
+                  '--dy': `${d.dy}px`,
                 } as Vars
               }
             />
           ))}
+          <div className="tb-st-vignette" />
         </>
       )
     case 'future':
@@ -904,6 +938,301 @@ function prefersReducedMotion(): boolean {
   return (
     typeof window !== 'undefined' &&
     !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+/* ---------------- street art: the warehouse ---------------- */
+
+/**
+ * Cracks, water streaks and the faded scrawls of writers who came before —
+ * the wall has a history before the first piece is ever sprayed.
+ */
+function WallMarks() {
+  return (
+    <svg
+      className="tb-st-marks"
+      viewBox="0 0 1200 800"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      {/* cracks: a dark fissure with a lighter chipped lip alongside */}
+      <g fill="none" strokeLinecap="round">
+        <path
+          d="M96 0 C104 62 88 96 100 148 C110 190 92 214 104 268"
+          stroke="rgba(0,0,0,0.5)"
+          strokeWidth="2.4"
+        />
+        <path
+          d="M98 4 C106 64 90 98 102 150 C112 192 94 216 106 270"
+          stroke="rgba(190,196,206,0.10)"
+          strokeWidth="1"
+        />
+        <path
+          d="M742 512 C766 546 758 588 786 626 C802 648 796 676 812 700"
+          stroke="rgba(0,0,0,0.45)"
+          strokeWidth="2"
+        />
+        <path
+          d="M744 514 C768 548 760 590 788 628"
+          stroke="rgba(190,196,206,0.09)"
+          strokeWidth="0.9"
+        />
+        <path
+          d="M1044 148 C1030 196 1052 232 1038 286"
+          stroke="rgba(0,0,0,0.4)"
+          strokeWidth="1.8"
+        />
+        <path d="M288 640 C336 656 372 648 420 664" stroke="rgba(0,0,0,0.35)" strokeWidth="1.6" />
+      </g>
+      {/* rust bleeding from an old fixing */}
+      <g fill="rgba(126,74,40,0.16)">
+        <path d="M352 96 L362 96 L370 300 L344 300 Z" />
+        <path d="M968 60 L976 60 L982 214 L960 214 Z" />
+      </g>
+      <circle cx="357" cy="92" r="5" fill="rgba(20,14,10,0.7)" />
+      <circle cx="972" cy="56" r="4" fill="rgba(20,14,10,0.7)" />
+      {/* faded old tags — the wall is already someone's spot */}
+      <g
+        fill="none"
+        stroke="rgba(14,15,18,0.55)"
+        strokeWidth="7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        opacity="0.5"
+      >
+        <path d="M44 430 L70 470 L44 470 M78 430 L104 470 L78 470 M112 428 L112 472 M112 450 L136 428" />
+        <path d="M1104 352 C1088 340 1076 352 1084 368 C1092 384 1116 380 1120 364 C1124 346 1108 336 1094 344" />
+        <path d="M1136 340 L1136 384 M1136 356 L1160 340 M1136 360 L1162 386" />
+      </g>
+      <g stroke="rgba(255,255,255,0.05)" strokeWidth="2" fill="none" opacity="0.6">
+        <path d="M46 432 L72 472 M80 432 L106 472" />
+      </g>
+    </svg>
+  )
+}
+
+/** Steel beam across the ceiling and the pipe run bracketed to the wall. */
+function Ironwork() {
+  return (
+    <svg
+      className="tb-st-iron"
+      viewBox="0 0 1200 800"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="tbst-steel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2b3037" />
+          <stop offset="0.32" stopColor="#454c56" />
+          <stop offset="0.55" stopColor="#22262c" />
+          <stop offset="1" stopColor="#14171b" />
+        </linearGradient>
+        <linearGradient id="tbst-pipe" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#1b1e22" />
+          <stop offset="0.3" stopColor="#4a5058" />
+          <stop offset="0.52" stopColor="#2f343a" />
+          <stop offset="1" stopColor="#121417" />
+        </linearGradient>
+        <linearGradient id="tbst-rust" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="rgba(140,78,40,0.55)" />
+          <stop offset="1" stopColor="rgba(90,44,22,0.2)" />
+        </linearGradient>
+      </defs>
+      {/* I-beam: web, two flanges, rivet line */}
+      <rect x="0" y="18" width="1200" height="26" fill="url(#tbst-steel)" />
+      <rect x="0" y="8" width="1200" height="12" fill="#3a4048" />
+      <rect x="0" y="42" width="1200" height="13" fill="#1a1d22" />
+      <rect x="0" y="55" width="1200" height="5" fill="rgba(0,0,0,0.55)" />
+      <g fill="#5a626d">
+        {Array.from({ length: 24 }, (_, i) => (
+          <circle key={i} cx={26 + i * 50} cy="31" r="3.4" />
+        ))}
+      </g>
+      <g fill="rgba(0,0,0,0.4)">
+        {Array.from({ length: 24 }, (_, i) => (
+          <circle key={i} cx={26 + i * 50} cy="32.6" r="3.4" />
+        ))}
+      </g>
+      <rect x="0" y="24" width="1200" height="60" fill="url(#tbst-rust)" opacity="0.25" />
+      {/* horizontal pipe with brackets */}
+      <rect x="0" y="120" width="1200" height="19" fill="url(#tbst-pipe)" />
+      <rect x="0" y="120" width="1200" height="3" fill="rgba(255,255,255,0.1)" />
+      <g fill="#22262b">
+        <rect x="150" y="114" width="16" height="31" rx="2" />
+        <rect x="560" y="114" width="16" height="31" rx="2" />
+        <rect x="980" y="114" width="16" height="31" rx="2" />
+      </g>
+      <g fill="rgba(126,74,40,0.4)">
+        <rect x="330" y="120" width="52" height="19" />
+        <rect x="742" y="120" width="38" height="19" />
+      </g>
+      {/* flange joints */}
+      <g fill="#2c3137">
+        <rect x="420" y="115" width="10" height="29" rx="1.5" />
+        <rect x="860" y="115" width="10" height="29" rx="1.5" />
+      </g>
+      {/* conduit dropping down the right side */}
+      <rect x="1136" y="139" width="13" height="500" fill="url(#tbst-pipe)" />
+      <g fill="#22262b">
+        <rect x="1130" y="250" width="25" height="12" rx="2" />
+        <rect x="1130" y="470" width="25" height="12" rx="2" />
+      </g>
+    </svg>
+  )
+}
+
+/**
+ * The one working lamp in the hall. It drives `--lamp` on <html>, which
+ * the cone, the pool of light, the vignette and the clock all read — so a
+ * flicker dims the whole room, interface included.
+ *
+ * The schedule is deliberately aperiodic: gaps are power-shaped (mostly
+ * short, occasionally half a minute of steady light) and each burst is
+ * either a run of blips or a slow brown-out. Nothing repeats.
+ */
+const LAMP_GAP_MIN = 3800
+const LAMP_GAP_MAX = 30000
+
+function Lamp() {
+  useEffect(() => {
+    const root = document.documentElement
+    if (prefersReducedMotion()) return
+
+    let alive = true
+    let timers: number[] = []
+    let raf = 0
+    let current = 1
+
+    const set = (v: number) => {
+      if (Math.abs(v - current) < 0.02) return
+      current = v
+      root.style.setProperty('--lamp', v.toFixed(3))
+    }
+    const later = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(() => {
+        if (alive) fn()
+      }, ms)
+      timers.push(id)
+      return id
+    }
+    const clear = () => {
+      timers.forEach(clearTimeout)
+      timers = []
+      cancelAnimationFrame(raf)
+      raf = 0
+    }
+
+    const blips = (left: number) => {
+      if (left <= 0) {
+        set(1)
+        scheduleNext()
+        return
+      }
+      set(0.05 + Math.random() * 0.4)
+      later(() => {
+        set(0.86 + Math.random() * 0.14)
+        later(() => blips(left - 1), 40 + Math.random() * 220)
+      }, 28 + Math.random() * 80)
+    }
+
+    const brownOut = () => {
+      const dur = 320 + Math.random() * 380
+      const start = performance.now()
+      const step = (t: number) => {
+        if (!alive) return
+        const u = Math.min(1, (t - start) / dur)
+        // dip to half and recover
+        set(1 - 0.5 * Math.sin(u * Math.PI))
+        if (u < 1) raf = requestAnimationFrame(step)
+        else {
+          set(1)
+          scheduleNext()
+        }
+      }
+      raf = requestAnimationFrame(step)
+    }
+
+    function scheduleNext() {
+      if (!alive) return
+      const gap = LAMP_GAP_MIN + Math.pow(Math.random(), 1.7) * (LAMP_GAP_MAX - LAMP_GAP_MIN)
+      later(() => {
+        if (document.hidden) {
+          scheduleNext()
+          return
+        }
+        if (Math.random() < 0.18) brownOut()
+        else blips(1 + Math.floor(Math.random() * 4))
+      }, gap)
+    }
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        clear()
+        set(1)
+      } else if (!timers.length && !raf) {
+        scheduleNext()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    scheduleNext()
+
+    return () => {
+      alive = false
+      clear()
+      document.removeEventListener('visibilitychange', onVisibility)
+      // never leave a dimmed value behind for the next theme
+      root.style.removeProperty('--lamp')
+    }
+  }, [])
+
+  return (
+    <svg className="tb-st-lamp" viewBox="0 0 120 96" aria-hidden="true">
+      <defs>
+        <radialGradient id="tbst-bulb" cx="50%" cy="50%">
+          <stop offset="0" stopColor="#fff6e2" />
+          <stop offset="0.55" stopColor="#ffd79a" />
+          <stop offset="1" stopColor="rgba(255,180,90,0)" />
+        </radialGradient>
+        <linearGradient id="tbst-shade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#3a3f47" />
+          <stop offset="0.6" stopColor="#22262c" />
+          <stop offset="1" stopColor="#15181c" />
+        </linearGradient>
+      </defs>
+      {/* flex + stem */}
+      <path d="M60 0 L60 18" stroke="#20242a" strokeWidth="3" />
+      <rect x="56" y="16" width="8" height="8" rx="1.5" fill="#2a2f36" />
+      {/* shade */}
+      <path d="M60 22 C40 24 24 42 22 56 L98 56 C96 42 80 24 60 22 Z" fill="url(#tbst-shade)" />
+      <ellipse cx="60" cy="56" rx="38" ry="6" fill="#0d0f12" />
+      <path d="M30 46 C40 33 50 27 60 25" stroke="rgba(255,255,255,0.09)" strokeWidth="2" fill="none" />
+      {/* bulb + its immediate halo */}
+      <circle className="tb-st-glow" cx="60" cy="62" r="26" fill="url(#tbst-bulb)" />
+      <circle className="tb-st-bulb" cx="60" cy="60" r="7.5" fill="#fff3d6" />
+    </svg>
+  )
+}
+
+/** Broken concrete scattered along the foot of the wall. */
+function Rubble() {
+  return (
+    <div className="tb-st-rubble">
+      {RUBBLE.map((r, i) => (
+        <span
+          key={i}
+          style={{
+            left: `${r.left}%`,
+            bottom: r.lift,
+            width: r.w,
+            height: r.h,
+            transform: `rotate(${r.tilt}deg)`,
+            background: `rgba(${Math.round(38 + r.shade * 40)}, ${Math.round(
+              40 + r.shade * 42,
+            )}, ${Math.round(45 + r.shade * 46)}, 0.95)`,
+          }}
+        />
+      ))}
+    </div>
   )
 }
 

@@ -3039,6 +3039,8 @@ input, select {
   .tb-jungle-pause,
   .tb-prey,
   .tb-vent-ember,
+  .tb-st-fog,
+  .tb-st-dust,
   .tb-dragon-layer {
     display: none;
   }
@@ -3068,6 +3070,9 @@ input, select {
   .tb-coral { transform: scale(calc(var(--cs, 1) * 0.72)) scaleX(var(--cf, 1)); }
   .tb-anemone { transform: scale(calc(var(--cs, 1) * 0.72)); }
   .tb-vent { width: 108px; height: 86px; }
+
+  /* the warehouse has its own mobile block, declared after its layers
+     so equal-specificity rules land on the right side of the cascade */
 }
 
 /* ---------------- deep space ---------------- */
@@ -3529,52 +3534,333 @@ input, select {
   100% { transform: translate3d(6vw, -115vh, 0) scale(1.6); opacity: 0; }
 }
 
-/* ---------------- street art: placeholder backdrop ----------------
-   Superseded by the warehouse scene in the next pass. */
+/* ---------------- street art: the warehouse ----------------
+   An abandoned hall: poured-concrete wall, steel overhead, a rubble
+   floor. The grain is feTurbulence delivered as a background-image
+   (decoded once, then cached like a bitmap) — never as filter: url(),
+   which would re-rasterise the layer on every repaint. */
 
-.tb-paint {
-  width: 46vw;
-  height: 46vw;
+/* Parallax plates. `.theme-backdrop > *` only reaches direct children,
+   so each plate has to position its own. */
+.tb-st-plate {
+  inset: 0;
+}
+
+.tb-st-plate > * {
+  position: absolute;
+}
+
+.tb-st-plate.deep {
+  animation: tb-st-drift-deep 92s ease-in-out infinite alternate;
+}
+
+.tb-st-plate.mid {
+  animation: tb-st-drift-mid 61s ease-in-out infinite alternate;
+}
+
+@keyframes tb-st-drift-deep {
+  from { transform: translate3d(-0.5%, 0, 0) scale(1.02); }
+  to { transform: translate3d(0.5%, -0.4%, 0) scale(1.03); }
+}
+
+@keyframes tb-st-drift-mid {
+  from { transform: translate3d(0.9%, 0.2%, 0) scale(1.02); }
+  to { transform: translate3d(-0.9%, -0.3%, 0) scale(1.035); }
+}
+
+.tb-st-wall {
+  inset: 0;
+  background:
+    linear-gradient(180deg, #1e2228 0%, #3a3f47 30%, #33383f 62%, #212429 88%, #16181c 100%);
+}
+
+/* feTurbulence is colour noise by default — the saturate matrix pulls it
+   back to grey so the wall reads as aggregate, not as a rainbow. */
+.tb-st-grain {
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 160px 160px;
+  mix-blend-mode: overlay;
+  opacity: 0.42;
+}
+
+.tb-st-mottle {
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='420' height='300' filter='url(%23m)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 760px 540px;
+  mix-blend-mode: soft-light;
+  opacity: 0.6;
+}
+
+/* form-work seams and the tie holes they leave behind */
+.tb-st-panels {
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 236px,
+      rgba(0, 0, 0, 0.5) 236px 238px,
+      rgba(206, 214, 226, 0.05) 238px 240px,
+      transparent 240px 244px
+    ),
+    linear-gradient(180deg, transparent 0 43%, rgba(0, 0, 0, 0.32) 43% 43.5%, transparent 43.5%),
+    radial-gradient(circle, rgba(0, 0, 0, 0.55) 0 2.5px, transparent 3px),
+    radial-gradient(circle, rgba(0, 0, 0, 0.4) 0 2px, transparent 2.6px);
+  background-size: auto, auto, 224px 152px, 197px 171px;
+  background-position: 0 0, 0 0, 40px 30px, 130px 96px;
+}
+
+.tb-st-stains {
+  inset: 0;
+  background:
+    radial-gradient(52% 34% at 12% 8%, rgba(0, 0, 0, 0.45), transparent 70%),
+    radial-gradient(46% 40% at 88% 22%, rgba(0, 0, 0, 0.38), transparent 72%),
+    radial-gradient(60% 30% at 62% 96%, rgba(0, 0, 0, 0.4), transparent 74%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 20%, transparent 82%, rgba(0, 0, 0, 0.6));
+}
+
+.tb-st-marks {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.tb-st-baseshadow {
+  left: 0;
+  right: 0;
+  bottom: 17vh;
+  height: 12vh;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.62));
+}
+
+/* the pilaster on the right — instant depth */
+.tb-st-column {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 13vw;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0 3%, rgba(30, 33, 38, 0.9) 12%, rgba(20, 22, 26, 0.95) 62%, rgba(8, 9, 11, 0.98));
+  box-shadow: -18px 0 34px rgba(0, 0, 0, 0.55);
+}
+
+.tb-st-iron {
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  height: 62vh;
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.55));
+}
+
+.tb-st-floor {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18vh;
+  background:
+    linear-gradient(180deg, #14161a, #0a0b0d 62%, #070809),
+    radial-gradient(60% 120% at 50% 0%, rgba(255, 196, 130, 0.05), transparent 70%);
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.7);
+}
+
+.tb-st-floor::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42%;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.tb-st-rubble {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 18vh;
+}
+
+.tb-st-rubble span {
+  position: absolute;
+  border-radius: 2px 3px 2px 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* ---- the lamp and what it lights ---- */
+
+/* --lamp is written by the Lamp component (0 = dark, 1 = full). The
+   @property declaration keeps it typed; the plain fallback covers
+   browsers without it and the reduced-motion case. */
+@property --lamp {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+:root {
+  --lamp: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lamp: 1;
+  }
+}
+
+.tb-st-lamp {
+  left: 46%;
+  top: 0;
+  width: 120px;
+  height: 96px;
+  overflow: visible;
+}
+
+.tb-st-bulb {
+  opacity: calc(0.3 + 0.7 * var(--lamp, 1));
+}
+
+.tb-st-glow {
+  opacity: calc(0.12 + 0.55 * var(--lamp, 1));
+}
+
+/* the shaft of light hanging in the air under the shade */
+.tb-st-cone {
+  left: 30%;
+  top: 56px;
+  width: 34%;
+  height: 78vh;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 218, 158, 0.26),
+    rgba(255, 204, 138, 0.07) 46%,
+    transparent 88%
+  );
+  clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%);
+  filter: blur(26px);
+  opacity: calc(0.08 + 0.5 * var(--lamp, 1));
+}
+
+/* where it lands on the wall — the bright spot the artist works in */
+.tb-st-pool {
+  left: 14%;
+  top: 0;
+  width: 72%;
+  height: 82%;
+  background:
+    radial-gradient(42% 40% at 50% 10%, rgba(255, 226, 178, 0.3), transparent 74%),
+    radial-gradient(64% 70% at 50% 32%, rgba(255, 208, 150, 0.13), transparent 76%);
+  mix-blend-mode: screen;
+  filter: blur(8px);
+  opacity: calc(0.16 + 0.66 * var(--lamp, 1));
+}
+
+/* a cold shaft leaking in from the top right */
+.tb-st-shaft {
+  right: -10%;
+  top: -18%;
+  width: 46%;
+  height: 96%;
+  background: linear-gradient(196deg, rgba(190, 214, 240, 0.16), transparent 62%);
+  transform: rotate(-14deg);
+  filter: blur(20px);
+  opacity: 0.5;
+}
+
+/* ---- atmosphere ---- */
+
+.tb-st-fog {
+  left: -50%;
+  width: 200vw;
+  pointer-events: none;
+}
+
+.tb-st-fog.f1 {
+  top: 44%;
+  height: 42vh;
+  background:
+    radial-gradient(40% 60% at 22% 50%, rgba(150, 165, 185, 0.09), transparent 70%),
+    radial-gradient(46% 54% at 62% 46%, rgba(150, 165, 185, 0.07), transparent 72%);
+  filter: blur(30px);
+  animation: tb-st-fog-a 170s linear infinite;
+}
+
+.tb-st-fog.f2 {
+  top: 18%;
+  height: 50vh;
+  background:
+    radial-gradient(38% 58% at 40% 50%, rgba(140, 158, 180, 0.07), transparent 72%),
+    radial-gradient(42% 50% at 78% 44%, rgba(140, 158, 180, 0.06), transparent 74%);
+  filter: blur(26px);
+  animation: tb-st-fog-b 130s linear infinite;
+}
+
+.tb-st-fog.f3 {
+  bottom: 6%;
+  height: 34vh;
+  background: radial-gradient(46% 62% at 52% 60%, rgba(160, 172, 190, 0.08), transparent 72%);
+  filter: blur(22px);
+  animation: tb-st-fog-a 92s linear infinite reverse;
+}
+
+@keyframes tb-st-fog-a {
+  from { transform: translate3d(-14%, 0, 0); }
+  to { transform: translate3d(14%, 0, 0); }
+}
+
+@keyframes tb-st-fog-b {
+  from { transform: translate3d(12%, 2%, 0); }
+  to { transform: translate3d(-12%, -2%, 0); }
+}
+
+.tb-st-dust {
   border-radius: 50%;
-  filter: blur(70px);
-}
-
-.tb-paint-1 {
-  top: -14%;
-  left: -10%;
-  background: radial-gradient(circle, rgba(255, 138, 43, 0.26), transparent 65%);
-  animation: tb-drift 22s ease-in-out infinite alternate;
-}
-
-.tb-paint-2 {
-  top: 30%;
-  right: -14%;
-  background: radial-gradient(circle, rgba(53, 215, 245, 0.16), transparent 65%);
-  animation: tb-drift 28s ease-in-out infinite alternate-reverse;
-}
-
-.tb-paint-3 {
-  bottom: -18%;
-  left: 22%;
-  background: radial-gradient(circle, rgba(255, 79, 163, 0.14), transparent 65%);
-  animation: tb-drift 34s ease-in-out infinite alternate;
-}
-
-.tb-spray {
-  border-radius: 50%;
-  background: hsl(var(--h, 320) 95% 65%);
-  box-shadow: 0 0 10px 2px hsl(var(--h, 320) 95% 60% / 0.5);
+  background: rgba(255, 238, 210, 0.85);
+  box-shadow: 0 0 3px rgba(255, 226, 180, 0.7);
   opacity: 0;
-  animation-name: tb-spray;
-  animation-timing-function: ease-in-out;
+  animation-name: tb-st-dust;
+  animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
 
-@keyframes tb-spray {
-  0%, 100% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.6); }
-  20% { opacity: 0.85; }
-  50% { opacity: 0.4; transform: translate3d(10px, -14px, 0) scale(1); }
-  80% { opacity: 0.7; }
+@keyframes tb-st-dust {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: calc(0.25 + 0.45 * var(--lamp, 1)); }
+  70% { opacity: calc(0.18 + 0.35 * var(--lamp, 1)); }
+  100% { transform: translate3d(var(--dx, 0px), var(--dy, -60px), 0); opacity: 0; }
+}
+
+/* Doubles as the reading scrim: the content column sits in the clear
+   centre while the frame falls away into the dark, like a game HUD. */
+.tb-st-vignette {
+  inset: 0;
+  background:
+    radial-gradient(128% 104% at 50% 36%, transparent 30%, rgba(0, 0, 0, 0.55) 82%, rgba(0, 0, 0, 0.72)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 22%);
+  /* the room closes in as the lamp dips */
+  opacity: calc(1.08 - 0.16 * var(--lamp, 1));
+}
+
+/* Phones: drop the heaviest sheet and shrink the rest of the blur
+   budget. Lives here, after the layers, because these selectors carry
+   the same specificity as the ones they override. */
+@media (max-width: 640px) {
+  .tb-st-fog.f1,
+  .tb-st-fog.f2 {
+    filter: blur(15px);
+  }
+
+  .tb-st-cone {
+    filter: blur(12px);
+  }
+
+  .tb-st-fog.f3,
+  .tb-st-mottle,
+  .tb-st-shaft {
+    display: none;
+  }
 }
 
 /* ================= street art: the industrial UI =================
