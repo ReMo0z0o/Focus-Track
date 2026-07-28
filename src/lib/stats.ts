@@ -51,6 +51,11 @@ export function fmtClock(seconds: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`
 }
 
+/** "1 session" / "4 sessions" — pluralised in one place. */
+export function fmtSessions(count: number): string {
+  return `${count} session${count === 1 ? '' : 's'}`
+}
+
 export function fmtPercent(ratio: number): string {
   const pct = Math.round(ratio * 100)
   // A near-zero focus total can make the pause ratio explode; cap the

@@ -94,9 +94,20 @@ export function StatsView() {
       }),
       focus: b.focus,
       idle: b.idle,
+      sessions: b.sessions.length,
     }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inPeriod, period])
+
+  // Always on screen, whatever period is selected.
+  const sessionCounts = useMemo(
+    () => ({
+      today: filterSince(sessions, startOfDay(now)).length,
+      week: filterSince(sessions, periodStart('week', now)).length,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessions],
+  )
 
   if (sessionsQuery.isLoading) {
     return (
@@ -159,6 +170,9 @@ export function StatsView() {
         <div className="tile">
           <div className="tile-label">Sessions</div>
           <div className="tile-value">{totals.sessions}</div>
+          <div className="tile-hint">
+            {sessionCounts.today} today · {sessionCounts.week} in 7 days
+          </div>
         </div>
         <div className="tile">
           <div className="tile-label">Pause / focus</div>

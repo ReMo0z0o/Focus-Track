@@ -23,6 +23,7 @@ import {
   dailyBuckets,
   filterSince,
   fmtDuration,
+  fmtSessions,
   startOfDay,
   summarize,
   tierMaterial,
@@ -451,6 +452,7 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
     }),
     focus: b.focus,
     idle: b.idle,
+    sessions: b.sessions.length,
   }))
 
   return (
@@ -466,10 +468,12 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
           <div className="tile">
             <div className="tile-label">Focus today</div>
             <div className="tile-value accent">{fmtDuration(today.focus)}</div>
+            <div className="tile-hint">{fmtSessions(today.sessions)}</div>
           </div>
           <div className="tile">
             <div className="tile-label">Focus this week</div>
             <div className="tile-value accent">{fmtDuration(week.focus)}</div>
+            <div className="tile-hint">{fmtSessions(week.sessions)}</div>
           </div>
           <div className="tile">
             <div className="tile-label">Best streak</div>

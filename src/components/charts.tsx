@@ -215,6 +215,7 @@ export function ConcentrationChart({
             fill="transparent"
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
+            onTouchStart={() => setHover(i)}
           />
         )
       })}
@@ -232,6 +233,11 @@ export interface StackedBucket {
   detail: string
   focus: number
   idle: number
+  /**
+   * Sessions started in this bucket. Omitted by the hourly view, where a
+   * session spanning several hours would be counted in only one of them.
+   */
+  sessions?: number
 }
 
 export function FocusPauseChart({ buckets }: { buckets: StackedBucket[] }) {
@@ -277,6 +283,13 @@ export function FocusPauseChart({ buckets }: { buckets: StackedBucket[] }) {
               <br />
               <span style={{ color: 'var(--text-muted)' }}>Pause</span>{' '}
               {fmtDuration(hovered.idle)}
+              {hovered.sessions !== undefined && (
+                <>
+                  <br />
+                  <span style={{ color: 'var(--text-muted)' }}>Sessions</span>{' '}
+                  {hovered.sessions}
+                </>
+              )}
             </>
           ),
         }
@@ -334,7 +347,7 @@ export function FocusPauseChart({ buckets }: { buckets: StackedBucket[] }) {
           ) : null,
         )}
 
-        {/* hover hit bands */}
+        {/* hover hit bands — touch selects, since taps have no hover */}
         {buckets.map((_, i) => (
           <rect
             key={i}
@@ -345,6 +358,7 @@ export function FocusPauseChart({ buckets }: { buckets: StackedBucket[] }) {
             fill="transparent"
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
+            onTouchStart={() => setHover(i)}
           />
         ))}
       </ChartShell>

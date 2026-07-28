@@ -8,6 +8,7 @@ import {
   dailyBuckets,
   fmtClock,
   fmtDuration,
+  fmtSessions,
   gradeLevel,
   hourlyBuckets,
   lastWorkedDaysSessions,
@@ -52,6 +53,14 @@ describe('fmtDuration', () => {
   it('formats hours with padded minutes', () => {
     expect(fmtDuration(3600)).toBe('1h 00m')
     expect(fmtDuration(3600 + 5 * 60 + 30)).toBe('1h 05m')
+  })
+})
+
+describe('fmtSessions', () => {
+  it('pluralises everything but one', () => {
+    expect(fmtSessions(0)).toBe('0 sessions')
+    expect(fmtSessions(1)).toBe('1 session')
+    expect(fmtSessions(4)).toBe('4 sessions')
   })
 })
 
