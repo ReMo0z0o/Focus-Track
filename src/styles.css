@@ -1526,6 +1526,10 @@ input, select {
   border-radius: 50%;
 }
 
+/* Compact disc for dense layouts (friend panel). */
+.medal.sm { width: 44px; height: 44px; }
+.medal.sm .medal-disc > svg { width: 21px; height: 21px; }
+
 .medal-disc {
   position: absolute;
   inset: 0;
@@ -2928,34 +2932,54 @@ input, select {
 }
 
 .fs-badges {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.6rem;
-  flex-wrap: wrap;
   margin-top: 0.9rem;
 }
 
 @media (max-width: 700px) {
-  .fs-badges { justify-content: center; }
+  .fs-badges { grid-template-columns: 1fr; }
 }
 
 .fs-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.32rem 0.8rem;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--tier) 45%, transparent);
-  background: color-mix(in srgb, var(--tier) 10%, transparent);
-  color: var(--tier-hi);
-  font-size: 0.8rem;
-  font-weight: 640;
+  gap: 0.6rem;
+  min-width: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--tier) 40%, transparent);
+  background: color-mix(in srgb, var(--tier) 9%, transparent);
 }
 
-.fs-badge-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, var(--tier-hi), var(--tier) 60%, var(--tier-lo));
+.fsb-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.fsb-name {
+  font-size: 0.82rem;
+  font-weight: 660;
+  color: var(--text);
+}
+
+.fsb-nick {
+  font-size: 0.7rem;
+  font-weight: 720;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--tier-hi);
+}
+
+.fsb-material {
+  font-size: 0.64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
 }
 
 .fs-chart {

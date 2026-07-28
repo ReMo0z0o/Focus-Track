@@ -256,6 +256,11 @@ export const TIER_NAMES = [
   'Diamond',
 ]
 
+/** Medal material for a tier — an unearned badge says so in words. */
+export function tierMaterial(tier: number): string {
+  return tier <= 0 ? 'Unranked' : (TIER_NAMES[tier] ?? '—')
+}
+
 /** Badge display names — used by the stats cards and friend panels alike. */
 export const ATTENTION_BADGE_NAME = 'Attention Span'
 export const DEAD_AIR_BADGE_NAME = 'Dead Air'

@@ -3,14 +3,8 @@ import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   APP_LOCALE,
-  ATTENTION_BADGE_NAME,
-  ATTENTION_TIER_NICKNAMES,
   CONCENTRATION_BADGE_THRESHOLDS,
   DAILY_GOAL_SECONDS,
-  DEAD_AIR_BADGE_NAME,
-  DEAD_AIR_TIER_NICKNAMES,
-  HAUL_BADGE_NAME,
-  HAUL_TIER_NICKNAMES,
   GRADE_NAMES,
   GRADE_THRESHOLDS,
   RATIO_BADGE_THRESHOLDS,
@@ -29,10 +23,18 @@ import {
   startOfDay,
   streakDays,
   summarize,
+  tierMaterial,
   weekHoursBadgeLevel,
 } from '@/lib/stats'
 import type { SessionRow } from '@/lib/stats'
 import { GradeEmblem } from '@/components/GradeEmblem'
+import {
+  ATTENTION_BADGE,
+  BadgeMedal,
+  DEAD_AIR_BADGE,
+  HAUL_BADGE,
+} from '@/components/BadgeMedal'
+import type { BadgeDef } from '@/components/BadgeMedal'
 
 /**
  * Gamified grade & badges section: rank emblem with rising embers, a
@@ -132,9 +134,7 @@ export function GradeBadges({
           className="anim-3"
           tier={concLevel}
           tierPrefix="c"
-          title={ATTENTION_BADGE_NAME}
-          nicknames={ATTENTION_TIER_NICKNAMES}
-          icon={<TargetIcon />}
+          badge={ATTENTION_BADGE}
           statLine={
             <>
               <CountUpValue value={worked3.concentration} /> pts — avg
@@ -156,9 +156,7 @@ export function GradeBadges({
           className="anim-4"
           tier={ratioLevel}
           tierPrefix="c"
-          title={DEAD_AIR_BADGE_NAME}
-          nicknames={DEAD_AIR_TIER_NICKNAMES}
-          icon={<ScaleIcon />}
+          badge={DEAD_AIR_BADGE}
           statLine={
             worked3.focus > 0 ? (
               <>
@@ -181,9 +179,7 @@ export function GradeBadges({
           className="anim-5 wide"
           tier={weekLevel}
           tierPrefix="c"
-          title={HAUL_BADGE_NAME}
-          nicknames={HAUL_TIER_NICKNAMES}
-          icon={<ClockIcon />}
+          badge={HAUL_BADGE}
           statLine={
             <>
               <strong>{fmtDuration(weekFocus)}</strong> of focus over the last
@@ -393,22 +389,17 @@ function StreakCard({
 /* ------------------------------------------------------------------ */
 
 function MedalCard({
+  badge,
   tier,
   tierPrefix,
-  title,
-  nicknames,
-  icon,
   statLine,
   progress,
   nextHint,
   className = '',
 }: {
+  badge: BadgeDef
   tier: number
   tierPrefix: string
-  title: string
-  /** Rank nicknames indexed by tier (0..5). */
-  nicknames: string[]
-  icon: ReactNode
   statLine: ReactNode
   progress: number | null
   nextHint: string
@@ -418,19 +409,16 @@ function MedalCard({
   return (
     <div className={`medal-card tier-${tierPrefix}${tier} ${className}`}>
       <div className="medal-col">
-        <div className={`medal${locked ? ' locked' : ''}`} aria-hidden="true">
-          <span className="medal-disc">{locked ? <LockIcon /> : icon}</span>
-          {!locked && <span className="medal-shine" />}
-        </div>
+        <BadgeMedal kind={badge.kind} tier={tier} />
         <span className={`m-material${locked ? ' locked' : ''}`}>
-          {locked ? 'Unranked' : TIER_NAMES[tier]}
+          {tierMaterial(tier)}
         </span>
       </div>
       <div className="medal-info">
         <div className="m-title-row">
-          <span className="m-title">{title}</span>
+          <span className="m-title">{badge.name}</span>
           <span className={`m-nick${locked ? ' locked' : ''}`}>
-            {nicknames[tier]}
+            {badge.nicknames[tier]}
           </span>
         </div>
         <div className="m-stat">{statLine}</div>
@@ -465,38 +453,3 @@ function FlameIcon({ className }: { className?: string }) {
   )
 }
 
-function TargetIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" />
-      <circle cx="12" cy="12" r="4.5" />
-      <circle cx="12" cy="12" r="1" fill="currentColor" />
-    </svg>
-  )
-}
-
-function ScaleIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M12 4v16M4.5 20h15M7 7.5 4.5 13a2.8 2.8 0 0 0 5 0L7 7.5ZM17 7.5 14.5 13a2.8 2.8 0 0 0 5 0L17 7.5ZM5.5 7.5h13" />
-    </svg>
-  )
-}
-
-function ClockIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M12 7.5V12l3.2 1.9" />
-    </svg>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-      <rect x="5.5" y="11" width="13" height="9" rx="2" />
-      <path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3" />
-    </svg>
-  )
-}

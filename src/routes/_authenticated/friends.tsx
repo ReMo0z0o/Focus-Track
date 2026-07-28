@@ -18,21 +18,17 @@ import type {
 import { normalizeMilestones } from '@/lib/rewards'
 import {
   APP_LOCALE,
-  ATTENTION_BADGE_NAME,
-  ATTENTION_TIER_NICKNAMES,
   DAILY_GOAL_SECONDS,
-  DEAD_AIR_BADGE_NAME,
-  DEAD_AIR_TIER_NICKNAMES,
   GRADE_NAMES,
-  HAUL_BADGE_NAME,
-  HAUL_TIER_NICKNAMES,
-  TIER_NAMES,
   dailyBuckets,
   filterSince,
   fmtDuration,
   startOfDay,
   summarize,
+  tierMaterial,
 } from '@/lib/stats'
+import { BADGES, BadgeMedal } from '@/components/BadgeMedal'
+import type { BadgeKind } from '@/components/BadgeMedal'
 import { GradeEmblem } from '@/components/GradeEmblem'
 import { FocusPauseChart } from '@/components/charts'
 import { Avatar } from '@/components/avatars'
@@ -435,6 +431,12 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
 
   const { profile, sessions } = statsQuery.data
   const milestones = normalizeMilestones(profile.milestones)
+  // Best tier ever reached per badge — friends see milestones, not today's form.
+  const badgeTiers: Record<BadgeKind, number> = {
+    attention: milestones.concTier,
+    deadAir: milestones.ratioTier,
+    haul: milestones.weekTier,
+  }
   const now = new Date()
   const today = summarize(filterSince(sessions, startOfDay(now)))
   const week = summarize(
@@ -484,27 +486,19 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
         </div>
 
         <div className="fs-badges">
-          <span
-            className={`fs-badge tier-c${milestones.concTier}`}
-            title={ATTENTION_TIER_NICKNAMES[milestones.concTier]}
-          >
-            <span className="fs-badge-dot" /> {ATTENTION_BADGE_NAME} ·{' '}
-            {TIER_NAMES[milestones.concTier]}
-          </span>
-          <span
-            className={`fs-badge tier-c${milestones.ratioTier}`}
-            title={DEAD_AIR_TIER_NICKNAMES[milestones.ratioTier]}
-          >
-            <span className="fs-badge-dot" /> {DEAD_AIR_BADGE_NAME} ·{' '}
-            {TIER_NAMES[milestones.ratioTier]}
-          </span>
-          <span
-            className={`fs-badge tier-c${milestones.weekTier}`}
-            title={HAUL_TIER_NICKNAMES[milestones.weekTier]}
-          >
-            <span className="fs-badge-dot" /> {HAUL_BADGE_NAME} ·{' '}
-            {TIER_NAMES[milestones.weekTier]}
-          </span>
+          {BADGES.map((badge) => {
+            const tier = badgeTiers[badge.kind]
+            return (
+              <div key={badge.kind} className={`fs-badge tier-c${tier}`}>
+                <BadgeMedal kind={badge.kind} tier={tier} small />
+                <div className="fsb-text">
+                  <span className="fsb-name">{badge.name}</span>
+                  <span className="fsb-nick">{badge.nicknames[tier]}</span>
+                  <span className="fsb-material">{tierMaterial(tier)}</span>
+                </div>
+              </div>
+            )
+          })}
         </div>
 
         <div className="fs-chart">
