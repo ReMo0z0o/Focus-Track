@@ -132,3 +132,131 @@ export function playReminderSound(id: string): void {
     play()
   }
 }
+
+/* ---------------- room ambience ---------------- */
+
+/**
+ * The warehouse hum behind the Street Art theme: distant ventilation,
+ * the odd metallic knock from somewhere down the hall. Synthesized, so
+ * there is nothing to download, and off unless the user asks for it.
+ */
+const AMBIENCE_KEY = 'focusguard.ambience'
+
+let ambience: {
+  master: GainNode
+  nodes: AudioScheduledSourceNode[]
+  timer: number
+} | null = null
+
+export function ambienceEnabled(): boolean {
+  if (typeof localStorage === 'undefined') return false
+  try {
+    return localStorage.getItem(AMBIENCE_KEY) === 'on'
+  } catch {
+    return false
+  }
+}
+
+export function setAmbienceEnabled(on: boolean): void {
+  try {
+    localStorage.setItem(AMBIENCE_KEY, on ? 'on' : 'off')
+  } catch {
+    /* private mode — the setting just won't stick */
+  }
+}
+
+/** Brown-ish noise, the cheapest convincing air-handling rumble. */
+function noiseBuffer(c: AudioContext, seconds: number): AudioBuffer {
+  const buf = c.createBuffer(1, Math.floor(c.sampleRate * seconds), c.sampleRate)
+  const data = buf.getChannelData(0)
+  let last = 0
+  for (let i = 0; i < data.length; i++) {
+    const white = Math.random() * 2 - 1
+    last = (last + 0.02 * white) / 1.02
+    data[i] = last * 3.2
+  }
+  return buf
+}
+
+/**
+ * Start the loop. Must be called from a user gesture — browsers refuse
+ * to start audio otherwise. Safe to call twice.
+ */
+export function startAmbience(): void {
+  if (ambience) return
+  const c = getContext()
+  if (!c) return
+  if (c.state === 'suspended') void c.resume().catch(() => {})
+
+  const master = c.createGain()
+  master.gain.setValueAtTime(0.0001, c.currentTime)
+  master.gain.exponentialRampToValueAtTime(0.05, c.currentTime + 2.5)
+  master.connect(c.destination)
+
+  // ventilation: filtered noise, slowly breathing
+  const src = c.createBufferSource()
+  src.buffer = noiseBuffer(c, 4)
+  src.loop = true
+  const lp = c.createBiquadFilter()
+  lp.type = 'lowpass'
+  lp.frequency.value = 320
+  const swell = c.createGain()
+  swell.gain.value = 0.85
+  const lfo = c.createOscillator()
+  lfo.frequency.value = 0.045
+  const lfoGain = c.createGain()
+  lfoGain.gain.value = 0.3
+  lfo.connect(lfoGain)
+  lfoGain.connect(swell.gain)
+  src.connect(lp)
+  lp.connect(swell)
+  swell.connect(master)
+  src.start()
+  lfo.start()
+
+  // occasional metallic knock somewhere down the hall
+  const knock = () => {
+    if (!ambience) return
+    const t = c.currentTime
+    const f = 180 + Math.random() * 420
+    note(c, f, t, 0.5 + Math.random() * 0.6, 0.012, { type: 'triangle', lowpass: 1400 })
+    note(c, f * 2.41, t + 0.01, 0.35, 0.005, { type: 'sine' })
+    ambience.timer = window.setTimeout(knock, 9000 + Math.random() * 26000)
+  }
+
+  ambience = { master, nodes: [src, lfo], timer: 0 }
+  ambience.timer = window.setTimeout(knock, 6000 + Math.random() * 12000)
+}
+
+export function stopAmbience(): void {
+  if (!ambience) return
+  const c = getContext()
+  const { master, nodes, timer } = ambience
+  ambience = null
+  clearTimeout(timer)
+  if (c) {
+    master.gain.cancelScheduledValues(c.currentTime)
+    master.gain.setValueAtTime(Math.max(master.gain.value, 0.0001), c.currentTime)
+    master.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.6)
+  }
+  nodes.forEach((n) => {
+    try {
+      n.stop(c ? c.currentTime + 0.7 : 0)
+    } catch {
+      /* already stopped */
+    }
+  })
+}
+
+/** The rattle of a can being shaken — fired by the graffiti scene. */
+export function playSprayShake(): void {
+  const c = getContext()
+  if (!c || c.state !== 'running') return
+  const t = c.currentTime
+  for (let i = 0; i < 7; i++) {
+    note(c, 2200 + Math.random() * 1800, t + i * 0.13, 0.05, 0.006, {
+      type: 'square',
+      lowpass: 5200,
+    })
+  }
+}

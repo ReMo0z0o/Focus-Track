@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode, RefObject } from 'react'
+import { ambienceEnabled, playSprayShake, startAmbience, stopAmbience } from '@/lib/audio'
 
 /**
  * Full-screen animated backdrop for the "world" themes (fire, jungle,
@@ -2512,6 +2513,34 @@ function StreetLayer() {
     img.src = '/tag-locked-in.webp'
   }, [reduced])
 
+  // Room tone, only if the user asked for it. Audio can't start without a
+  // gesture, so if none has happened yet we wait for the first one.
+  useEffect(() => {
+    if (!ambienceEnabled()) return
+    let done = false
+    const begin = () => {
+      if (done) return
+      done = true
+      startAmbience()
+      window.removeEventListener('pointerdown', begin)
+      window.removeEventListener('keydown', begin)
+    }
+    begin()
+    window.addEventListener('pointerdown', begin, { once: true })
+    window.addEventListener('keydown', begin, { once: true })
+    const onVisibility = () => {
+      if (document.hidden) stopAmbience()
+      else if (ambienceEnabled()) startAmbience()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pointerdown', begin)
+      window.removeEventListener('keydown', begin)
+      document.removeEventListener('visibilitychange', onVisibility)
+      stopAmbience()
+    }
+  }, [])
+
   const layerRef = useRef<HTMLDivElement>(null)
   const artistRef = useRef<HTMLDivElement>(null)
   const armRef = useRef<SVGGElement>(null)
@@ -2719,6 +2748,7 @@ function StreetLayer() {
       setArtistX(off, from === 1)
       walk(off, target, WALK_MS, from === 1, () => {
         setPhase('shake')
+        if (ambienceEnabled()) playSprayShake()
         later(() => {
           setPhase('spray')
           runSpray(next, () => {

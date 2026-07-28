@@ -7,7 +7,11 @@ import { getProfile, updateProfile } from '@/lib/sessions.functions'
 import {
   DEFAULT_REMINDER_SOUND,
   REMINDER_SOUNDS,
+  ambienceEnabled,
   playReminderSound,
+  setAmbienceEnabled,
+  startAmbience,
+  stopAmbience,
 } from '@/lib/audio'
 import { useToast } from '@/components/Toaster'
 
@@ -49,6 +53,19 @@ function SettingsPage() {
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [reminderSound, setReminderSound] = useState(DEFAULT_REMINDER_SOUND)
   const [hydrated, setHydrated] = useState(false)
+  // device-level, so it lives in localStorage rather than the profile
+  const [ambience, setAmbience] = useState(false)
+  const [streetTheme, setStreetTheme] = useState(false)
+
+  useEffect(() => {
+    setAmbience(ambienceEnabled())
+    setStreetTheme(document.documentElement.dataset.theme === 'street')
+    const el = document.documentElement
+    const read = () => setStreetTheme(el.dataset.theme === 'street')
+    const observer = new MutationObserver(read)
+    observer.observe(el, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
 
   // Populate the form once the profile arrives (only the first time, so we
   // don't clobber in-progress edits on refetch).
@@ -240,6 +257,35 @@ function SettingsPage() {
               ))}
             </div>
           </div>
+
+          {streetTheme && (
+            <div className="toggle-row" style={{ marginTop: '1.6rem' }}>
+              <div className="toggle-text">
+                <div className="t-label">Warehouse ambience</div>
+                <div className="t-sub">
+                  Distant ventilation and the odd metallic knock, under the Street
+                  Art theme. Off by default.
+                </div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={ambience}
+                  onChange={(e) => {
+                    const on = e.target.checked
+                    setAmbience(on)
+                    setAmbienceEnabled(on)
+                    // browsers only start audio from a real gesture — this is it
+                    if (on) startAmbience()
+                    else stopAmbience()
+                  }}
+                  aria-label="Warehouse ambience"
+                />
+                <span className="track-el" />
+                <span className="thumb" />
+              </label>
+            </div>
+          )}
         </div>
 
         <button

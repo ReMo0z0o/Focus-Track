@@ -49,6 +49,14 @@ badges.
   animated human & animal characters (a blinking alley cat, a buzzing bee,
   a spouting whale, a polar bear puffing cold breath…), each with its own
   micro-animation.
+  **Street Art** goes further than a backdrop: the whole interface moves into
+  an abandoned warehouse — smoked-glass panels, brushed-metal controls,
+  condensed uppercase titles, and one industrial lamp that flickers on an
+  aperiodic schedule and dims the UI with it. Every minute or so a hooded
+  writer walks in, shakes a can and sprays a piece on the concrete; the work
+  stays up, accumulates across four wall slots and survives a reload.
+  An optional warehouse ambience (synthesized, off by default) lives in
+  Settings while that theme is active.
   Grade emblems render as
   draggable 3D badges (CSS 3D, no dependencies). Unlocks are high-water
   marks persisted in `profiles.milestones`, so a dip in recent form never

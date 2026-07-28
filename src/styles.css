@@ -3540,32 +3540,18 @@ input, select {
    (decoded once, then cached like a bitmap) — never as filter: url(),
    which would re-rasterise the layer on every repaint. */
 
-/* Parallax plates. `.theme-backdrop > *` only reaches direct children,
-   so each plate has to position its own. */
+/* Depth plates. `.theme-backdrop > *` only reaches direct children, so
+   each plate positions its own.
+   These are deliberately static: animating a transform here re-rasterises
+   the whole wall — two full-screen background-image layers — every frame,
+   which measured at 50ms/frame. The room gets its motion from the fog,
+   the dust and the lamp instead. */
 .tb-st-plate {
   inset: 0;
 }
 
 .tb-st-plate > * {
   position: absolute;
-}
-
-.tb-st-plate.deep {
-  animation: tb-st-drift-deep 92s ease-in-out infinite alternate;
-}
-
-.tb-st-plate.mid {
-  animation: tb-st-drift-mid 61s ease-in-out infinite alternate;
-}
-
-@keyframes tb-st-drift-deep {
-  from { transform: translate3d(-0.5%, 0, 0) scale(1.02); }
-  to { transform: translate3d(0.5%, -0.4%, 0) scale(1.03); }
-}
-
-@keyframes tb-st-drift-mid {
-  from { transform: translate3d(0.9%, 0.2%, 0) scale(1.02); }
-  to { transform: translate3d(-0.9%, -0.3%, 0) scale(1.035); }
 }
 
 .tb-st-wall {
@@ -3581,8 +3567,9 @@ input, select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 160px 160px;
-  mix-blend-mode: overlay;
-  opacity: 0.42;
+  /* No blend mode: a blended layer forces every moving layer beneath it
+     back onto the CPU. Plain alpha over the concrete reads the same. */
+  opacity: 0.16;
 }
 
 .tb-st-mottle {
@@ -3590,8 +3577,7 @@ input, select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='300'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='420' height='300' filter='url(%23m)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 760px 540px;
-  mix-blend-mode: soft-light;
-  opacity: 0.6;
+  opacity: 0.22;
 }
 
 /* form-work seams and the tie holes they leave behind */
@@ -3750,9 +3736,8 @@ input, select {
   width: 72%;
   height: 82%;
   background:
-    radial-gradient(42% 40% at 50% 10%, rgba(255, 226, 178, 0.3), transparent 74%),
-    radial-gradient(64% 70% at 50% 32%, rgba(255, 208, 150, 0.13), transparent 76%);
-  mix-blend-mode: screen;
+    radial-gradient(42% 40% at 50% 10%, rgba(255, 232, 190, 0.34), transparent 74%),
+    radial-gradient(64% 70% at 50% 32%, rgba(255, 214, 160, 0.16), transparent 76%);
   filter: blur(8px);
   opacity: calc(0.16 + 0.66 * var(--lamp, 1));
 }
@@ -3771,37 +3756,39 @@ input, select {
 
 /* ---- atmosphere ---- */
 
+/* Fog sheets carry their own softness in the gradient stops. A blur
+   filter here would be re-rasterised across the whole sheet on every
+   frame of the drift — measured at ~80ms/frame — whereas a plain
+   gradient on a composited layer costs nothing to move. */
 .tb-st-fog {
-  left: -50%;
-  width: 200vw;
+  left: -30%;
+  width: 140vw;
   pointer-events: none;
+  will-change: transform;
 }
 
 .tb-st-fog.f1 {
-  top: 44%;
-  height: 42vh;
+  top: 42%;
+  height: 46vh;
   background:
-    radial-gradient(40% 60% at 22% 50%, rgba(150, 165, 185, 0.09), transparent 70%),
-    radial-gradient(46% 54% at 62% 46%, rgba(150, 165, 185, 0.07), transparent 72%);
-  filter: blur(30px);
+    radial-gradient(38% 58% at 20% 50%, rgba(150, 165, 185, 0.1), rgba(150, 165, 185, 0.04) 45%, transparent 72%),
+    radial-gradient(44% 52% at 60% 46%, rgba(150, 165, 185, 0.08), rgba(150, 165, 185, 0.03) 48%, transparent 74%);
   animation: tb-st-fog-a 170s linear infinite;
 }
 
 .tb-st-fog.f2 {
-  top: 18%;
-  height: 50vh;
+  top: 16%;
+  height: 54vh;
   background:
-    radial-gradient(38% 58% at 40% 50%, rgba(140, 158, 180, 0.07), transparent 72%),
-    radial-gradient(42% 50% at 78% 44%, rgba(140, 158, 180, 0.06), transparent 74%);
-  filter: blur(26px);
+    radial-gradient(36% 56% at 38% 50%, rgba(140, 158, 180, 0.08), rgba(140, 158, 180, 0.03) 46%, transparent 74%),
+    radial-gradient(40% 48% at 76% 44%, rgba(140, 158, 180, 0.07), rgba(140, 158, 180, 0.02) 50%, transparent 76%);
   animation: tb-st-fog-b 130s linear infinite;
 }
 
 .tb-st-fog.f3 {
-  bottom: 6%;
-  height: 34vh;
-  background: radial-gradient(46% 62% at 52% 60%, rgba(160, 172, 190, 0.08), transparent 72%);
-  filter: blur(22px);
+  bottom: 4%;
+  height: 38vh;
+  background: radial-gradient(44% 60% at 50% 60%, rgba(160, 172, 190, 0.09), rgba(160, 172, 190, 0.03) 46%, transparent 74%);
   animation: tb-st-fog-a 92s linear infinite reverse;
 }
 
@@ -4008,11 +3995,6 @@ input, select {
    budget. Lives here, after the layers, because these selectors carry
    the same specificity as the ones they override. */
 @media (max-width: 640px) {
-  .tb-st-fog.f1,
-  .tb-st-fog.f2 {
-    filter: blur(15px);
-  }
-
   .tb-st-cone {
     filter: blur(12px);
   }
