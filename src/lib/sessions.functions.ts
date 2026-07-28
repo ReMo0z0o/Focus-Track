@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { requireSupabaseAuth } from '@/lib/supabase-auth'
+import { canDeleteSession } from '@/lib/stats'
 import type { SessionRow } from '@/lib/stats'
 
 const RECENT_WINDOW_DAYS = 60
@@ -92,11 +93,31 @@ export const getRecentSessions = createServerFn({ method: 'GET' })
     return data
   })
 
-/** Delete one of the caller's sessions. */
+/**
+ * Delete one of the caller's sessions, within 24h of it ending.
+ *
+ * The window is enforced here, not just on the button: the stats a friend
+ * sees would mean nothing if any client could quietly drop last month's
+ * worst days.
+ */
 export const deleteSession = createServerFn({ method: 'POST' })
   .validator((input: { id: string }) => ({ id: asUuid(input.id, 'session id') }))
   .middleware([requireSupabaseAuth])
   .handler(async ({ data, context }) => {
+    const { data: row, error: readError } = await context.supabase
+      .from('focus_sessions')
+      .select('ended_at')
+      .eq('id', data.id)
+      .eq('user_id', context.user.id)
+      .maybeSingle()
+    if (readError) throw new Error(readError.message)
+    if (!row) return { success: true } // already gone — nothing to do
+    if (!canDeleteSession(row, new Date())) {
+      throw new Error(
+        'That session is older than 24 hours — the history is locked now.',
+      )
+    }
+
     const { error } = await context.supabase
       .from('focus_sessions')
       .delete()

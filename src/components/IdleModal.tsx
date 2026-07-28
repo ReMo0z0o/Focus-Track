@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { fmtDuration } from '@/lib/stats'
+import { MAX_PAUSE_SECONDS, fmtDuration } from '@/lib/stats'
 import { useSessionEngine } from '@/lib/session-engine'
 
 function formatThresholdMinutes(seconds: number): string {
@@ -129,6 +129,13 @@ export function IdleModal() {
                 <div className="value">{fmtDuration(idleSeconds)}</div>
               </div>
             </div>
+            <p className="modal-hint">
+              Closes on its own after {fmtDuration(MAX_PAUSE_SECONDS)} of pause —{' '}
+              {fmtDuration(
+                Math.max(0, MAX_PAUSE_SECONDS - currentPauseSeconds),
+              )}{' '}
+              left.
+            </p>
             <button
               type="button"
               className="btn btn-primary btn-lg"

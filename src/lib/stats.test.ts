@@ -4,6 +4,7 @@ import {
   DEAD_AIR_TIER_NICKNAMES,
   HAUL_TIER_NICKNAMES,
   TIER_NAMES,
+  canDeleteSession,
   concentrationBadgeLevel,
   dailyBuckets,
   fmtClock,
@@ -213,6 +214,26 @@ describe('badge naming', () => {
   it('no nickname is shared between two badges', () => {
     const all = LADDERS.flat()
     expect(new Set(all).size).toBe(all.length)
+  })
+})
+
+describe('canDeleteSession', () => {
+  const at = (iso: string) => ({ ended_at: new Date(iso).toISOString() })
+
+  it('allows deletion for 24h after the session ends', () => {
+    expect(canDeleteSession(at('2026-07-11T15:00:00'), NOW)).toBe(true)
+    // 23h59 old — still inside the window
+    expect(canDeleteSession(at('2026-07-10T15:31:00'), NOW)).toBe(true)
+  })
+
+  it('locks the row once 24h have passed', () => {
+    expect(canDeleteSession(at('2026-07-10T15:29:00'), NOW)).toBe(false)
+    expect(canDeleteSession(at('2026-06-01T09:00:00'), NOW)).toBe(false)
+  })
+
+  it('keeps unclosed rows removable', () => {
+    expect(canDeleteSession({ ended_at: null }, NOW)).toBe(true)
+    expect(canDeleteSession({ ended_at: 'not-a-date' }, NOW)).toBe(true)
   })
 })
 

@@ -4,6 +4,9 @@ import { useServerFn } from '@tanstack/react-start'
 import { deleteSession, getRecentSessions } from '@/lib/sessions.functions'
 import {
   APP_LOCALE,
+  SESSION_LIST_DAYS,
+  addDays,
+  canDeleteSession,
   concentrationSeries,
   dailyBuckets,
   dayKey,
@@ -52,7 +55,13 @@ export function StatsView() {
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
       toast('Session deleted')
     },
-    onError: () => toast('Could not delete the session.', 'error'),
+    onError: (err) =>
+      toast(
+        err instanceof Error && err.message
+          ? err.message
+          : 'Could not delete the session.',
+        'error',
+      ),
   })
 
   const sessions = sessionsQuery.data ?? []
@@ -232,11 +241,18 @@ function SessionList({
 }) {
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
 
+  // Only the recent past is listed — older rows live on in the charts.
+  const recent = useMemo(
+    () => filterSince(sessions, addDays(startOfDay(now), -(SESSION_LIST_DAYS - 1))),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessions],
+  )
+
   const groups = useMemo(() => {
     const byDay = new Map<string, { label: string; rows: SessionRow[] }>()
     const todayKey = dayKey(startOfDay(now))
     const yesterdayKey = dayKey(new Date(startOfDay(now).getTime() - 86_400_000))
-    for (const s of sessions) {
+    for (const s of recent) {
       const d = new Date(s.started_at)
       const key = dayKey(d)
       if (!byDay.has(key)) {
@@ -255,14 +271,16 @@ function SessionList({
       byDay.get(key)!.rows.push(s)
     }
     return [...byDay.values()]
-  }, [sessions, now])
+  }, [recent, now])
 
-  if (sessions.length === 0) {
+  if (recent.length === 0) {
     return (
       <div className="card mt-3">
         <h2 className="card-title">Sessions</h2>
         <div className="chart-empty">
-          No sessions yet. Start one from the Session page.
+          {sessions.length === 0
+            ? 'No sessions yet. Start one from the Session page.'
+            : `Nothing in the last ${SESSION_LIST_DAYS} days — older sessions still count in the charts above.`}
         </div>
       </div>
     )
@@ -270,7 +288,12 @@ function SessionList({
 
   return (
     <div className="session-table">
-      <h2 className="card-title mt-3">Sessions ({sessions.length})</h2>
+      <h2 className="card-title mt-3">
+        Sessions ({recent.length})
+        <span className="session-scope">
+          last {SESSION_LIST_DAYS} days · deletable for 24h after they end
+        </span>
+      </h2>
       {groups.map((g) => (
         <div key={g.label}>
           <div className="day-group-label">{g.label}</div>
@@ -296,7 +319,14 @@ function SessionList({
                   : `${s.resumes_count} resume${s.resumes_count === 1 ? '' : 's'}`}
               </span>
               <span className="spacer" />
-              {confirmingId === s.id ? (
+              {!canDeleteSession(s, now) ? (
+                <span
+                  className="row-locked"
+                  title={`Sessions can only be deleted within 24 hours of ending.`}
+                >
+                  locked
+                </span>
+              ) : confirmingId === s.id ? (
                 <>
                   <button
                     type="button"

@@ -26,6 +26,31 @@ export const TARGET_CONCENTRATION_SECONDS = 2 * 60 * 60
 /** Daily focus goal used by grades, streaks and the goal ring. */
 export const DAILY_GOAL_SECONDS = 2 * 60 * 60
 
+/** A pause this long ends the session on its own — you have clearly left. */
+export const MAX_PAUSE_SECONDS = 3 * 60 * 60
+
+/** How many days of session detail the stats page lists. */
+export const SESSION_LIST_DAYS = 5
+
+/**
+ * A closed session can be removed for 24 hours, then the history freezes:
+ * long enough to undo a mistake, short enough that nobody can quietly
+ * rewrite a month of stats.
+ */
+export const DELETE_WINDOW_MS = 24 * 60 * 60 * 1000
+
+export function canDeleteSession(
+  session: Pick<SessionRow, 'ended_at'>,
+  now: Date,
+): boolean {
+  // Never closed (the running session, or a row orphaned by a crash): the
+  // window hasn't started, so it stays removable.
+  if (!session.ended_at) return true
+  const ended = new Date(session.ended_at).getTime()
+  if (!Number.isFinite(ended)) return true
+  return now.getTime() - ended < DELETE_WINDOW_MS
+}
+
 /* ------------------------------------------------------------------ */
 /* Formatting                                                          */
 /* ------------------------------------------------------------------ */

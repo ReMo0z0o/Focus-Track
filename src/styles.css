@@ -676,7 +676,13 @@ input, select {
   display: flex;
   justify-content: center;
   gap: 2.2rem;
-  margin: 0.2rem 0 1.4rem;
+  margin: 0.2rem 0 0.9rem;
+}
+
+.modal .modal-hint {
+  font-size: 0.76rem;
+  color: var(--text-faint);
+  margin-bottom: 1.2rem;
 }
 
 .pause-facts .label {
@@ -1704,6 +1710,24 @@ input, select {
   font-size: 0.8rem;
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
+}
+
+/* Past the 24h window: the row explains itself instead of going button-less. */
+.session-row .row-locked {
+  font-size: 0.76rem;
+  color: var(--text-faint);
+  font-style: italic;
+  cursor: help;
+}
+
+.session-scope {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-faint);
 }
 
 @media (max-width: 560px) {

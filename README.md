@@ -23,6 +23,9 @@ badges.
 5. **Honest accounting.** The timer works on `Date.now()` deltas, so it stays
    correct through background-tab throttling. Gaps longer than 90s (machine
    sleep, frozen tab) are credited to pause time retroactively.
+6. **3-hour pause cap.** A pause that reaches 3 hours closes the session by
+   itself: you left. The pause is credited up to the cap and no further, so a
+   tab forgotten overnight doesn't bury the day under pause time.
 
 ## Stats & gamification
 
@@ -30,7 +33,11 @@ badges.
   a **concentration score** — your average uninterrupted focus run measured
   against a 2-hour target.
 - Charts: concentration per day (7/14/30 days) and stacked focus-vs-pause bars
-  (hourly for today, daily for week/month).
+  (hourly for today, daily for week/month — daily bars also report their
+  session count).
+- Session detail lists the last 5 days. A session can be deleted for 24 hours
+  after it ends, then the history locks — enforced server-side, so nobody can
+  quietly rewrite the stats their friends compare against.
 - **Grade** (Ember → Lighthouse): days with 2h+ of focus in the last 30 days.
 - **Streak**: consecutive 2h+ days.
 - **Badges** (Bronze → Diamond), each with its own rank nicknames from

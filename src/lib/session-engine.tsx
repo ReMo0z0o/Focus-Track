@@ -13,7 +13,7 @@ import { endSession, getProfile, startSession } from '@/lib/sessions.functions'
 import { useIdleDetector } from '@/hooks/use-idle-detector'
 import type { IdleDetectorAPI, IdleState } from '@/hooks/use-idle-detector'
 import { DEFAULT_REMINDER_SOUND, playReminderSound, unlockAudio } from '@/lib/audio'
-import { fmtClock, fmtDuration } from '@/lib/stats'
+import { MAX_PAUSE_SECONDS, fmtClock, fmtDuration } from '@/lib/stats'
 import { useToast } from '@/components/Toaster'
 import { useAuth } from '@/routes/__root'
 
@@ -571,6 +571,38 @@ export function SessionEngineProvider({ children }: { children: ReactNode }) {
     notifiedRef.current = false
     idle.markActive()
   }, [idle, tick])
+
+  /* ---------------- auto-close after a 3h pause ---------------- */
+
+  // Guard against firing twice while the save is in flight; cleared as soon
+  // as the pause ends so a later pause can close the session in turn.
+  const autoClosedRef = useRef(false)
+
+  useEffect(() => {
+    if (!active || pauseConfirmedAt === null) {
+      autoClosedRef.current = false
+      return
+    }
+    if (autoClosedRef.current) return
+    const pausedMs = nowTs - pauseConfirmedAt
+    if (pausedMs < MAX_PAUSE_SECONDS * 1000) return
+    autoClosedRef.current = true
+
+    // Credit this pause up to the cap and no further: hours spent away after
+    // the session should have closed are not the session's pause. Moving the
+    // tick cursor keeps handleStop's settling tick from re-adding them.
+    const excess = pausedMs - MAX_PAUSE_SECONDS * 1000
+    if (excess > 0) {
+      idleMsRef.current = Math.max(0, idleMsRef.current - excess)
+      setIdleSeconds(Math.floor(idleMsRef.current / 1000))
+    }
+    lastTickRef.current = Date.now()
+
+    toast(
+      `Paused for ${fmtDuration(MAX_PAUSE_SECONDS)} — session closed automatically.`,
+    )
+    void handleStop()
+  }, [active, pauseConfirmedAt, nowTs, handleStop, toast])
 
   /* ---------------- keyboard shortcut: P ---------------- */
 
