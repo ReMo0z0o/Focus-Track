@@ -262,9 +262,9 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'street',
     name: 'Street Art',
-    tagline: 'Neon paint in the back alley.',
+    tagline: 'An abandoned warehouse where the writers meet.',
     condition: { kind: 'concTier', tier: 3 },
-    preview: { accent: '#ff5fa8', accentStrong: '#ff92c5', bg: '#0d0a10', surface: '#171021' },
+    preview: { accent: '#ff7a2f', accentStrong: '#ffa059', bg: '#090a0c', surface: '#121417' },
     animated: true,
   },
   {

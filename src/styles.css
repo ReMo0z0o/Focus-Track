@@ -2010,14 +2010,52 @@ input, select {
   --surface-2: #152233;
 }
 
+/* Street Art is a full environment, not just a palette: cold concrete,
+   smoked-glass panels, brushed-metal controls, condensed uppercase
+   titles. Everything below re-points shared tokens — see the
+   "street art" section for the warehouse itself. */
 :root[data-theme='street'] {
-  --accent: #ff5fa8;
-  --accent-strong: #ff92c5;
-  --accent-ink: #33081d;
-  --bg: #0d0a10;
-  --bg-raise: #120d17;
-  --surface: #171021;
-  --surface-2: #1d1529;
+  /* lamp-lit orange leads; the other graffiti colours stay accents */
+  --accent: #ff7a2f;
+  --accent-strong: #ffa059;
+  --accent-ink: #1c0c02;
+  --bg: #090a0c;
+  --bg-raise: #0d0f12;
+  --surface: #121417;
+  --surface-2: #171a1e;
+
+  --border: rgba(190, 200, 214, 0.13);
+  --border-strong: rgba(190, 200, 214, 0.24);
+  /* lifted a notch: this text sits on translucent glass, not solid fill */
+  --text: #eef1f5;
+  --text-muted: #b0b8c4;
+  --text-faint: #9aa4b2;
+  --pause: #8fa6cc;
+
+  /* smoked industrial glass */
+  --panel-bg: linear-gradient(180deg, rgba(24, 27, 32, 0.62), rgba(12, 14, 17, 0.76));
+  --panel-bg-solid: linear-gradient(180deg, rgba(24, 27, 32, 0.94), rgba(12, 14, 17, 0.96));
+  --panel-border: rgba(200, 212, 228, 0.14);
+  --panel-blur: 16px;
+  --panel-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --modal-bg: linear-gradient(180deg, rgba(28, 31, 36, 0.9), rgba(14, 16, 19, 0.94));
+  --overlay-bg: rgba(6, 7, 9, 0.7);
+  --chrome-bg: rgba(9, 10, 12, 0.62);
+
+  /* corners used sparingly */
+  --radius-sm: 5px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --btn-radius: 8px;
+
+  --font-display: 'Oswald', 'Arial Narrow', 'Roboto Condensed', ui-sans-serif, system-ui, sans-serif;
+  --title-tracking: 0.14em;
+
+  /* the can palette — used by the scene and the graffiti pieces */
+  --gc-orange: #ff8a2b;
+  --gc-cyan: #35d7f5;
+  --gc-lime: #b6f24a;
+  --gc-pink: #ff4fa3;
 }
 
 :root[data-theme='space'] {
@@ -2948,7 +2986,6 @@ input, select {
   [data-theme='fire'],
   [data-theme='jungle'],
   [data-theme='polar'],
-  [data-theme='street'],
   [data-theme='space'],
   [data-theme='future'],
   [data-theme='dragon'],
@@ -2961,7 +2998,14 @@ input, select {
     color-mix(in srgb, var(--surface) 88%, transparent),
     color-mix(in srgb, var(--bg-raise) 92%, transparent)
   );
+  --panel-bg-solid: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--surface) 88%, transparent),
+    color-mix(in srgb, var(--bg-raise) 92%, transparent)
+  );
 }
+/* street opts out: it ships its own smoked-glass panel treatment, and this
+   rule sits after the theme blocks (equal specificity) so it would win. */
 
 .theme-backdrop > * {
   position: absolute;
@@ -3485,7 +3529,8 @@ input, select {
   100% { transform: translate3d(6vw, -115vh, 0) scale(1.6); opacity: 0; }
 }
 
-/* ---------------- street art ---------------- */
+/* ---------------- street art: placeholder backdrop ----------------
+   Superseded by the warehouse scene in the next pass. */
 
 .tb-paint {
   width: 46vw;
@@ -3497,21 +3542,21 @@ input, select {
 .tb-paint-1 {
   top: -14%;
   left: -10%;
-  background: radial-gradient(circle, rgba(255, 70, 160, 0.38), transparent 65%);
+  background: radial-gradient(circle, rgba(255, 138, 43, 0.26), transparent 65%);
   animation: tb-drift 22s ease-in-out infinite alternate;
 }
 
 .tb-paint-2 {
   top: 30%;
   right: -14%;
-  background: radial-gradient(circle, rgba(60, 220, 255, 0.3), transparent 65%);
+  background: radial-gradient(circle, rgba(53, 215, 245, 0.16), transparent 65%);
   animation: tb-drift 28s ease-in-out infinite alternate-reverse;
 }
 
 .tb-paint-3 {
   bottom: -18%;
   left: 22%;
-  background: radial-gradient(circle, rgba(255, 220, 60, 0.24), transparent 65%);
+  background: radial-gradient(circle, rgba(255, 79, 163, 0.14), transparent 65%);
   animation: tb-drift 34s ease-in-out infinite alternate;
 }
 
@@ -3530,6 +3575,142 @@ input, select {
   20% { opacity: 0.85; }
   50% { opacity: 0.4; transform: translate3d(10px, -14px, 0) scale(1); }
   80% { opacity: 0.7; }
+}
+
+/* ================= street art: the industrial UI =================
+   Scoped to the theme. Panels become smoked glass, controls become
+   brushed metal, titles switch to a condensed face. Everything else
+   rides the tokens re-pointed in the theme block above. */
+
+/* The condensed face is only referenced under [data-theme='street'], so
+   the other fifteen themes never fetch it. */
+@font-face {
+  font-family: 'Oswald';
+  src: url('/fonts/oswald-latin.woff2') format('woff2-variations');
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212;
+}
+
+/* Frosted surfaces — deliberately a short list. Every element with a
+   backdrop-filter is its own backdrop root; /rewards alone renders
+   sixteen theme cards, so .tile and .theme-card stay opaque instead. */
+:root[data-theme='street'] :is(.card, .modal, .site-header, .toast) {
+  backdrop-filter: blur(var(--panel-blur)) saturate(0.88);
+  -webkit-backdrop-filter: blur(var(--panel-blur)) saturate(0.88);
+}
+
+:root[data-theme='street'] :is(.tile, .theme-card, .avatar-card, .medal-card) {
+  background: var(--panel-bg-solid);
+}
+
+/* condensed, uppercase titles — never on user-authored text */
+:root[data-theme='street'] :is(h1, h2, h3, h4, .page-title, .card-title, .btn, .status-chip, .brand, .tile-label, .preset, .seg-control button, .grade-badge .gb-name) {
+  font-family: var(--font-display);
+}
+
+:root[data-theme='street'] :is(.page-title, .btn, .status-chip, .tile-label) {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+:root[data-theme='street'] :is(h1, h2, h3, .page-title) {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* brushed metal controls */
+:root[data-theme='street'] .btn {
+  position: relative;
+  overflow: hidden;
+  font-weight: 500;
+  transition: transform 0.08s, box-shadow 0.2s, background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+:root[data-theme='street'] .btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 24%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: translateX(-180%);
+  transition: transform 0.62s ease;
+  pointer-events: none;
+}
+
+:root[data-theme='street'] .btn:hover::after {
+  transform: translateX(560%);
+}
+
+:root[data-theme='street'] .btn-ghost {
+  border-color: rgba(200, 212, 228, 0.22);
+  background:
+    linear-gradient(180deg, rgba(226, 232, 240, 0.11), rgba(226, 232, 240, 0.03)),
+    repeating-linear-gradient(96deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+:root[data-theme='street'] .btn-ghost:hover {
+  background:
+    linear-gradient(180deg, rgba(226, 232, 240, 0.16), rgba(226, 232, 240, 0.05)),
+    repeating-linear-gradient(96deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 3px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent),
+    0 6px 22px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+:root[data-theme='street'] .btn-primary {
+  background:
+    repeating-linear-gradient(96deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, var(--accent-strong), var(--accent));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 8px 26px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+:root[data-theme='street'] .input,
+:root[data-theme='street'] .seg-control {
+  background: rgba(6, 7, 9, 0.66);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+:root[data-theme='street'] .input:focus {
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55), 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+:root[data-theme='street'] .site-header {
+  border-bottom-color: rgba(200, 212, 228, 0.16);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--accent) 18%, transparent), 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* the clock glows with the lamp (see --lamp, set by the scene) */
+:root[data-theme='street'] .timer-clock {
+  text-shadow: 0 0 calc(14px * var(--lamp, 1)) color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+/* graffiti accents, used only on indicators */
+:root[data-theme='street'] .goal-ring .fill {
+  stroke: var(--gc-cyan);
+}
+
+:root[data-theme='street'] .status-chip.running {
+  color: var(--gc-lime);
+  border-color: color-mix(in srgb, var(--gc-lime) 45%, transparent);
+}
+
+@media (max-width: 640px) {
+  :root[data-theme='street'] {
+    --panel-blur: 8px;
+  }
+
+  :root[data-theme='street'] .toast {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* ---------------- neon future ---------------- */
