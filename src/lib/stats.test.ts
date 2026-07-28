@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ATTENTION_TIER_NICKNAMES,
+  DEAD_AIR_TIER_NICKNAMES,
+  HAUL_TIER_NICKNAMES,
+  TIER_NAMES,
   concentrationBadgeLevel,
   dailyBuckets,
   fmtClock,
@@ -180,6 +184,26 @@ describe('grade & streak', () => {
   it('streak breaks on a gap', () => {
     const sessions = [goodDay('2026-07-10'), goodDay('2026-07-08')]
     expect(streakDays(sessions, NOW)).toBe(1)
+  })
+})
+
+describe('badge naming', () => {
+  const LADDERS = [
+    ATTENTION_TIER_NICKNAMES,
+    DEAD_AIR_TIER_NICKNAMES,
+    HAUL_TIER_NICKNAMES,
+  ]
+
+  it('every badge has one nickname per tier', () => {
+    for (const ladder of LADDERS) {
+      expect(ladder).toHaveLength(TIER_NAMES.length)
+      expect(ladder.every((n) => n.trim().length > 0)).toBe(true)
+    }
+  })
+
+  it('no nickname is shared between two badges', () => {
+    const all = LADDERS.flat()
+    expect(new Set(all).size).toBe(all.length)
   })
 })
 

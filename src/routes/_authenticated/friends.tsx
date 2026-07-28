@@ -18,8 +18,14 @@ import type {
 import { normalizeMilestones } from '@/lib/rewards'
 import {
   APP_LOCALE,
+  ATTENTION_BADGE_NAME,
+  ATTENTION_TIER_NICKNAMES,
   DAILY_GOAL_SECONDS,
+  DEAD_AIR_BADGE_NAME,
+  DEAD_AIR_TIER_NICKNAMES,
   GRADE_NAMES,
+  HAUL_BADGE_NAME,
+  HAUL_TIER_NICKNAMES,
   TIER_NAMES,
   dailyBuckets,
   filterSince,
@@ -478,16 +484,25 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
         </div>
 
         <div className="fs-badges">
-          <span className={`fs-badge tier-c${milestones.concTier}`}>
-            <span className="fs-badge-dot" /> Concentration ·{' '}
+          <span
+            className={`fs-badge tier-c${milestones.concTier}`}
+            title={ATTENTION_TIER_NICKNAMES[milestones.concTier]}
+          >
+            <span className="fs-badge-dot" /> {ATTENTION_BADGE_NAME} ·{' '}
             {TIER_NAMES[milestones.concTier]}
           </span>
-          <span className={`fs-badge tier-c${milestones.ratioTier}`}>
-            <span className="fs-badge-dot" /> Pause ratio ·{' '}
+          <span
+            className={`fs-badge tier-c${milestones.ratioTier}`}
+            title={DEAD_AIR_TIER_NICKNAMES[milestones.ratioTier]}
+          >
+            <span className="fs-badge-dot" /> {DEAD_AIR_BADGE_NAME} ·{' '}
             {TIER_NAMES[milestones.ratioTier]}
           </span>
-          <span className={`fs-badge tier-c${milestones.weekTier}`}>
-            <span className="fs-badge-dot" /> Focus hours ·{' '}
+          <span
+            className={`fs-badge tier-c${milestones.weekTier}`}
+            title={HAUL_TIER_NICKNAMES[milestones.weekTier]}
+          >
+            <span className="fs-badge-dot" /> {HAUL_BADGE_NAME} ·{' '}
             {TIER_NAMES[milestones.weekTier]}
           </span>
         </div>

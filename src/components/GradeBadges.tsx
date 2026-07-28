@@ -3,8 +3,14 @@ import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   APP_LOCALE,
+  ATTENTION_BADGE_NAME,
+  ATTENTION_TIER_NICKNAMES,
   CONCENTRATION_BADGE_THRESHOLDS,
   DAILY_GOAL_SECONDS,
+  DEAD_AIR_BADGE_NAME,
+  DEAD_AIR_TIER_NICKNAMES,
+  HAUL_BADGE_NAME,
+  HAUL_TIER_NICKNAMES,
   GRADE_NAMES,
   GRADE_THRESHOLDS,
   RATIO_BADGE_THRESHOLDS,
@@ -126,7 +132,8 @@ export function GradeBadges({
           className="anim-3"
           tier={concLevel}
           tierPrefix="c"
-          title="Concentration"
+          title={ATTENTION_BADGE_NAME}
+          nicknames={ATTENTION_TIER_NICKNAMES}
           icon={<TargetIcon />}
           statLine={
             <>
@@ -149,7 +156,8 @@ export function GradeBadges({
           className="anim-4"
           tier={ratioLevel}
           tierPrefix="c"
-          title="Pause ratio"
+          title={DEAD_AIR_BADGE_NAME}
+          nicknames={DEAD_AIR_TIER_NICKNAMES}
           icon={<ScaleIcon />}
           statLine={
             worked3.focus > 0 ? (
@@ -173,7 +181,8 @@ export function GradeBadges({
           className="anim-5 wide"
           tier={weekLevel}
           tierPrefix="c"
-          title="Focus hours"
+          title={HAUL_BADGE_NAME}
+          nicknames={HAUL_TIER_NICKNAMES}
           icon={<ClockIcon />}
           statLine={
             <>
@@ -387,6 +396,7 @@ function MedalCard({
   tier,
   tierPrefix,
   title,
+  nicknames,
   icon,
   statLine,
   progress,
@@ -396,6 +406,8 @@ function MedalCard({
   tier: number
   tierPrefix: string
   title: string
+  /** Rank nicknames indexed by tier (0..5). */
+  nicknames: string[]
   icon: ReactNode
   statLine: ReactNode
   progress: number | null
@@ -405,15 +417,20 @@ function MedalCard({
   const locked = tier === 0
   return (
     <div className={`medal-card tier-${tierPrefix}${tier} ${className}`}>
-      <div className={`medal${locked ? ' locked' : ''}`} aria-hidden="true">
-        <span className="medal-disc">{locked ? <LockIcon /> : icon}</span>
-        {!locked && <span className="medal-shine" />}
+      <div className="medal-col">
+        <div className={`medal${locked ? ' locked' : ''}`} aria-hidden="true">
+          <span className="medal-disc">{locked ? <LockIcon /> : icon}</span>
+          {!locked && <span className="medal-shine" />}
+        </div>
+        <span className={`m-material${locked ? ' locked' : ''}`}>
+          {locked ? 'Unranked' : TIER_NAMES[tier]}
+        </span>
       </div>
       <div className="medal-info">
         <div className="m-title-row">
           <span className="m-title">{title}</span>
-          <span className={`m-tier${locked ? ' locked' : ''}`}>
-            {TIER_NAMES[tier]}
+          <span className={`m-nick${locked ? ' locked' : ''}`}>
+            {nicknames[tier]}
           </span>
         </div>
         <div className="m-stat">{statLine}</div>

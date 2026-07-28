@@ -1508,6 +1508,16 @@ input, select {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
+/* Disc + its material stamp, kept narrow so the info column gets the room. */
+.medal-col {
+  flex: none;
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.42rem;
+}
+
 .medal {
   position: relative;
   width: 58px;
@@ -1571,9 +1581,10 @@ input, select {
 
 .m-title-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
 }
 
 .m-title {
@@ -1581,18 +1592,40 @@ input, select {
   font-size: 0.95rem;
 }
 
-.m-tier {
-  font-size: 0.76rem;
-  font-weight: 740;
+/* Bronze / Silver / … stamped under the disc. */
+.m-material {
+  font-size: 0.62rem;
+  font-weight: 760;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
+  text-align: center;
   color: var(--tier-hi);
-  text-shadow: 0 0 16px var(--tier-glow);
+  text-shadow: 0 0 14px var(--tier-glow);
 }
 
-.m-tier.locked {
+.m-material.locked {
   color: var(--text-faint);
   text-shadow: none;
+}
+
+/* The rank nickname — the fun half of the badge. */
+.m-nick {
+  font-size: 0.66rem;
+  font-weight: 720;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  padding: 0.2rem 0.52rem;
+  border-radius: 999px;
+  color: var(--tier-hi);
+  background: color-mix(in srgb, var(--tier) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier) 34%, transparent);
+}
+
+.m-nick.locked {
+  color: var(--text-faint);
+  background: var(--surface-2);
+  border-color: var(--border);
 }
 
 .m-stat {

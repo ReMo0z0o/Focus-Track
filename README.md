@@ -33,9 +33,13 @@ badges.
   (hourly for today, daily for week/month).
 - **Grade** (Ember → Lighthouse): days with 2h+ of focus in the last 30 days.
 - **Streak**: consecutive 2h+ days.
-- **Badges** (Bronze → Diamond): concentration and pause-ratio over your last
-  3 *worked* days (a day with 30+ minutes of focus — a vacation can't cost you
-  the badge), plus focus hours over the last 7 days (Diamond at 36h+).
+- **Badges** (Bronze → Diamond), each with its own rank nicknames from
+  Goldfish to Monolith:
+  - **Attention Span** — average uninterrupted run.
+  - **Dead Air** — pause time per hour of focus, lower is better.
+  Both score your last 3 *worked* days (a day with 30+ minutes of focus),
+  so a vacation can't cost you a badge.
+  - **Weekly Haul** — focus hours over the last 7 days (Diamond at 36h+).
 - **Friends**: every account has a unique username; add focus buddies by
   username (request → accept), then see each other's stats — best grade and
   badge tiers reached (milestone high-water marks), today/this-week focus,

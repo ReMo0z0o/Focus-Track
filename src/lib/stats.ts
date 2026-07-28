@@ -246,6 +246,7 @@ export const GRADE_NAMES = [
   'Lighthouse',
 ]
 
+/** The medal material, shown under each badge disc. */
 export const TIER_NAMES = [
   '—',
   'Bronze',
@@ -253,6 +254,43 @@ export const TIER_NAMES = [
   'Gold',
   'Platinum',
   'Diamond',
+]
+
+/** Badge display names — used by the stats cards and friend panels alike. */
+export const ATTENTION_BADGE_NAME = 'Attention Span'
+export const DEAD_AIR_BADGE_NAME = 'Dead Air'
+export const HAUL_BADGE_NAME = 'Weekly Haul'
+
+/**
+ * Rank nicknames, one ladder per badge (index = tier 0..5). Each badge gets
+ * its own vocabulary — no nickname is ever shared between two ladders — and
+ * the bottom rungs are meant to sting a little.
+ */
+export const ATTENTION_TIER_NICKNAMES = [
+  'Goldfish',
+  'Channel Surfer',
+  'Slow Burner',
+  'Deep Diver',
+  'Tunnel Vision',
+  'Monolith',
+]
+
+export const DEAD_AIR_TIER_NICKNAMES = [
+  'Couch Bound',
+  'Snack Runner',
+  'Clock Watcher',
+  'Short Breather',
+  'Tight Ship',
+  'Airtight',
+]
+
+export const HAUL_TIER_NICKNAMES = [
+  'Empty Cart',
+  'Light Load',
+  'Full Cart',
+  'Heavy Freight',
+  'Cargo Ship',
+  'Freight Train',
 ]
 
 export const CONCENTRATION_BADGE_THRESHOLDS = [0, 20, 40, 60, 80, 95]

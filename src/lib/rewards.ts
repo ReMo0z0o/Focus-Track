@@ -1,4 +1,6 @@
 import {
+  ATTENTION_BADGE_NAME,
+  DEAD_AIR_BADGE_NAME,
   GRADE_NAMES,
   TIER_NAMES,
   concentrationBadgeLevel,
@@ -149,9 +151,9 @@ export function unlockLabel(c: UnlockCondition): string {
       // mark), not a lifetime total — label it honestly.
       return `Log ${c.count} sessions within 60 days`
     case 'concTier':
-      return `Earn a ${TIER_NAMES[c.tier]} concentration badge`
+      return `Earn a ${TIER_NAMES[c.tier]} ${ATTENTION_BADGE_NAME} badge`
     case 'ratioTier':
-      return `Earn a ${TIER_NAMES[c.tier]} pause-ratio badge`
+      return `Earn a ${TIER_NAMES[c.tier]} ${DEAD_AIR_BADGE_NAME} badge`
     case 'anyDiamond':
       return 'Earn any Diamond badge'
     case 'all':
