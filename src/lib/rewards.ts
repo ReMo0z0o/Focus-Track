@@ -112,6 +112,8 @@ export type UnlockCondition =
   | { kind: 'concTier'; tier: number }
   | { kind: 'ratioTier'; tier: number }
   | { kind: 'anyDiamond' }
+  /** Every sub-condition must be met (the rarest rewards stack two feats). */
+  | { kind: 'all'; conditions: UnlockCondition[] }
 
 export function isUnlocked(c: UnlockCondition, m: Milestones): boolean {
   switch (c.kind) {
@@ -129,6 +131,8 @@ export function isUnlocked(c: UnlockCondition, m: Milestones): boolean {
       return m.ratioTier >= c.tier
     case 'anyDiamond':
       return m.concTier >= 5 || m.ratioTier >= 5 || m.weekTier >= 5
+    case 'all':
+      return c.conditions.every((sub) => isUnlocked(sub, m))
   }
 }
 
@@ -150,6 +154,15 @@ export function unlockLabel(c: UnlockCondition): string {
       return `Earn a ${TIER_NAMES[c.tier]} pause-ratio badge`
     case 'anyDiamond':
       return 'Earn any Diamond badge'
+    case 'all':
+      // "Earn any Diamond badge + reach the Lighthouse grade" — only the
+      // first clause keeps its capital.
+      return c.conditions
+        .map((sub, i) => {
+          const label = unlockLabel(sub)
+          return i === 0 ? label : label.charAt(0).toLowerCase() + label.slice(1)
+        })
+        .join(' + ')
   }
 }
 
@@ -172,6 +185,16 @@ export function unlockProgress(c: UnlockCondition, m: Milestones): number {
       return ratio(m.ratioTier, c.tier)
     case 'anyDiamond':
       return ratio(Math.max(m.concTier, m.ratioTier, m.weekTier), 5)
+    case 'all': {
+      // Average of the parts: one finished half still reads as real progress,
+      // which a `min` would hide behind the unstarted half.
+      if (c.conditions.length === 0) return 1
+      const total = c.conditions.reduce(
+        (sum, sub) => sum + unlockProgress(sub, m),
+        0,
+      )
+      return total / c.conditions.length
+    }
   }
 }
 
@@ -293,7 +316,12 @@ export const THEMES: ThemeDef[] = [
     id: 'dragon',
     name: 'Dragon’s Lair',
     tagline: 'Smoke and embers from a sleeping hoard.',
-    condition: { kind: 'anyDiamond' },
+    // The rarest theme: a Diamond badge is not enough on its own — the
+    // hoard only opens for a Lighthouse.
+    condition: {
+      kind: 'all',
+      conditions: [{ kind: 'anyDiamond' }, { kind: 'grade', level: 5 }],
+    },
     preview: { accent: '#ff5346', accentStrong: '#ff8a76', bg: '#120708', surface: '#1d0e10' },
     animated: true,
   },

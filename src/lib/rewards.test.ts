@@ -119,6 +119,46 @@ describe('unlock conditions', () => {
     expect(unlockLabel({ kind: 'grade', level: 3 })).toContain('Torch')
     expect(unlockLabel({ kind: 'concTier', tier: 1 })).toContain('Bronze')
   })
+
+  it('an "all" condition needs every part', () => {
+    const both: Parameters<typeof isUnlocked>[0] = {
+      kind: 'all',
+      conditions: [{ kind: 'anyDiamond' }, { kind: 'grade', level: 5 }],
+    }
+    // Diamond badge but only grade 2 — the second gate is still shut.
+    expect(isUnlocked(both, normalizeMilestones({ ratioTier: 5, grade: 2 }))).toBe(
+      false,
+    )
+    // Lighthouse but no Diamond badge — same.
+    expect(isUnlocked(both, normalizeMilestones({ grade: 5 }))).toBe(false)
+    expect(
+      isUnlocked(both, normalizeMilestones({ concTier: 5, grade: 5 })),
+    ).toBe(true)
+  })
+
+  it('an "all" condition averages the progress of its parts', () => {
+    const both: Parameters<typeof unlockProgress>[0] = {
+      kind: 'all',
+      conditions: [{ kind: 'anyDiamond' }, { kind: 'grade', level: 5 }],
+    }
+    // badge done (1) + grade 2 of 5 (0.4) -> 0.7
+    expect(
+      unlockProgress(both, normalizeMilestones({ weekTier: 5, grade: 2 })),
+    ).toBeCloseTo(0.7)
+    expect(unlockProgress(both, EMPTY_MILESTONES)).toBe(0)
+  })
+
+  it('the Dragon’s Lair theme demands a Diamond badge and Lighthouse', () => {
+    const dragon = THEMES.find((t) => t.id === 'dragon')!
+    const diamondOnly = normalizeMilestones({ concTier: 5, grade: 4 })
+    expect(isUnlocked(dragon.condition, diamondOnly)).toBe(false)
+    expect(
+      isUnlocked(dragon.condition, normalizeMilestones({ concTier: 5, grade: 5 })),
+    ).toBe(true)
+    expect(unlockLabel(dragon.condition)).toBe(
+      'Earn any Diamond badge + reach the Lighthouse grade',
+    )
+  })
 })
 
 describe('reward catalogs', () => {
