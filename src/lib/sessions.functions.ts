@@ -27,17 +27,43 @@ function asUuid(value: unknown, field: string): string {
   return value
 }
 
-/** Insert a new focus session and return its id + server-side start time. */
+/**
+ * Insert a new focus session and return its id + server-side start time.
+ *
+ * The caller's current idle threshold is stamped onto the row (read
+ * server-side from the profile — not client-supplied) so the profile can
+ * later show the threshold they actually work with, not just today's
+ * setting.
+ */
 export const startSession = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const { data: profile } = await context.supabase
+      .from('profiles')
+      .select('idle_threshold_seconds')
+      .eq('id', context.user.id)
+      .maybeSingle()
+    const threshold = profile?.idle_threshold_seconds ?? null
+
     const { data, error } = await context.supabase
       .from('focus_sessions')
-      .insert({ user_id: context.user.id })
+      .insert({ user_id: context.user.id, idle_threshold_seconds: threshold })
       .select('id, started_at')
       .single()
-    if (error) throw new Error(error.message)
-    return data
+    if (!error) return data
+
+    // Pre-migration database without the column: never block starting a
+    // session over a cosmetic stat — insert the bare row instead.
+    if (/idle_threshold_seconds/i.test(error.message)) {
+      const { data: bare, error: bareError } = await context.supabase
+        .from('focus_sessions')
+        .insert({ user_id: context.user.id })
+        .select('id, started_at')
+        .single()
+      if (bareError) throw new Error(bareError.message)
+      return bare
+    }
+    throw new Error(error.message)
   })
 
 /** Close a session with its final counters. */
@@ -80,9 +106,12 @@ export const getRecentSessions = createServerFn({ method: 'GET' })
     const since = new Date(
       Date.now() - RECENT_WINDOW_DAYS * 24 * 60 * 60 * 1000,
     ).toISOString()
+    // select('*') keeps this tolerant of a database that hasn't run the
+    // idle_threshold_seconds migration yet — the column simply comes back
+    // undefined instead of erroring the whole stats page.
     const { data, error } = await context.supabase
       .from('focus_sessions')
-      .select('id, started_at, ended_at, focus_seconds, idle_seconds, resumes_count')
+      .select('*')
       // Explicit owner filter: RLS also lets accepted friends read rows, so
       // "my stats" must never rely on RLS alone to scope this query.
       .eq('user_id', context.user.id)

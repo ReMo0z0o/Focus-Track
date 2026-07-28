@@ -8,6 +8,8 @@ import {
   addDays,
   canDeleteSession,
   concentrationSeries,
+  favoriteIdleThreshold,
+  fmtThresholdMinutes,
   dailyBuckets,
   dayKey,
   filterSince,
@@ -118,6 +120,11 @@ export function StatsView() {
     [sessions],
   )
 
+  const favoriteThreshold = useMemo(
+    () => favoriteIdleThreshold(sessions),
+    [sessions],
+  )
+
   if (sessionsQuery.isLoading) {
     return (
       <div className="loading-screen">
@@ -192,6 +199,19 @@ export function StatsView() {
           <div className="tile-label">Concentration</div>
           <div className="tile-value">{totals.concentration}</div>
           <div className="tile-hint">avg run vs 2h target</div>
+        </div>
+        <div className="tile">
+          <div className="tile-label">Idle threshold</div>
+          <div className="tile-value">
+            {favoriteThreshold !== null
+              ? fmtThresholdMinutes(favoriteThreshold)
+              : '—'}
+          </div>
+          <div className="tile-hint">
+            {favoriteThreshold !== null
+              ? 'most used · last 3 worked days (2h+)'
+              : 'needs worked days with 2h+ of focus'}
+          </div>
         </div>
       </div>
 

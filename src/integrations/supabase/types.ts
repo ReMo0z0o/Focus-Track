@@ -84,6 +84,7 @@ export interface Database {
           focus_seconds: number
           idle_seconds: number
           resumes_count: number
+          idle_threshold_seconds: number | null
           created_at: string
         }
         Insert: {
@@ -94,6 +95,7 @@ export interface Database {
           focus_seconds?: number
           idle_seconds?: number
           resumes_count?: number
+          idle_threshold_seconds?: number | null
           created_at?: string
         }
         Update: {
@@ -104,6 +106,7 @@ export interface Database {
           focus_seconds?: number
           idle_seconds?: number
           resumes_count?: number
+          idle_threshold_seconds?: number | null
           created_at?: string
         }
         Relationships: []

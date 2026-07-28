@@ -7,6 +7,7 @@ import {
   canDeleteSession,
   concentrationBadgeLevel,
   dailyBuckets,
+  favoriteIdleThreshold,
   fmtClock,
   fmtDuration,
   fmtSessions,
@@ -214,6 +215,49 @@ describe('badge naming', () => {
   it('no nickname is shared between two badges', () => {
     const all = LADDERS.flat()
     expect(new Set(all).size).toBe(all.length)
+  })
+})
+
+describe('favoriteIdleThreshold', () => {
+  const withT = (startedAt: string, focus: number, threshold: number | null) => ({
+    ...session(startedAt, focus),
+    idle_threshold_seconds: threshold,
+  })
+
+  it('picks the threshold carrying the most focus over the last 3 worked days', () => {
+    const sessions = [
+      withT('2026-07-11T09:00:00', 3 * 3600, 120), // 3h at 2 min
+      withT('2026-07-10T09:00:00', 2 * 3600, 300), // 2h at 5 min
+      withT('2026-07-09T09:00:00', 2 * 3600, 300), // 2h at 5 min -> 4h total
+    ]
+    expect(favoriteIdleThreshold(sessions)).toBe(300)
+  })
+
+  it('only counts worked days with 2h+ of focus', () => {
+    const sessions = [
+      // 1h30 day at 5 min — real work, but under the 2h bar for this stat
+      withT('2026-07-11T09:00:00', 1.5 * 3600, 300),
+      withT('2026-07-08T09:00:00', 2 * 3600, 120),
+      withT('2026-07-07T09:00:00', 2 * 3600, 120),
+    ]
+    expect(favoriteIdleThreshold(sessions)).toBe(120)
+  })
+
+  it('ignores pre-migration rows and returns null with no data', () => {
+    expect(favoriteIdleThreshold([])).toBe(null)
+    const unstamped = [withT('2026-07-11T09:00:00', 3 * 3600, null)]
+    expect(favoriteIdleThreshold(unstamped)).toBe(null)
+    // a stamped session next to unstamped ones still wins
+    const mixed = [...unstamped, withT('2026-07-10T09:00:00', 2 * 3600, 180)]
+    expect(favoriteIdleThreshold(mixed)).toBe(180)
+  })
+
+  it('breaks ties toward the most recently used threshold', () => {
+    const sessions = [
+      withT('2026-07-11T09:00:00', 2 * 3600, 300),
+      withT('2026-07-10T09:00:00', 2 * 3600, 120),
+    ]
+    expect(favoriteIdleThreshold(sessions)).toBe(300)
   })
 })
 

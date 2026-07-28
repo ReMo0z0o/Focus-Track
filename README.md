@@ -38,6 +38,10 @@ badges.
 - Session detail lists the last 5 days. A session can be deleted for 24 hours
   after it ends, then the history locks — enforced server-side, so nobody can
   quietly rewrite the stats their friends compare against.
+- **Favorite idle threshold**: each session records the threshold it started
+  under; the profile (yours and the one friends see) shows the focus-weighted
+  mode over the last 3 worked days with 2h+ of focus — the threshold you
+  actually work with, not just today's setting.
 - **Grade** (Ember → Lighthouse): days with 2h+ of focus in the last 30 days.
 - **Streak**: consecutive 2h+ days.
 - **Badges** (Bronze → Diamond), each with its own rank nicknames from

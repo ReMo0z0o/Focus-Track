@@ -21,9 +21,11 @@ import {
   DAILY_GOAL_SECONDS,
   GRADE_NAMES,
   dailyBuckets,
+  favoriteIdleThreshold,
   filterSince,
   fmtDuration,
   fmtSessions,
+  fmtThresholdMinutes,
   startOfDay,
   summarize,
   tierMaterial,
@@ -438,6 +440,7 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
     deadAir: milestones.ratioTier,
     haul: milestones.weekTier,
   }
+  const favoriteThreshold = favoriteIdleThreshold(sessions)
   const now = new Date()
   const today = summarize(filterSince(sessions, startOfDay(now)))
   const week = summarize(
@@ -486,6 +489,15 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
           <div className="tile">
             <div className="tile-label">Sessions (60d)</div>
             <div className="tile-value">{sessions.length}</div>
+          </div>
+          <div className="tile">
+            <div className="tile-label">Idle threshold</div>
+            <div className="tile-value">
+              {favoriteThreshold !== null
+                ? fmtThresholdMinutes(favoriteThreshold)
+                : '—'}
+            </div>
+            <div className="tile-hint">most used · last 3 worked days</div>
           </div>
         </div>
 

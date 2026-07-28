@@ -10,6 +10,8 @@ export interface SessionRow {
   focus_seconds: number
   idle_seconds: number
   resumes_count: number
+  /** Idle threshold in effect when the session started. Null on old rows. */
+  idle_threshold_seconds?: number | null
 }
 
 export type Period = 'day' | 'week' | 'month'
@@ -383,6 +385,7 @@ export function streakDays(sessions: SessionRow[], now: Date): number {
 export function lastWorkedDaysSessions(
   sessions: SessionRow[],
   count: number,
+  minFocusSeconds: number = WORKED_DAY_MIN_FOCUS_SECONDS,
 ): SessionRow[] {
   const byDay = new Map<string, { focus: number; sessions: SessionRow[] }>()
   for (const s of sessions) {
@@ -396,10 +399,48 @@ export function lastWorkedDaysSessions(
     day.sessions.push(s)
   }
   return [...byDay.entries()]
-    .filter(([, day]) => day.focus >= WORKED_DAY_MIN_FOCUS_SECONDS)
+    .filter(([, day]) => day.focus >= minFocusSeconds)
     .sort(([a], [b]) => (a < b ? 1 : -1)) // day keys sort newest first
     .slice(0, count)
     .flatMap(([, day]) => day.sessions)
+}
+
+/**
+ * The user's favorite idle threshold: over the last 3 worked days of at
+ * least 2h of focus, each session votes for its recorded threshold with a
+ * weight of its focus seconds — the heaviest threshold wins (ties go to the
+ * most recently used one). Null when nothing qualifies yet: too few solid
+ * days, or only pre-migration rows with no threshold recorded.
+ */
+export function favoriteIdleThreshold(sessions: SessionRow[]): number | null {
+  const pool = lastWorkedDaysSessions(sessions, 3, DAILY_GOAL_SECONDS)
+  const weight = new Map<number, number>()
+  const lastUsed = new Map<number, number>()
+  for (const s of pool) {
+    const t = s.idle_threshold_seconds
+    if (typeof t !== 'number' || !Number.isFinite(t) || t <= 0) continue
+    weight.set(t, (weight.get(t) ?? 0) + s.focus_seconds)
+    const started = new Date(s.started_at).getTime()
+    lastUsed.set(t, Math.max(lastUsed.get(t) ?? 0, started))
+  }
+  let best: number | null = null
+  for (const [t, w] of weight) {
+    if (best === null) {
+      best = t
+      continue
+    }
+    const bw = weight.get(best)!
+    if (w > bw || (w === bw && (lastUsed.get(t) ?? 0) > (lastUsed.get(best) ?? 0))) {
+      best = t
+    }
+  }
+  return best
+}
+
+/** "2 min" / "2.5 min" — threshold values are minute-scaled. */
+export function fmtThresholdMinutes(seconds: number): string {
+  const minutes = seconds / 60
+  return `${Number.isInteger(minutes) ? minutes : minutes.toFixed(1)} min`
 }
 
 /** Concentration badge level (0..5) from the last 3 worked days. */

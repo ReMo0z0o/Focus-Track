@@ -302,9 +302,11 @@ export const getFriendStats = createServerFn({ method: 'GET' })
           .select('id, username, avatar, milestones')
           .eq('id', data.userId)
           .maybeSingle(),
+        // select('*') tolerates a pre-migration DB missing
+        // idle_threshold_seconds; only friend-readable rows reach here (RLS).
         context.supabase
           .from('focus_sessions')
-          .select('id, started_at, ended_at, focus_seconds, idle_seconds, resumes_count')
+          .select('*')
           .eq('user_id', data.userId)
           .gte(
             'started_at',
