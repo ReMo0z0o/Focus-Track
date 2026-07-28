@@ -256,8 +256,13 @@ export const TIER_NAMES = [
 ]
 
 export const CONCENTRATION_BADGE_THRESHOLDS = [0, 20, 40, 60, 80, 95]
-/** Descending: lower idle/focus ratio is better. */
-export const RATIO_BADGE_THRESHOLDS = [999, 1.0, 0.5, 0.25, 0.12, 0.05]
+/** Descending: lower idle/focus ratio is better. Diamond at 20% or below. */
+export const RATIO_BADGE_THRESHOLDS = [999, 1.0, 0.7, 0.5, 0.35, 0.2]
+/** Hours of focus over the last 7 calendar days. */
+export const WEEK_HOURS_BADGE_THRESHOLDS = [0, 6, 12, 20, 28, 36]
+
+/** A local day counts as "worked" once it holds 30 minutes of focus. */
+export const WORKED_DAY_MIN_FOCUS_SECONDS = 30 * 60
 
 /** Number of days within the last 30 with at least 2h of focus. */
 export function qualifiedDaysLast30(sessions: SessionRow[], now: Date): number {
@@ -296,35 +301,57 @@ export function streakDays(sessions: SessionRow[], now: Date): number {
   return streak
 }
 
-/** Aggregate concentration over the last N days (single pooled computation). */
-export function aggregateConcentration(
+/**
+ * Sessions of the user's `count` most recent worked days (a local day with at
+ * least 30 minutes of focus), pooled into one array. Calendar gaps are
+ * invisible here, so the concentration and ratio badges survive a vacation —
+ * and a stray 5-minute session on a day off can't drag the pool down.
+ */
+export function lastWorkedDaysSessions(
   sessions: SessionRow[],
-  days: number,
-  now: Date,
-): number {
-  const since = addDays(startOfDay(now), -(days - 1))
-  return summarize(filterSince(sessions, since)).concentration
+  count: number,
+): SessionRow[] {
+  const byDay = new Map<string, { focus: number; sessions: SessionRow[] }>()
+  for (const s of sessions) {
+    const key = dayKey(new Date(s.started_at))
+    let day = byDay.get(key)
+    if (!day) {
+      day = { focus: 0, sessions: [] }
+      byDay.set(key, day)
+    }
+    day.focus += s.focus_seconds
+    day.sessions.push(s)
+  }
+  return [...byDay.entries()]
+    .filter(([, day]) => day.focus >= WORKED_DAY_MIN_FOCUS_SECONDS)
+    .sort(([a], [b]) => (a < b ? 1 : -1)) // day keys sort newest first
+    .slice(0, count)
+    .flatMap(([, day]) => day.sessions)
 }
 
-/** Concentration badge level (0..5) from the last 3 days. */
-export function concentrationBadgeLevel(
-  sessions: SessionRow[],
-  now: Date,
-): number {
+/** Concentration badge level (0..5) from the last 3 worked days. */
+export function concentrationBadgeLevel(sessions: SessionRow[]): number {
   return ladder(
-    aggregateConcentration(sessions, 3, now),
+    summarize(lastWorkedDaysSessions(sessions, 3)).concentration,
     CONCENTRATION_BADGE_THRESHOLDS,
   )
 }
 
-/** Ratio badge level (0..5) from the last 3 days — lower ratio is better. */
-export function ratioBadgeLevel(sessions: SessionRow[], now: Date): number {
-  const since = addDays(startOfDay(now), -2)
-  const totals = summarize(filterSince(sessions, since))
+/** Ratio badge level (0..5) from the last 3 worked days — lower is better. */
+export function ratioBadgeLevel(sessions: SessionRow[]): number {
+  const totals = summarize(lastWorkedDaysSessions(sessions, 3))
   if (totals.focus <= 0) return 0
   let level = 0
   RATIO_BADGE_THRESHOLDS.forEach((t, i) => {
     if (totals.ratio <= t) level = i
   })
   return level
+}
+
+/** Focus-hours badge level (0..5) from the last 7 calendar days. */
+export function weekHoursBadgeLevel(sessions: SessionRow[], now: Date): number {
+  const { focus } = summarize(
+    filterSince(sessions, addDays(startOfDay(now), -6)),
+  )
+  return ladder(focus / 3600, WEEK_HOURS_BADGE_THRESHOLDS)
 }

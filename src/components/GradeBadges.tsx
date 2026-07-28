@@ -9,19 +9,21 @@ import {
   GRADE_THRESHOLDS,
   RATIO_BADGE_THRESHOLDS,
   TIER_NAMES,
+  WEEK_HOURS_BADGE_THRESHOLDS,
   addDays,
-  aggregateConcentration,
   concentrationBadgeLevel,
   dailyBuckets,
   filterSince,
   fmtDuration,
   fmtPercent,
   gradeLevel,
+  lastWorkedDaysSessions,
   qualifiedDaysLast30,
   ratioBadgeLevel,
   startOfDay,
   streakDays,
   summarize,
+  weekHoursBadgeLevel,
 } from '@/lib/stats'
 import type { SessionRow } from '@/lib/stats'
 import { GradeEmblem } from '@/components/GradeEmblem'
@@ -85,10 +87,15 @@ export function GradeBadges({
   const grade = gradeLevel(sessions, now)
   const qualified = qualifiedDaysLast30(sessions, now)
   const streak = streakDays(sessions, now)
-  const concLevel = concentrationBadgeLevel(sessions, now)
-  const concValue = aggregateConcentration(sessions, 3, now)
-  const ratioLevel = ratioBadgeLevel(sessions, now)
-  const last3 = summarize(filterSince(sessions, addDays(startOfDay(now), -2)))
+  const concLevel = concentrationBadgeLevel(sessions)
+  const ratioLevel = ratioBadgeLevel(sessions)
+  // Same pool the badge levels are computed from, so the numbers on the
+  // cards always match the medal they sit next to.
+  const worked3 = summarize(lastWorkedDaysSessions(sessions, 3))
+  const weekLevel = weekHoursBadgeLevel(sessions, now)
+  const weekFocus = summarize(
+    filterSince(sessions, addDays(startOfDay(now), -6)),
+  ).focus
 
   const last7 = dailyBuckets(sessions, 7, now).map((b) => ({
     key: b.key,
@@ -104,7 +111,8 @@ export function GradeBadges({
           Grade &amp; badges
         </h2>
         <span className="gamify-sub">
-          grade: last 30 days · badges: last 3 days ·{' '}
+          grade: last 30 days · badges: last 3 worked days · hours: last 7 days
+          ·{' '}
           <Link to="/rewards" className="gamify-link">
             view rewards →
           </Link>
@@ -122,11 +130,15 @@ export function GradeBadges({
           icon={<TargetIcon />}
           statLine={
             <>
-              <CountUpValue value={concValue} /> pts — avg uninterrupted run vs
-              the 2h target
+              <CountUpValue value={worked3.concentration} /> pts — avg
+              uninterrupted run vs the 2h target
             </>
           }
-          progress={concentrationProgress(concValue, concLevel)}
+          progress={ladderProgress(
+            worked3.concentration,
+            concLevel,
+            CONCENTRATION_BADGE_THRESHOLDS,
+          )}
           nextHint={
             CONCENTRATION_BADGE_THRESHOLDS[concLevel + 1] !== undefined
               ? `${TIER_NAMES[concLevel + 1]} at ${CONCENTRATION_BADGE_THRESHOLDS[concLevel + 1]}+ pts`
@@ -140,21 +152,44 @@ export function GradeBadges({
           title="Pause ratio"
           icon={<ScaleIcon />}
           statLine={
-            last3.focus > 0 ? (
+            worked3.focus > 0 ? (
               <>
-                {fmtPercent(last3.ratio)} pause per focus — lower is better
+                {fmtPercent(worked3.ratio)} pause per focus — lower is better
               </>
             ) : (
               <>Log some focus time to earn this badge</>
             )
           }
-          progress={ratioProgress(last3, ratioLevel)}
+          progress={ratioProgress(worked3, ratioLevel)}
           nextHint={
-            last3.focus > 0 && RATIO_BADGE_THRESHOLDS[ratioLevel + 1] !== undefined
+            worked3.focus > 0 && RATIO_BADGE_THRESHOLDS[ratioLevel + 1] !== undefined
               ? `${TIER_NAMES[ratioLevel + 1]} below ${fmtPercent(RATIO_BADGE_THRESHOLDS[ratioLevel + 1]!)}`
-              : last3.focus > 0
+              : worked3.focus > 0
                 ? 'Top tier — barely a pause.'
                 : `Reach ${fmtDuration(DAILY_GOAL_SECONDS)} of focus to get rated`
+          }
+        />
+        <MedalCard
+          className="anim-5 wide"
+          tier={weekLevel}
+          tierPrefix="c"
+          title="Focus hours"
+          icon={<ClockIcon />}
+          statLine={
+            <>
+              <strong>{fmtDuration(weekFocus)}</strong> of focus over the last
+              7 days
+            </>
+          }
+          progress={ladderProgress(
+            weekFocus / 3600,
+            weekLevel,
+            WEEK_HOURS_BADGE_THRESHOLDS,
+          )}
+          nextHint={
+            WEEK_HOURS_BADGE_THRESHOLDS[weekLevel + 1] !== undefined
+              ? `${TIER_NAMES[weekLevel + 1]} at ${WEEK_HOURS_BADGE_THRESHOLDS[weekLevel + 1]}h+ this week`
+              : 'Top tier — a monumental week.'
           }
         />
       </div>
@@ -162,23 +197,28 @@ export function GradeBadges({
   )
 }
 
-function concentrationProgress(value: number, level: number): number | null {
-  const next = CONCENTRATION_BADGE_THRESHOLDS[level + 1]
+/** Linear progress between the current rung and the next one. */
+function ladderProgress(
+  value: number,
+  level: number,
+  thresholds: number[],
+): number | null {
+  const next = thresholds[level + 1]
   if (next === undefined) return 1
-  const current = CONCENTRATION_BADGE_THRESHOLDS[level] ?? 0
+  const current = thresholds[level] ?? 0
   return Math.min(1, Math.max(0, (value - current) / (next - current)))
 }
 
 function ratioProgress(
-  last3: { focus: number; ratio: number },
+  worked3: { focus: number; ratio: number },
   level: number,
 ): number | null {
-  if (last3.focus <= 0) return 0
+  if (worked3.focus <= 0) return 0
   const next = RATIO_BADGE_THRESHOLDS[level + 1]
   if (next === undefined) return 1
-  if (last3.ratio <= 0) return 1
+  if (worked3.ratio <= 0) return 1
   // Closeness to the next (lower-is-better) threshold.
-  return Math.min(1, Math.max(0.04, next / last3.ratio))
+  return Math.min(1, Math.max(0.04, next / worked3.ratio))
 }
 
 function CountUpValue({ value }: { value: number }) {
@@ -422,6 +462,15 @@ function ScaleIcon() {
   return (
     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M12 4v16M4.5 20h15M7 7.5 4.5 13a2.8 2.8 0 0 0 5 0L7 7.5ZM17 7.5 14.5 13a2.8 2.8 0 0 0 5 0L17 7.5ZM5.5 7.5h13" />
+    </svg>
+  )
+}
+
+function ClockIcon() {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3.2 1.9" />
     </svg>
   )
 }

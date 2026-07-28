@@ -135,7 +135,14 @@ export const getProfile = createServerFn({ method: 'GET' })
     }
   })
 
-const MILESTONE_FIELDS = ['grade', 'streak', 'sessions', 'concTier', 'ratioTier'] as const
+const MILESTONE_FIELDS = [
+  'grade',
+  'streak',
+  'sessions',
+  'concTier',
+  'ratioTier',
+  'weekTier',
+] as const
 
 function asToken(value: unknown, field: string): string {
   if (typeof value !== 'string' || !/^[a-z0-9-]{1,40}$/.test(value)) {

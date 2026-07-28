@@ -40,6 +40,13 @@ describe('normalizeMilestones', () => {
     expect(m.streak).toBe(2)
     expect('junk' in m).toBe(false)
   })
+
+  it('clamps badge tiers to the 0-5 ladder', () => {
+    const m = normalizeMilestones({ concTier: 9, ratioTier: -1, weekTier: 7 })
+    expect(m.concTier).toBe(5)
+    expect(m.ratioTier).toBe(0)
+    expect(m.weekTier).toBe(5)
+  })
 })
 
 describe('computeMilestones + merge', () => {
@@ -52,6 +59,8 @@ describe('computeMilestones + merge', () => {
     expect(current.grade).toBe(1) // 2 qualified days -> Kindling
     expect(current.streak).toBe(2)
     expect(current.sessions).toBe(2)
+    expect(current.concTier).toBe(5) // two perfect 2h runs
+    expect(current.weekTier).toBe(0) // 4h this week — Bronze needs 6h
 
     const stored = normalizeMilestones({ grade: 3, streak: 1, sessions: 40 })
     const merged = mergeMilestones(stored, current)
@@ -59,6 +68,16 @@ describe('computeMilestones + merge', () => {
     expect(merged.streak).toBe(2)
     expect(merged.sessions).toBe(40)
     expect(milestonesEqual(merged, stored)).toBe(false)
+  })
+
+  it('weekTier reflects focus hours over the last 7 days', () => {
+    // 3 days × 12h inside the window -> 36h -> Diamond
+    const sessions = [
+      session('2026-07-12T08:00:00', 12 * 3600),
+      session('2026-07-10T08:00:00', 12 * 3600),
+      session('2026-07-08T08:00:00', 12 * 3600),
+    ]
+    expect(computeMilestones(sessions, NOW).weekTier).toBe(5)
   })
 })
 
@@ -79,6 +98,15 @@ describe('unlock conditions', () => {
     expect(isUnlocked({ kind: 'sessions', count: 25 }, m)).toBe(false)
     expect(isUnlocked({ kind: 'concTier', tier: 1 }, m)).toBe(true)
     expect(isUnlocked({ kind: 'anyDiamond' }, m)).toBe(true)
+  })
+
+  it('anyDiamond counts a Diamond focus-hours badge too', () => {
+    const weekOnly = normalizeMilestones({ weekTier: 5 })
+    expect(isUnlocked({ kind: 'anyDiamond' }, weekOnly)).toBe(true)
+    expect(
+      unlockProgress({ kind: 'anyDiamond' }, normalizeMilestones({ weekTier: 4 })),
+    ).toBeCloseTo(0.8)
+    expect(isUnlocked({ kind: 'anyDiamond' }, EMPTY_MILESTONES)).toBe(false)
   })
 
   it('reports progress toward locked rewards', () => {

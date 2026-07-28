@@ -486,6 +486,10 @@ function FriendStatsPanel({ user }: { user: FriendProfile }) {
             <span className="fs-badge-dot" /> Pause ratio ·{' '}
             {TIER_NAMES[milestones.ratioTier]}
           </span>
+          <span className={`fs-badge tier-c${milestones.weekTier}`}>
+            <span className="fs-badge-dot" /> Focus hours ·{' '}
+            {TIER_NAMES[milestones.weekTier]}
+          </span>
         </div>
 
         <div className="fs-chart">

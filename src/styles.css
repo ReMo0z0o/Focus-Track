@@ -1026,6 +1026,7 @@ input, select {
 
 .gamify-grid .grade-card { grid-row: 1 / span 2; }
 .gamify-grid .streak-card { grid-column: 2 / -1; }
+.gamify-grid .medal-card.wide { grid-column: 1 / -1; }
 
 @media (max-width: 940px) {
   .gamify-grid { grid-template-columns: 1fr 1fr; }
@@ -1040,12 +1041,13 @@ input, select {
 
 /* entrance stagger */
 
-.anim-1, .anim-2, .anim-3, .anim-4 {
+.anim-1, .anim-2, .anim-3, .anim-4, .anim-5 {
   animation: rise-in 0.55s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
 }
 .anim-2 { animation-delay: 0.08s; }
 .anim-3 { animation-delay: 0.16s; }
 .anim-4 { animation-delay: 0.24s; }
+.anim-5 { animation-delay: 0.32s; }
 
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(14px); }
@@ -1557,6 +1559,7 @@ input, select {
 }
 
 .anim-4 .medal-shine::after { animation-delay: 1.4s; }
+.anim-5 .medal-shine::after { animation-delay: 2.8s; }
 
 @keyframes medal-sweep {
   0% { left: -80%; }

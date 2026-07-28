@@ -5,6 +5,7 @@ import {
   gradeLevel,
   ratioBadgeLevel,
   streakDays,
+  weekHoursBadgeLevel,
 } from '@/lib/stats'
 import type { SessionRow } from '@/lib/stats'
 
@@ -32,6 +33,8 @@ export interface Milestones {
   concTier: number
   /** Best pause-ratio badge tier (0-5). */
   ratioTier: number
+  /** Best weekly focus-hours badge tier (0-5). */
+  weekTier: number
 }
 
 export const EMPTY_MILESTONES: Milestones = {
@@ -40,6 +43,7 @@ export const EMPTY_MILESTONES: Milestones = {
   sessions: 0,
   concTier: 0,
   ratioTier: 0,
+  weekTier: 0,
 }
 
 const MILESTONE_KEYS = Object.keys(EMPTY_MILESTONES) as (keyof Milestones)[]
@@ -51,6 +55,7 @@ const MILESTONE_MAX: Record<keyof Milestones, number> = {
   sessions: 1_000_000,
   concTier: 5,
   ratioTier: 5,
+  weekTier: 5,
 }
 
 function clampCount(value: unknown, max: number): number {
@@ -76,8 +81,9 @@ export function computeMilestones(sessions: SessionRow[], now: Date): Milestones
     grade: gradeLevel(sessions, now),
     streak: streakDays(sessions, now),
     sessions: sessions.length,
-    concTier: concentrationBadgeLevel(sessions, now),
-    ratioTier: ratioBadgeLevel(sessions, now),
+    concTier: concentrationBadgeLevel(sessions),
+    ratioTier: ratioBadgeLevel(sessions),
+    weekTier: weekHoursBadgeLevel(sessions, now),
   }
 }
 
@@ -122,7 +128,7 @@ export function isUnlocked(c: UnlockCondition, m: Milestones): boolean {
     case 'ratioTier':
       return m.ratioTier >= c.tier
     case 'anyDiamond':
-      return m.concTier >= 5 || m.ratioTier >= 5
+      return m.concTier >= 5 || m.ratioTier >= 5 || m.weekTier >= 5
   }
 }
 
@@ -165,7 +171,7 @@ export function unlockProgress(c: UnlockCondition, m: Milestones): number {
     case 'ratioTier':
       return ratio(m.ratioTier, c.tier)
     case 'anyDiamond':
-      return ratio(Math.max(m.concTier, m.ratioTier), 5)
+      return ratio(Math.max(m.concTier, m.ratioTier, m.weekTier), 5)
   }
 }
 

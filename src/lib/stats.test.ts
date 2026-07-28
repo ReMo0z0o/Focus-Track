@@ -1,18 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import {
-  aggregateConcentration,
   concentrationBadgeLevel,
   dailyBuckets,
   fmtClock,
   fmtDuration,
   gradeLevel,
   hourlyBuckets,
+  lastWorkedDaysSessions,
   periodStart,
   qualifiedDaysLast30,
   ratioBadgeLevel,
   startOfDay,
   streakDays,
   summarize,
+  weekHoursBadgeLevel,
 } from './stats'
 import type { SessionRow } from './stats'
 
@@ -182,30 +183,110 @@ describe('grade & streak', () => {
   })
 })
 
+describe('worked days pool', () => {
+  it('keeps only days with 30+ minutes of focus, newest first', () => {
+    const short = session('2026-07-11T09:00:00', 10 * 60) // 10 min — not a worked day
+    const a = session('2026-07-08T09:00:00', 3600)
+    const b = session('2026-07-05T09:00:00', 1800)
+    const pool = lastWorkedDaysSessions([short, a, b], 3)
+    expect(pool.map((s) => s.id)).toEqual([a.id, b.id])
+  })
+
+  it('caps the pool at the requested number of days', () => {
+    const days = [
+      session('2026-07-11T09:00:00', 3600),
+      session('2026-07-10T09:00:00', 3600),
+      session('2026-07-09T09:00:00', 3600),
+      session('2026-07-01T09:00:00', 3600), // 4th most recent — dropped
+    ]
+    const pool = lastWorkedDaysSessions(days, 3)
+    expect(pool).toHaveLength(3)
+    expect(pool.map((s) => s.id)).not.toContain(days[3]!.id)
+  })
+
+  it('pools every session of a worked day, not just the qualifying one', () => {
+    const morning = session('2026-07-11T09:00:00', 20 * 60)
+    const evening = session('2026-07-11T20:00:00', 20 * 60)
+    expect(lastWorkedDaysSessions([morning, evening], 3)).toHaveLength(2)
+  })
+})
+
 describe('badges', () => {
-  it('concentration badge pools the last 3 days', () => {
+  it('concentration badge pools the last 3 worked days', () => {
     // 2h focus in one uninterrupted run each day -> avgRun 7200 -> 100
     const sessions = [
       session('2026-07-11T09:00:00', 7200),
       session('2026-07-10T09:00:00', 7200),
     ]
-    expect(aggregateConcentration(sessions, 3, NOW)).toBe(100)
-    expect(concentrationBadgeLevel(sessions, NOW)).toBe(5)
+    expect(concentrationBadgeLevel(sessions)).toBe(5)
   })
 
-  it('concentration badge ignores sessions older than 3 days', () => {
-    const sessions = [session('2026-07-01T09:00:00', 7200)]
-    expect(aggregateConcentration(sessions, 3, NOW)).toBe(0)
-    expect(concentrationBadgeLevel(sessions, NOW)).toBe(0)
+  it('survives a vacation: worked days can be weeks apart', () => {
+    // Last worked days are long before NOW — the badge holds anyway.
+    const sessions = [
+      session('2026-06-20T09:00:00', 7200),
+      session('2026-06-19T09:00:00', 7200),
+    ]
+    expect(concentrationBadgeLevel(sessions)).toBe(5)
+    expect(ratioBadgeLevel(sessions)).toBe(5)
+  })
+
+  it('a stray sub-30-minute day cannot dilute the badge', () => {
+    const sessions = [
+      session('2026-07-11T09:00:00', 10 * 60, 0, 4), // choppy 10-min doodle
+      session('2026-07-05T09:00:00', 7200),
+      session('2026-07-04T09:00:00', 7200),
+    ]
+    expect(concentrationBadgeLevel(sessions)).toBe(5)
+  })
+
+  it('only the 3 most recent worked days count', () => {
+    const sessions = [
+      session('2026-07-11T09:00:00', 3600, 0, 5), // avg run 600s each
+      session('2026-07-10T09:00:00', 3600, 0, 5),
+      session('2026-07-09T09:00:00', 3600, 0, 5),
+      session('2026-07-01T09:00:00', 7200), // perfect day, but out of the pool
+    ]
+    // pooled: 10800s over 18 breaks -> avg run 600s -> 8 pts -> no badge
+    expect(concentrationBadgeLevel(sessions)).toBe(0)
   })
 
   it('ratio badge rewards low idle/focus, requires some focus', () => {
-    expect(ratioBadgeLevel([], NOW)).toBe(0)
-    // ratio 0.04 -> best tier (<= 0.05)
+    expect(ratioBadgeLevel([])).toBe(0)
+    // ratio 0.04 -> Diamond (<= 0.2)
     const great = [session('2026-07-11T09:00:00', 10000, 400)]
-    expect(ratioBadgeLevel(great, NOW)).toBe(5)
-    // ratio 0.6 -> <= 1.0 tier (level 1)
-    const meh = [session('2026-07-11T09:00:00', 1000, 600)]
-    expect(ratioBadgeLevel(meh, NOW)).toBe(1)
+    expect(ratioBadgeLevel(great)).toBe(5)
+    // ratio 0.6 -> Silver (<= 0.7)
+    const meh = [session('2026-07-11T09:00:00', 3600, 2160)]
+    expect(ratioBadgeLevel(meh)).toBe(2)
+    // ratio 0.9 -> Bronze (<= 1.0)
+    const rough = [session('2026-07-11T09:00:00', 3600, 3240)]
+    expect(ratioBadgeLevel(rough)).toBe(1)
+  })
+
+  it('ratio Diamond starts at 20% or below', () => {
+    const at20 = [session('2026-07-11T09:00:00', 10000, 2000)]
+    expect(ratioBadgeLevel(at20)).toBe(5)
+    const above20 = [session('2026-07-11T09:00:00', 10000, 2100)]
+    expect(ratioBadgeLevel(above20)).toBe(4)
+  })
+
+  it('week hours badge sums the last 7 calendar days', () => {
+    const h = (n: number) => n * 3600
+    expect(weekHoursBadgeLevel([], NOW)).toBe(0)
+    // 5h59 of focus -> still nothing; 6h -> Bronze
+    expect(
+      weekHoursBadgeLevel([session('2026-07-11T08:00:00', h(6) - 60)], NOW),
+    ).toBe(0)
+    expect(weekHoursBadgeLevel([session('2026-07-11T08:00:00', h(6))], NOW)).toBe(1)
+    // 36h spread across the window -> Diamond
+    const big = [
+      session('2026-07-05T08:00:00', h(12)),
+      session('2026-07-08T08:00:00', h(12)),
+      session('2026-07-11T08:00:00', h(12)),
+    ]
+    expect(weekHoursBadgeLevel(big, NOW)).toBe(5)
+    // 8 days back is outside the window — this badge is calendar-based
+    expect(weekHoursBadgeLevel([session('2026-07-03T08:00:00', h(36))], NOW)).toBe(0)
   })
 })
