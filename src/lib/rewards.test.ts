@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   AVATARS,
   EMPTY_MILESTONES,
+  PREVIEW_UNTIL,
   THEMES,
   computeMilestones,
+  isThemeAvailable,
   isUnlocked,
   mergeMilestones,
   milestonesEqual,
@@ -158,6 +160,33 @@ describe('unlock conditions', () => {
     expect(unlockLabel(dragon.condition)).toBe(
       'Earn any Diamond badge + reach the Lighthouse grade',
     )
+  })
+})
+
+describe('temporary theme preview', () => {
+  const dragon = THEMES.find((t) => t.id === 'dragon')!
+  const polar = THEMES.find((t) => t.id === 'polar')!
+  const during = new Date(PREVIEW_UNTIL - 60_000)
+  const after = new Date(PREVIEW_UNTIL + 60_000)
+
+  it('opens Dragon’s Lair to everyone until the deadline', () => {
+    expect(isThemeAvailable(dragon, EMPTY_MILESTONES, during)).toBe(true)
+    expect(isThemeAvailable(dragon, EMPTY_MILESTONES, after)).toBe(false)
+  })
+
+  it('leaves every other locked theme alone', () => {
+    expect(isThemeAvailable(polar, EMPTY_MILESTONES, during)).toBe(false)
+  })
+
+  it('never counts as earned, so no milestone or unlock toast fires', () => {
+    // The guard that keeps the preview out of computeMilestones and the
+    // "Reward unlocked" detection in _authenticated.tsx.
+    expect(isUnlocked(dragon.condition, EMPTY_MILESTONES)).toBe(false)
+  })
+
+  it('still resolves normally for someone who earned it', () => {
+    const earned = normalizeMilestones({ concTier: 5, grade: 5 })
+    expect(isThemeAvailable(dragon, earned, after)).toBe(true)
   })
 })
 

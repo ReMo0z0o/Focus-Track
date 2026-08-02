@@ -10,8 +10,10 @@ import {
 import {
   AVATARS,
   DEFAULT_THEME,
+  PREVIEW_UNTIL,
   THEMES,
   computeMilestones,
+  isPreviewing,
   isUnlocked,
   mergeMilestones,
   normalizeMilestones,
@@ -20,7 +22,13 @@ import {
 } from '@/lib/rewards'
 import type { Milestones } from '@/lib/rewards'
 import { applyTheme } from '@/lib/theme'
-import { GRADE_NAMES, GRADE_THRESHOLDS } from '@/lib/stats'
+import { APP_LOCALE, GRADE_NAMES, GRADE_THRESHOLDS } from '@/lib/stats'
+
+/** Deadline in the viewer's own timezone — reads "18:00" in Paris. */
+const PREVIEW_DEADLINE_LABEL = new Date(PREVIEW_UNTIL).toLocaleTimeString(
+  APP_LOCALE,
+  { hour: '2-digit', minute: '2-digit' },
+)
 import { Emblem3D } from '@/components/Emblem3D'
 import { Avatar } from '@/components/avatars'
 import { useToast } from '@/components/Toaster'
@@ -178,7 +186,9 @@ function RewardsPage() {
         </div>
         <div className="theme-grid">
           {THEMES.map((t) => {
-            const unlocked = isUnlocked(t.condition, milestones)
+            const earned = isUnlocked(t.condition, milestones)
+            const previewing = !earned && isPreviewing(t.id, new Date())
+            const unlocked = earned || previewing
             const applied = currentTheme === t.id
             return (
               <div
@@ -213,6 +223,14 @@ function RewardsPage() {
                     {t.animated && (
                       <span className="theme-anim-chip" title="Ships a full-screen animated backdrop">
                         <SparkleIcon /> Animated
+                      </span>
+                    )}
+                    {previewing && (
+                      <span
+                        className="theme-anim-chip preview"
+                        title="Temporary access so you can try the theme — it locks again afterwards"
+                      >
+                        Preview until {PREVIEW_DEADLINE_LABEL}
                       </span>
                     )}
                   </div>

@@ -4311,6 +4311,13 @@ input, select {
 }
 
 /* "Animated" chip on theme cards */
+/* Temporary preview badge — REMOVE WITH THE PREVIEW WINDOW. */
+.theme-anim-chip.preview {
+  color: var(--pause);
+  background: color-mix(in srgb, var(--pause) 14%, transparent);
+  border-color: color-mix(in srgb, var(--pause) 35%, transparent);
+}
+
 .theme-anim-chip {
   display: inline-flex;
   align-items: center;

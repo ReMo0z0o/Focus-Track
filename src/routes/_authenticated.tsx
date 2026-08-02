@@ -14,8 +14,11 @@ import {
 import { getFriends } from '@/lib/friends.functions'
 import {
   AVATARS,
+  DEFAULT_THEME,
+  PREVIEW_THEME_ID,
   THEMES,
   computeMilestones,
+  isPreviewing,
   isUnlocked,
   mergeMilestones,
   milestonesEqual,
@@ -80,6 +83,38 @@ function useRewardsSync() {
   useEffect(() => {
     if (theme) applyTheme(theme)
   }, [theme])
+
+  // Preview expiry — REMOVE WITH THE PREVIEW WINDOW IN rewards.ts.
+  // A theme borrowed during the window must not stay applied forever, so
+  // once the deadline passes we hand back the default.
+  const revertedRef = useRef(false)
+  useEffect(() => {
+    if (revertedRef.current || !profileQuery.data || !sessionsQuery.data) return
+    if (theme !== PREVIEW_THEME_ID || isPreviewing(PREVIEW_THEME_ID, new Date())) {
+      return
+    }
+    const previewTheme = THEMES.find((t) => t.id === PREVIEW_THEME_ID)
+    if (!previewTheme) return
+    const milestones = mergeMilestones(
+      normalizeMilestones(profileQuery.data.milestones),
+      computeMilestones(sessionsQuery.data, new Date()),
+    )
+    if (isUnlocked(previewTheme.condition, milestones)) return // genuinely earned
+
+    revertedRef.current = true
+    applyTheme(DEFAULT_THEME)
+    updateProfileFn({ data: { theme: DEFAULT_THEME } })
+      .then(() => queryClient.invalidateQueries({ queryKey: ['profile'] }))
+      .catch(() => {})
+    toast(`The ${previewTheme.name} preview has ended — back to the default theme.`)
+  }, [
+    theme,
+    profileQuery.data,
+    sessionsQuery.data,
+    updateProfileFn,
+    queryClient,
+    toast,
+  ])
 
   const syncingRef = useRef(false)
   // What this tab last persisted — folded into `stored` so a stale profile

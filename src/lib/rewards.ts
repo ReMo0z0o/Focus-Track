@@ -201,6 +201,37 @@ export function unlockProgress(c: UnlockCondition, m: Milestones): number {
 }
 
 /* ------------------------------------------------------------------ */
+/* Temporary theme preview — REMOVE AFTER 2026-08-02 18:00             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Dragon's Lair asks for two feats at once, which makes it hard to check
+ * that the theme itself works. This window lets anyone apply it until the
+ * deadline, then the code goes inert and the theme locks again.
+ *
+ * Deliberately kept OUT of `isUnlocked`: that function feeds
+ * `computeMilestones` and the "Reward unlocked" toasts, so previewing must
+ * never write a milestone or announce an unlock that wasn't earned.
+ */
+export const PREVIEW_THEME_ID = 'dragon'
+/** 18:00 Europe/Paris on 2026-08-02, as a fixed instant so SSR and the
+ * client never disagree about whether the window is open. */
+export const PREVIEW_UNTIL = Date.parse('2026-08-02T16:00:00Z')
+
+export function isPreviewing(themeId: string, now: Date): boolean {
+  return themeId === PREVIEW_THEME_ID && now.getTime() < PREVIEW_UNTIL
+}
+
+/** Unlocked for real, or borrowable during the preview window. */
+export function isThemeAvailable(
+  theme: ThemeDef,
+  m: Milestones,
+  now: Date,
+): boolean {
+  return isUnlocked(theme.condition, m) || isPreviewing(theme.id, now)
+}
+
+/* ------------------------------------------------------------------ */
 /* Themes                                                              */
 /* ------------------------------------------------------------------ */
 
